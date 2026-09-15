@@ -4,15 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Prisme — cartographie de ce que tu penses vraiment</title>
-  <meta name="description" content="Un test politique en profondeur : 171 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, tes signatures. Compare-toi à tes amis.">
-  <meta name="theme-color" content="#0a0b12">
+  <meta name="description" content="Un test politique en profondeur : 201 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, ton profil DISC en couleurs. Compare-toi à tes amis.">
+  <meta name="theme-color" content="#f5efe4">
+  <script>try { if (localStorage.getItem('prisme.theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
   <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
-  <meta property="og:description" content="24 axes politiques, méta-politiques et de personnalité, 6 fondements moraux, un tempérament, un archétype. Compare-toi à tes amis.">
+  <meta property="og:description" content="24 axes politiques, méta-politiques et de personnalité, 6 fondements moraux, un tempérament, un archétype, un profil DISC. Compare-toi à tes amis.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d6d'/%3E%3Cstop offset='.5' stop-color='%23ffd60a'/%3E%3Cstop offset='1' stop-color='%234dc9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,6 60,56 4,56' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -21,11 +22,18 @@
   <!-- ===================== INTRO ===================== -->
   <section id="screen-intro" class="screen is-active">
     <header class="intro-head">
-      <div class="brand">
-        <span class="brand-prism" aria-hidden="true"></span>
-        <span class="brand-name">Prisme</span>
+      <div>
+        <div class="brand">
+          <span class="brand-prism" aria-hidden="true"></span>
+          <span class="brand-name">Prisme</span>
+        </div>
+        <p class="brand-sub">Cartographie de ce que tu penses vraiment</p>
       </div>
-      <p class="brand-sub">Cartographie de ce que tu penses vraiment</p>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Passer en mode sombre">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
+      </button>
     </header>
 
     <div class="intro-hero">
@@ -53,9 +61,9 @@
         <p>Soin, équité, loyauté, autorité, sacré, liberté : les intuitions profondes qui précèdent tes opinions.</p>
       </article>
       <article class="intro-card">
-        <span class="intro-card-num">3</span>
+        <span class="intro-card-num">4</span>
         <h3>portraits</h3>
-        <p>Une famille politique, un tempérament (Bâtisseur, Tribun, Gardien…) et un archétype de personnalité (Architecte, Funambule, Pilier…).</p>
+        <p>Une famille politique, un tempérament (Bâtisseur, Tribun…), un archétype de personnalité et ton <strong>profil DISC</strong> en couleurs : rouge, jaune, vert, bleu.</p>
       </article>
       <article class="intro-card">
         <span class="intro-card-num">∞</span>
@@ -67,7 +75,7 @@
     <div class="intro-actions">
       <button id="btn-start" class="btn btn-primary">
         <span>Commencer</span>
-        <small>171 curseurs · ~17 min</small>
+        <small>201 curseurs · ~20 min</small>
       </button>
       <button id="btn-resume" class="btn btn-ghost" hidden>
         <span>Reprendre</span>
@@ -92,7 +100,14 @@
   <section id="screen-quiz" class="screen">
     <div class="quiz-top">
       <button id="btn-quit" class="link-btn" type="button">← Accueil</button>
-      <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">171</span></div>
+      <div class="quiz-top-right">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Passer en mode sombre">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
+        </button>
+        <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">201</span></div>
+      </div>
     </div>
     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div id="progress-fill" class="progress-fill"></div>
@@ -140,13 +155,21 @@
         <span class="brand-prism" aria-hidden="true"></span>
         <span class="brand-name">Prisme</span>
       </div>
-      <button id="btn-home" class="link-btn" type="button">Accueil</button>
+      <div class="head-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Passer en mode sombre">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
+        </button>
+        <button id="btn-home" class="link-btn" type="button">Accueil</button>
+      </div>
     </header>
 
     <div class="res-hero">
       <p class="res-kicker" id="res-kicker">Ton profil</p>
       <h1 class="res-title" id="res-title"></h1>
       <p class="print-meta" id="print-meta"></p>
+      <div id="disc-chips" class="disc-chips" hidden></div>
       <p class="res-headline" id="res-headline"></p>
       <div class="res-share" id="res-share">
         <button id="btn-copy" class="btn btn-primary" type="button"><span>Inviter mes amis</span></button>
@@ -213,6 +236,18 @@
             <p id="map-note" class="map-note"></p>
           </article>
         </div>
+
+        <article class="res-card circle-disc-card" id="circle-disc-card" hidden>
+          <p class="card-kicker">Profils DISC</p>
+          <h2>Les couleurs du cercle</h2>
+          <div class="circle-disc">
+            <div id="circle-disc-wheel" class="disc-wheel"></div>
+            <div>
+              <ul id="circle-disc-list" class="circle-disc-list"></ul>
+              <p id="circle-disc-notes" class="circle-disc-notes"></p>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -259,6 +294,19 @@
           <ul id="cmp-found" class="found-cmp"></ul>
         </article>
       </div>
+
+      <article class="res-card cmp-disc" id="cmp-disc" hidden>
+        <p class="card-kicker">Profils DISC</p>
+        <h2>Vos couleurs</h2>
+        <div class="cmp-disc-grid">
+          <div id="cmp-disc-wheel" class="disc-wheel"></div>
+          <div>
+            <p id="cmp-disc-who" class="cmp-disc-who"></p>
+            <p id="cmp-disc-text" class="cmp-disc-text"></p>
+            <ul id="cmp-disc-bars" class="found-cmp"></ul>
+          </div>
+        </div>
+      </article>
 
       <article class="res-card dumbbell-card">
         <p class="card-kicker">Face à face</p>
@@ -310,6 +358,26 @@
         <p>Les combinaisons et les tensions que les réponses dessinent — ce qui distingue ce profil d'un profil moyen.</p>
       </div>
       <div id="signatures" class="signatures"></div>
+    </section>
+
+    <!-- Profil DISC -->
+    <section class="res-section disc" id="disc-section" hidden>
+      <div class="section-head">
+        <h2>Profil DISC</h2>
+        <p>Ton style de comportement en quatre couleurs, selon la méthode utilisée en ressources humaines : comment tu agis, communiques et réagis sous pression.</p>
+      </div>
+      <div class="disc-hero">
+        <div id="disc-wheel" class="disc-wheel"></div>
+        <div class="disc-main">
+          <p class="card-kicker" id="disc-kicker">Ta couleur dominante</p>
+          <h3 class="disc-title" id="disc-title"></h3>
+          <p class="disc-sub" id="disc-sub"></p>
+          <p class="disc-desc" id="disc-desc"></p>
+          <div id="disc-bars" class="disc-bars"></div>
+        </div>
+      </div>
+      <div id="disc-cards" class="disc-cards"></div>
+      <div id="disc-legend" class="disc-legend"></div>
     </section>
 
     <!-- Axes politiques -->
@@ -381,8 +449,8 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=4"></script>
-  <script src="js/profiles.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/questions.js?v=5"></script>
+  <script src="js/profiles.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

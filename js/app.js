@@ -6,8 +6,11 @@
 (function () {
   'use strict';
 
-  const { AXES, FOUNDATIONS, TRAITS, QUESTIONS } = window.PRISME_DATA;
-  const { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT } = window.PRISME_PROFILES;
+  const { AXES, FOUNDATIONS, TRAITS, DISC, QUESTIONS } = window.PRISME_DATA;
+  const {
+    FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
+    DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
+  } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
   const STORAGE_LAST = 'prisme.last.v3';
@@ -16,6 +19,7 @@
   const STORAGE_CIRCLE = 'prisme.circle.v1';
   const STORAGE_PENDING = 'prisme.pending.v1';
   const STORAGE_MAP = 'prisme.map.v1';
+  const STORAGE_THEME = 'prisme.theme';
 
   const POLITICAL = AXES.filter(a => a.group === 'politique');
   const META = AXES.filter(a => a.group === 'meta');
@@ -32,8 +36,11 @@
         'aff', 'loc', 'rsk', 'ord', 'thr', 'col', 'tmp', 'cmp', 'opn'],
     3: ['eco', 'egl', 'soc', 'idn', 'aut', 'env', 'geo', 'jus', 'tec', 'epi', 'chg', 'dem', 'cfl', 'vis', 'nat',
         'aff', 'loc', 'rsk', 'ord', 'thr', 'col', 'tmp', 'cmp', 'opn'],
+    4: ['eco', 'egl', 'soc', 'idn', 'aut', 'env', 'geo', 'jus', 'tec', 'epi', 'chg', 'dem', 'cfl', 'vis', 'nat',
+        'aff', 'loc', 'rsk', 'ord', 'thr', 'col', 'tmp', 'cmp', 'opn'],
   };
-  const CURRENT_VERSION = 3;
+  const CURRENT_VERSION = 4;
+  const DISC_SINCE_VERSION = 4;
 
   const $ = id => document.getElementById(id);
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -236,9 +243,9 @@
     bubble.textContent = labelFor(v);
     // la bulle suit le pouce (compensation de la largeur du pouce : 30 px)
     bubble.style.left = `calc(${p}% + ${(50 - p) * 0.3}px)`;
-    const color = Math.abs(v) < 8 ? '#f3f0ea' : (v < 0 ? '#ff4d6d' : '#4dc9ff');
+    const color = Math.abs(v) < 8 ? 'var(--ink)' : (v < 0 ? 'var(--neg)' : 'var(--pos)');
     bubble.style.background = color;
-    bubble.style.color = '#0a0b12';
+    bubble.style.color = 'var(--bg)';
     slider.style.setProperty('--thumb', color);
   }
 
@@ -337,7 +344,11 @@
     document.addEventListener('keydown', e => {
       if (!$('screen-quiz').classList.contains('is-active')) return;
       if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
-      if (e.key === 'Enter') { e.preventDefault(); goNext(false); }
+      if (e.key === 'Enter') {
+        if (e.target.closest && e.target.closest('button')) return;
+        e.preventDefault();
+        goNext(false);
+      }
       else if (e.key === 'Backspace' && e.target !== slider) { e.preventDefault(); goPrev(); }
       else if (e.key.toLowerCase() === 'h') { heart.checked = !heart.checked; }
       else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target !== slider) {
@@ -356,6 +367,7 @@
     AXES.forEach(a => dims[a.id] = { num: 0, den: 0, contribs: [] });
     FOUNDATIONS.forEach(f => dims[f.id] = { num: 0, den: 0, contribs: [] });
     TRAITS.forEach(t => dims[t.id] = { num: 0, den: 0, contribs: [] });
+    DISC.forEach(x => dims[x.id] = { num: 0, den: 0, contribs: [] });
 
     const hearts = {};
     AXES.forEach(a => hearts[a.id] = 0);
@@ -407,6 +419,11 @@
       const d = dims[t.id];
       traits[t.id] = d.den ? clamp((d.num / d.den + 1) / 2, 0, 1) : 0.5;
     });
+    const disc = {};
+    DISC.forEach(x => {
+      const d = dims[x.id];
+      disc[x.id] = d.den ? clamp((d.num / d.den + 1) / 2, 0, 1) : 0.5;
+    });
 
     const stats = {
       intensity: answered ? sumAbs / answered : 0,
@@ -421,7 +438,7 @@
     strongest.sort((x, y) => (Number(y.h) - Number(x.h)) || (Math.abs(y.v) - Math.abs(x.v)));
     const extremes = strongest.slice(0, EXTREMES_KEPT).map(e => ({ id: e.id, v: e.v }));
 
-    return { axes, found, traits, stats, heartAxes, answered, extremes };
+    return { axes, found, traits, disc, stats, heartAxes, answered, extremes };
   }
 
   /* ---------------------------------------------------------
@@ -452,13 +469,14 @@
     return bytes;
   }
 
-  // Version 3 : [3, 24 axes, 6 fondements, 3 traits, 4 stats, 3 octets de cœurs, nb répondu, 4 × (question, valeur)]
+  // Version 4 : [4, 24 axes, 6 fondements, 3 traits, 4 scores DISC, 4 stats, 3 octets de cœurs, nb répondu, 4 × (question, valeur)]
   function encodeResult(r) {
     const ids = AXES_BY_VERSION[CURRENT_VERSION];
     const bytes = [CURRENT_VERSION];
     ids.forEach(id => bytes.push(Math.round(r.axes[id] * 100) + 100));
     FOUNDATIONS.forEach(f => bytes.push(Math.round(r.found[f.id] * 100)));
     TRAITS.forEach(t => bytes.push(Math.round(r.traits[t.id] * 100)));
+    DISC.forEach(x => bytes.push(Math.round(r.disc[x.id] * 100)));
     bytes.push(Math.round(r.stats.intensity * 100), Math.round(r.stats.nuance * 100), Math.round(r.stats.radical * 100), Math.round(r.stats.coherence * 100));
     let mask = 0;
     ids.forEach((id, i) => { if (r.heartAxes.includes(id)) mask |= (1 << i); });
@@ -488,7 +506,8 @@
     if (!ids) return null;
     const maskBytes = version === 1 ? 2 : 3;
     const extremeBytes = version === 1 ? 0 : EXTREMES_KEPT * 2;
-    const need = 1 + ids.length + FOUNDATIONS.length + TRAITS.length + 4 + maskBytes + 1 + extremeBytes;
+    const discBytes = version >= DISC_SINCE_VERSION ? DISC.length : 0;
+    const need = 1 + ids.length + FOUNDATIONS.length + TRAITS.length + discBytes + 4 + maskBytes + 1 + extremeBytes;
     if (bytes.length < need) return null;
 
     let i = 1;
@@ -497,6 +516,11 @@
     ids.forEach(id => axes[id] = clamp((bytes[i++] - 100) / 100, -1, 1));
     FOUNDATIONS.forEach(f => found[f.id] = clamp(bytes[i++] / 100, 0, 1));
     TRAITS.forEach(t => traits[t.id] = clamp(bytes[i++] / 100, 0, 1));
+    let disc = null;
+    if (discBytes) {
+      disc = {};
+      DISC.forEach(x => disc[x.id] = clamp(bytes[i++] / 100, 0, 1));
+    }
     const stats = { intensity: bytes[i++] / 100, nuance: bytes[i++] / 100, radical: bytes[i++] / 100, coherence: bytes[i++] / 100 };
     let mask = 0;
     for (let k = 0; k < maskBytes; k++) mask |= bytes[i++] << (8 * k);
@@ -508,7 +532,7 @@
       if (id >= 0 && id < QUESTIONS.length) extremes.push({ id, v });
     }
     const known = new Set(ids);
-    return { version, axes, found, traits, stats, heartAxes, answered, extremes, known, partial: !known.has('aff') };
+    return { version, axes, found, traits, disc, stats, heartAxes, answered, extremes, known, partial: !known.has('aff') };
   }
 
   /* ---------------------------------------------------------
@@ -624,8 +648,8 @@
   function matchSignatures(r) {
     if (r.partial) return [];
     return SIGNATURES
-      .filter(s => { try { return s.test(r.axes, r.found, r.traits, r.stats); } catch (e) { return false; } })
-      .map(s => ({ ...s, strength: s.str(r.axes, r.found, r.traits, r.stats) }))
+      .filter(s => { try { return s.test(r.axes, r.found, r.traits, r.stats, r.disc); } catch (e) { return false; } })
+      .map(s => ({ ...s, strength: s.str(r.axes, r.found, r.traits, r.stats, r.disc) }))
       .sort((a, b) => b.strength - a.strength)
       .slice(0, 5);
   }
@@ -753,6 +777,12 @@
       }
       if (psyTorn.length) p3 += `Tu oscilles sur ${joinFr(psyTorn.map(pairLabel))}, selon les jours ou les sujets. `;
       p3 += psy[0].desc;
+      const dpS = discProfile(r.disc);
+      if (dpS) {
+        p3 += dpS.balanced
+          ? ` Côté DISC, ton profil est équilibré, avec une légère dominante <strong>${esc(dpS.primary.color.toLowerCase())}</strong>.`
+          : ` Côté DISC, tu es <strong>${esc(discLabel(dpS))}</strong> — ${esc((dpS.secondary ? dpS.pair.title : dpS.primary.style.title).toLowerCase())} : ${esc(dpS.primary.style.keywords.slice(0, 3).join(', '))}.`;
+      }
     }
     parts.push({ h: 'Comment tu fonctionnes', p: p3 });
 
@@ -996,6 +1026,180 @@
   }
 
   /* ---------------------------------------------------------
+     DISC
+     --------------------------------------------------------- */
+  const DISC_ORDER = 'DISC';
+
+  function discKey(x, y) {
+    return [x.letter, y.letter].sort((p, q) => DISC_ORDER.indexOf(p) - DISC_ORDER.indexOf(q)).join('');
+  }
+
+  // Couleur dominante, éventuelle seconde couleur (si proche), ou profil équilibré
+  function discProfile(disc) {
+    if (!disc) return null;
+    const ranked = DISC.map(x => ({ ...x, v: disc[x.id], style: DISC_STYLES[x.id] })).sort((p, q) => q.v - p.v);
+    const first = ranked[0], second = ranked[1];
+    const balanced = first.v - ranked[ranked.length - 1].v < 0.1;
+    const secondary = !balanced && second.v >= 0.5 && first.v - second.v <= 0.12 ? second : null;
+    return { ranked, primary: first, secondary, balanced, pair: secondary ? DISC_PAIRS[discKey(first, secondary)] : null };
+  }
+
+  function discColors(dp) {
+    return [dp.primary, dp.secondary].filter(Boolean);
+  }
+
+  function discLabel(dp) {
+    return discColors(dp).map(x => x.color.toLowerCase()).join(' et ');
+  }
+
+  function discPills(dp, small) {
+    return discColors(dp).map(x =>
+      `<span class="disc-pill${small ? ' sm' : ''}" style="--c:var(${x.css})"><b>${x.letter}</b>${esc(x.color)}${small ? '' : `<small>${esc(x.label)}</small>`}</span>`).join('');
+  }
+
+  function discMini(r) {
+    const dp = discProfile(r.disc);
+    if (!dp) return '';
+    return discColors(dp).map(x => `<span class="disc-mini" style="--c:var(${x.css})" title="${esc(x.color)}">${x.letter}</span>`).join('') + ' ';
+  }
+
+  // Position sur la roue : horizontal = tâches (gauche) / relations (droite), vertical = posé (bas) / rapide (haut)
+  function discPoint(disc) {
+    const x = ((disc.inf + disc.ste) - (disc.dom + disc.con)) / 2;
+    const y = ((disc.dom + disc.inf) - (disc.ste + disc.con)) / 2;
+    const k = 1.8;
+    const len = Math.hypot(x * k, y * k);
+    const scale = len > 0.9 ? 0.9 / len : 1;
+    return [x * k * scale, y * k * scale];
+  }
+
+  function renderDiscWheel({ fill, outline, points, scores }) {
+    const S = 400, C = 200, R = 128;
+    const quads = { dom: [180, 270], inf: [270, 360], ste: [0, 90], con: [90, 180] };
+    const pt = (deg, r) => [C + Math.cos((deg * Math.PI) / 180) * r, C + Math.sin((deg * Math.PI) / 180) * r];
+    const sector = (a0, a1, r) => {
+      const [x0, y0] = pt(a0, r), [x1, y1] = pt(a1, r);
+      return `M${C} ${C}L${x0.toFixed(1)} ${y0.toFixed(1)}A${r.toFixed(1)} ${r.toFixed(1)} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}Z`;
+    };
+    const radius = v => R * (0.16 + 0.84 * v);
+
+    let svg = `<svg viewBox="0 0 ${S} ${S}" role="img" aria-label="Roue DISC">`;
+    DISC.forEach(x => {
+      const [a0, a1] = quads[x.id];
+      svg += `<path class="disc-bg" d="${sector(a0, a1, R)}" style="fill:var(${x.css})"/>`;
+    });
+    if (fill) {
+      DISC.forEach(x => {
+        const [a0, a1] = quads[x.id];
+        svg += `<path class="disc-fill" d="${sector(a0, a1, radius(fill[x.id]))}" style="fill:var(${x.css})"/>`;
+      });
+    }
+    [1 / 3, 2 / 3, 1].forEach(k => { svg += `<circle class="disc-ring" cx="${C}" cy="${C}" r="${(R * k).toFixed(1)}"/>`; });
+    if (outline) {
+      DISC.forEach(x => {
+        const [a0, a1] = quads[x.id];
+        svg += `<path class="disc-outline" d="${sector(a0, a1, radius(outline[x.id]))}"/>`;
+      });
+    }
+    svg += `<line class="disc-cross" x1="${C - R - 8}" y1="${C}" x2="${C + R + 8}" y2="${C}"/>`;
+    svg += `<line class="disc-cross" x1="${C}" y1="${C - R - 8}" x2="${C}" y2="${C + R + 8}"/>`;
+    svg += `<text class="disc-axis" x="${C}" y="${C - R - 20}" text-anchor="middle">RAPIDE · AFFIRMÉ</text>`;
+    svg += `<text class="disc-axis" x="${C}" y="${C + R + 30}" text-anchor="middle">POSÉ · RÉFLÉCHI</text>`;
+    svg += `<text class="disc-axis" transform="translate(${C - R - 20} ${C}) rotate(-90)" text-anchor="middle">TÂCHES</text>`;
+    svg += `<text class="disc-axis" transform="translate(${C + R + 20} ${C}) rotate(90)" text-anchor="middle">RELATIONS</text>`;
+    DISC.forEach(x => {
+      const mid = quads[x.id][0] + 45;
+      const [bx, by] = pt(mid, R + 34);
+      svg += `<circle class="disc-badge" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="20" style="fill:var(${x.css})"/>`;
+      svg += `<text class="disc-letter" x="${bx.toFixed(1)}" y="${(by + 8).toFixed(1)}" text-anchor="middle">${x.letter}</text>`;
+      if (fill && scores) {
+        const [sx, sy] = pt(mid, R * 0.58);
+        svg += `<text class="disc-score" x="${sx.toFixed(1)}" y="${(sy + 8).toFixed(1)}" text-anchor="middle">${pct(fill[x.id])}</text>`;
+      }
+    });
+    (points || []).forEach(p => {
+      const [dx, dy] = discPoint(p.disc);
+      const x = C + dx * R, y = C - dy * R;
+      const right = x > S - 120;
+      svg += `<g class="disc-pt ${p.me ? 'me' : ''}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.me ? 9 : 7}"${p.color ? ` style="fill:${p.color}"` : ''}/>`
+        + `<text x="${(right ? x - 13 : x + 13).toFixed(1)}" y="${(y + 5).toFixed(1)}" text-anchor="${right ? 'end' : 'start'}">${esc(p.label)}</text></g>`;
+    });
+    return svg + '</svg>';
+  }
+
+  function renderDiscSection(r, dp) {
+    const P = dp.primary, sec = dp.secondary;
+    const colors = discColors(dp);
+
+    $('disc-wheel').innerHTML = renderDiscWheel({ fill: r.disc, scores: true, points: [{ disc: r.disc, label: 'Toi', me: true }] });
+    $('disc-kicker').textContent = dp.balanced ? 'Profil équilibré' : sec ? 'Tes deux couleurs' : 'Ta couleur dominante';
+    $('disc-title').innerHTML = sec
+      ? `<span class="c" style="--c:var(${P.css})">${esc(P.color)}</span> <span class="amp">&amp;</span> <span class="c" style="--c:var(${sec.css})">${esc(sec.color)}</span>`
+      : `<span class="c" style="--c:var(${P.css})">${esc(P.color)}</span>`;
+    $('disc-sub').textContent = sec
+      ? `${dp.pair.title} · profil ${P.letter}${sec.letter}`
+      : `${P.style.title} · ${P.letter} comme ${P.label}`;
+    $('disc-desc').textContent = dp.balanced ? `${DISC_BALANCED} ${P.style.desc}` : sec ? dp.pair.text : P.style.desc;
+
+    $('disc-bars').innerHTML = DISC.map(x => {
+      const v = r.disc[x.id];
+      const top = colors.some(c => c.id === x.id);
+      return `<div class="disc-bar ${top ? 'is-top' : ''}" style="--c:var(${x.css})">
+          <span class="badge">${x.letter}</span>
+          <div><div class="name">${esc(x.label)}<small>${esc(x.color)}</small></div><div class="track"><i data-w="${pct(v)}"></i></div></div>
+          <span class="num">${pct(v)}</span>
+        </div>`;
+    }).join('');
+
+    const bullets = items => items.map(([x, text]) => `<li style="--c:var(${x.css})">${esc(text)}</li>`).join('');
+    const strengths = colors.flatMap((x, k) => x.style.strengths.slice(0, k ? 2 : 4).map(t => [x, t]));
+    const watch = colors.flatMap((x, k) => x.style.watch.slice(0, k ? 2 : 3).map(t => [x, t]));
+    $('disc-cards').innerHTML = `
+      <article class="disc-card"><h4>Tes forces</h4><ul>${bullets(strengths)}</ul></article>
+      <article class="disc-card"><h4>Tes points de vigilance</h4><ul>${bullets(watch)}</ul></article>
+      <article class="disc-card"><h4>Ce qui te motive</h4><p>${esc(colors.map(x => x.style.motive).join(' '))}</p></article>
+      <article class="disc-card"><h4>Pour bien communiquer avec toi</h4><p>${esc(colors.map(x => x.style.comm).join(' '))}</p></article>
+      <article class="disc-card"><h4>Sous pression</h4><p>${esc(P.style.stress)}</p></article>
+      <article class="disc-card"><h4>En débat politique</h4><p>${esc(colors.map(x => x.style.politics).join(' '))}</p></article>`;
+
+    $('disc-legend').innerHTML = DISC.map(x => {
+      const st = DISC_STYLES[x.id];
+      const mine = colors.some(c => c.id === x.id);
+      return `<article class="disc-style ${mine ? 'is-mine' : ''}" style="--c:var(${x.css})">
+          <div class="head"><span class="color">${esc(x.color)} · ${x.letter}</span><span class="pct">${pct(r.disc[x.id])}</span></div>
+          <h5>${esc(x.label)}</h5>
+          <p>${esc(st.title)} — ${esc(st.keywords.join(', '))}.</p>
+        </article>`;
+    }).join('');
+  }
+
+  function renderCircleDisc(cur, entries) {
+    const people = [{ name: 'Toi', r: cur.r, me: true }, ...entries].filter(p => p.r.disc);
+    const card = $('circle-disc-card');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+
+    // « Toi » dessiné en dernier pour rester au-dessus
+    $('circle-disc-wheel').innerHTML = renderDiscWheel({
+      scores: false,
+      points: people.slice().reverse().map(p => ({ disc: p.r.disc, label: p.name, me: !!p.me, color: p.me ? null : p.color })),
+    });
+    const profiles = people.map(p => ({ ...p, dp: discProfile(p.r.disc) }));
+    $('circle-disc-list').innerHTML = profiles.map(p =>
+      `<li><span class="who">${esc(p.name)}</span>${discPills(p.dp, true)}<small>${esc(p.dp.secondary ? p.dp.pair.title : p.dp.primary.style.title)}</small></li>`).join('');
+
+    const counts = {};
+    DISC.forEach(x => { counts[x.id] = 0; });
+    profiles.forEach(p => discColors(p.dp).forEach(x => { counts[x.id] += 1; }));
+    const top = DISC.slice().sort((p, q) => counts[q.id] - counts[p.id])[0];
+    const notes = [`Couleur la plus présente : <b>${esc(top.color.toLowerCase())}</b> (${counts[top.id]} sur ${profiles.length}).`];
+    DISC.filter(x => !counts[x.id]).forEach(x => notes.push(esc(DISC_MISSING[x.id])));
+    const legacy = entries.length + 1 - people.length;
+    if (legacy) notes.push(`${legacy} personne${legacy > 1 ? 's' : ''} sans profil DISC (ancienne version du test).`);
+    $('circle-disc-notes').innerHTML = notes.map(n => `<span>${n}</span>`).join('');
+  }
+
+  /* ---------------------------------------------------------
      Rendu : briques graphiques
      --------------------------------------------------------- */
   function renderAxisRow(axis, mine, theirs) {
@@ -1085,6 +1289,14 @@
       ? `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>, ${esc(shortName(psy[0].name))}`
       : `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>`;
     $('res-headline').textContent = [fam[0].desc, temp[0].desc, psy.length ? psy[0].desc : ''].filter(Boolean).join(' ');
+
+    const dp = discProfile(r.disc);
+    $('disc-chips').hidden = !dp;
+    $('disc-chips').innerHTML = dp
+      ? discPills(dp, false) + (dp.balanced ? '<span class="disc-pill" style="--c:var(--ink-3)"><b>≈</b>Profil équilibré</span>' : '')
+      : '';
+    $('disc-section').hidden = !dp;
+    if (dp) renderDiscSection(r, dp);
 
     // Barre d'actions : propriétaire ou visiteur
     $('res-share').hidden = !cur.isMine;
@@ -1218,7 +1430,7 @@
         <button class="rank-main" type="button" data-action="select" data-code="${f.code}" aria-label="Me comparer à ${esc(f.name)}">
           <span class="rank-pos">${k + 1}</span>
           <span class="rank-dot" style="background:${f.color}"></span>
-          <span class="rank-who"><strong>${esc(f.name)}</strong><small>${esc(f.fam.name)} · ${esc(f.temp.name)}</small></span>
+          <span class="rank-who"><strong>${esc(f.name)}</strong><small>${discMini(f.r)}${esc(f.fam.name)} · ${esc(f.temp.name)}</small></span>
           <span class="rank-pct">${pct(f.aff.total)}<small> %</small></span>
           <span class="rank-bar"><i data-w="${pct(f.aff.total)}" style="background:${f.color}"></i></span>
         </button>
@@ -1252,6 +1464,7 @@
 
     mapState = { cur, entries, selectedCode };
     renderMap();
+    renderCircleDisc(cur, entries);
   }
 
   function renderMap() {
@@ -1285,10 +1498,10 @@
     });
     svg += `<line class="map-axis" x1="${C}" y1="${P}" x2="${C}" y2="${P + W}"/>`;
     svg += `<line class="map-axis" x1="${P}" y1="${C}" x2="${P + W}" y2="${C}"/>`;
-    svg += `<text class="map-lbl" transform="translate(${P - 14} ${C}) rotate(-90)" text-anchor="middle" style="fill:${ax.colorL}">${esc(ax.left.toUpperCase())}</text>`;
-    svg += `<text class="map-lbl" transform="translate(${S - P + 14} ${C}) rotate(90)" text-anchor="middle" style="fill:${ax.colorR}">${esc(ax.right.toUpperCase())}</text>`;
-    svg += `<text class="map-lbl" x="${C}" y="${P - 14}" text-anchor="middle" style="fill:${ay.colorR}">${esc(ay.right.toUpperCase())}</text>`;
-    svg += `<text class="map-lbl" x="${C}" y="${S - P + 24}" text-anchor="middle" style="fill:${ay.colorL}">${esc(ay.left.toUpperCase())}</text>`;
+    svg += `<text class="map-lbl" transform="translate(${P - 14} ${C}) rotate(-90)" text-anchor="middle" style="--c:${ax.colorL}">${esc(ax.left.toUpperCase())}</text>`;
+    svg += `<text class="map-lbl" transform="translate(${S - P + 14} ${C}) rotate(90)" text-anchor="middle" style="--c:${ax.colorR}">${esc(ax.right.toUpperCase())}</text>`;
+    svg += `<text class="map-lbl" x="${C}" y="${P - 14}" text-anchor="middle" style="--c:${ay.colorR}">${esc(ay.right.toUpperCase())}</text>`;
+    svg += `<text class="map-lbl" x="${C}" y="${S - P + 24}" text-anchor="middle" style="--c:${ay.colorL}">${esc(ay.left.toUpperCase())}</text>`;
 
     const onMap = entries.filter(f => f.r.known.has(ax.id) && f.r.known.has(ay.id));
     const meX = px(cur.r.axes[ax.id]), meY = py(cur.r.axes[ay.id]);
@@ -1309,7 +1522,7 @@
         + `<circle cx="${x}" cy="${y}" r="${isSel ? 9 : 7}" fill="${f.color}"/>${label(x, y, f.name)}</g>`;
     });
     svg += `<g class="map-pt me"><title>Toi — ${esc(nuancedLabel(ax, cur.r.axes[ax.id]))}, ${esc(nuancedLabel(ay, cur.r.axes[ay.id]).toLowerCase())}</title>`
-      + `<circle cx="${meX}" cy="${meY}" r="9" fill="#f3f0ea"/>${label(meX, meY, 'Toi')}</g>`;
+      + `<circle cx="${meX}" cy="${meY}" r="9"/>${label(meX, meY, 'Toi')}</g>`;
     svg += '</svg>';
 
     $('circle-map').innerHTML = svg;
@@ -1383,6 +1596,20 @@
           </div>`;
       }).join('')}</div>`;
     }).join('');
+
+    // Couleurs DISC
+    const da = discProfile(a.disc), db = discProfile(b.disc);
+    $('cmp-disc').hidden = !(da && db);
+    if (da && db) {
+      $('cmp-disc-wheel').innerHTML = renderDiscWheel({
+        fill: a.disc, outline: b.disc, scores: false,
+        points: [{ disc: b.disc, label: name, color: 'var(--accent)' }, { disc: a.disc, label: meLabel, me: true }],
+      });
+      $('cmp-disc-who').innerHTML = `<span>${esc(meLabel)}</span>${discPills(da, true)}<span class="amp">·</span><span>${esc(name)}</span>${discPills(db, true)}`;
+      $('cmp-disc-text').textContent = DISC_DUO[discKey(da.primary, db.primary)];
+      $('cmp-disc-bars').innerHTML = DISC.map(x =>
+        `<li><b style="color:color-mix(in srgb, var(${x.css}) var(--label-mix), var(--label-toward))">${esc(x.color)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(a.disc[x.id])}"></i></span><span class="bar them"><i data-w="${pct(b.disc[x.id])}"></i></span></span><span class="num">${pct(a.disc[x.id])}<em>${pct(b.disc[x.id])}</em></span></li>`).join('');
+    }
 
     // Listes d'accords et de désaccords
     const agree = rows.filter(r => r.d < 0.3 && Math.sign(r.m) === Math.sign(r.t) && Math.abs(r.m) >= 0.2)
@@ -1643,8 +1870,34 @@
   }
 
   /* ---------------------------------------------------------
+     Thème clair / sombre (clair par défaut)
+     --------------------------------------------------------- */
+  function applyTheme(theme) {
+    const dark = theme === 'dark';
+    if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#0a0b12' : '#f5efe4');
+    document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
+      btn.setAttribute('aria-label', dark ? 'Passer en mode clair' : 'Passer en mode sombre');
+    });
+  }
+
+  function initTheme() {
+    applyTheme(readStr(STORAGE_THEME) === 'dark' ? 'dark' : 'light');
+    document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        store(STORAGE_THEME, next);
+        applyTheme(next);
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------
      Démarrage
      --------------------------------------------------------- */
+  initTheme();
   initQuiz();
   initResults();
   window.addEventListener('hashchange', route);

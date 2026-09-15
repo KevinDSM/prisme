@@ -132,6 +132,15 @@ const TRAITS = [
     desc: 'Propension à agir, parler et s\'impliquer pour ses idées.' },
 ];
 
+// ---------- Profil DISC (unipolaire, 0 → 100) ----------
+// Deux dimensions : rythme (rapide D-I / posé S-C) et orientation (tâches D-C / relations I-S)
+const DISC = [
+  { id: 'dom', letter: 'D', label: 'Dominance',  color: 'Rouge', css: '--disc-d' },
+  { id: 'inf', letter: 'I', label: 'Influence',  color: 'Jaune', css: '--disc-i' },
+  { id: 'ste', letter: 'S', label: 'Stabilité',  color: 'Vert',  css: '--disc-s' },
+  { id: 'con', letter: 'C', label: 'Conformité', color: 'Bleu',  css: '--disc-c' },
+];
+
 // ---------- Banque de questions ----------
 // t = texte, w = poids par dimension
 const QUESTION_BANK = [
@@ -360,6 +369,46 @@ const QUESTION_BANK = [
   { t: 'Malgré ses défauts, le capitalisme est le meilleur système économique jamais inventé.', w: { eco: 1 } },
   { t: 'La dette publique n\'est pas un problème tant qu\'elle finance des investissements d\'avenir.', w: { eco: -0.6 } },
   { t: 'Réduire le temps de travail (32 heures, semaine de quatre jours) serait bon pour tout le monde.', w: { eco: -0.7 } },
+
+  // DISC — Dominance (rouge)
+  { t: 'Je prends les décisions rapidement, même sans avoir toutes les informations.', w: { dom: 1, con: -0.4 } },
+  { t: 'Dans un groupe, je prends naturellement la direction des opérations.', w: { dom: 1 } },
+  { t: 'Je dis les choses franchement, quitte à froisser.', w: { dom: 0.9, ste: -0.4 } },
+  { t: 'Les défis difficiles me motivent plus qu\'ils ne m\'inquiètent.', w: { dom: 0.8, rsk: 0.3 } },
+  { t: 'Je supporte mal de perdre, même à un jeu sans enjeu.', w: { dom: 0.7, cmp: 0.4 } },
+  { t: 'Ce qui compte, c\'est le résultat, plus que la manière d\'y arriver.', w: { dom: 0.8, con: -0.4 } },
+  { t: 'Je préfère décider seul que chercher l\'accord de tout le monde.', w: { dom: 0.8, ste: -0.3 } },
+
+  // DISC — Influence (jaune)
+  { t: 'Je me fais facilement des amis, même avec des inconnus.', w: { inf: 1 } },
+  { t: 'J\'aime être au centre de l\'attention dans une soirée.', w: { inf: 1 } },
+  { t: 'Je convaincs plus par l\'enthousiasme que par les arguments.', w: { inf: 0.9, con: -0.3 } },
+  { t: 'Je pense souvent à voix haute.', w: { inf: 0.8, con: -0.3 } },
+  { t: 'Un projet m\'intéresse d\'abord pour les gens avec qui je vais le faire.', w: { inf: 0.7, ste: 0.3 } },
+  { t: 'Je m\'ennuie vite dans les tâches répétitives et solitaires.', w: { inf: 0.8, ste: -0.4 } },
+  { t: 'J\'ai plein d\'idées, mais j\'en termine moins que j\'en commence.', w: { inf: 0.8, con: -0.4 } },
+
+  // DISC — Stabilité (vert)
+  { t: 'Je préfère la stabilité et mes habitudes aux changements soudains.', w: { ste: 1, dom: -0.3 } },
+  { t: 'Je suis la personne qu\'on appelle quand on a besoin d\'une oreille attentive.', w: { ste: 1 } },
+  { t: 'J\'évite les conflits, quitte à garder mon avis pour moi.', w: { ste: 0.9, dom: -0.5 } },
+  { t: 'Je reste patient, même quand les choses traînent.', w: { ste: 0.8, dom: -0.3 } },
+  { t: 'Dans une équipe, la bonne entente compte plus pour moi que la performance.', w: { ste: 0.8, dom: -0.2 } },
+  { t: 'J\'ai besoin de temps pour m\'adapter à une nouvelle situation.', w: { ste: 0.8, inf: -0.2 } },
+  { t: 'J\'aide volontiers les autres, même quand ce n\'est pas mon rôle.', w: { ste: 0.7, inf: 0.2 } },
+
+  // DISC — Conformité (bleu)
+  { t: 'Avant d\'agir, j\'ai besoin de comprendre tous les détails.', w: { con: 1, dom: -0.3 } },
+  { t: 'Une erreur, même petite, me dérange vraiment.', w: { con: 1 } },
+  { t: 'Je vérifie souvent mon travail plusieurs fois.', w: { con: 0.9 } },
+  { t: 'Je me méfie des décisions prises sur un coup de tête.', w: { con: 0.8, dom: -0.3 } },
+  { t: 'Je préfère les échanges écrits et précis aux grandes discussions.', w: { con: 0.8, inf: -0.4 } },
+  { t: 'On me reproche parfois d\'être trop perfectionniste.', w: { con: 0.8 } },
+  { t: 'Les procédures existent pour de bonnes raisons et je les suis.', w: { con: 0.8, ord: 0.3 } },
+
+  // DISC — rythme et orientation
+  { t: 'Je préfère agir vite et corriger ensuite plutôt que tout planifier.', w: { dom: 0.5, inf: 0.5, con: -0.5, ste: -0.4 } },
+  { t: 'Dans une réunion, je parle plus que je n\'écoute.', w: { dom: 0.4, inf: 0.6, ste: -0.5, con: -0.3 } },
 ];
 
 // Ordre fixe mais mélangé (même ordre pour tout le monde → comparable entre amis)
@@ -381,4 +430,4 @@ function seededOrder(n, seed) {
 
 const QUESTIONS = seededOrder(QUESTION_BANK.length, 0x9e3779b9).map(i => ({ id: i, ...QUESTION_BANK[i] }));
 
-window.PRISME_DATA = { AXES, FOUNDATIONS, TRAITS, QUESTIONS };
+window.PRISME_DATA = { AXES, FOUNDATIONS, TRAITS, DISC, QUESTIONS };

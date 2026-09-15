@@ -259,6 +259,27 @@ const SIGNATURES = [
   { id: 'egalitaire-autoritaire', test: (a) => a.egl < -0.5 && a.aut > 0.4, str: (a) => -a.egl * a.aut,
     title: 'L\'égalité s\'impose',
     text: 'Tu veux réduire les écarts et tu acceptes un pouvoir fort pour y arriver. Pour toi, l\'égalité ne se négocie pas avec ceux qui en profitent : elle se décrète.' },
+  { id: 'rouge-consensuel', test: (a, f, t, s, d) => d.dom >= 0.65 && a.cfl < -0.4, str: (a, f, t, s, d) => d.dom * -a.cfl,
+    title: 'Un meneur qui cherche l\'accord',
+    text: 'Rouge dans ta façon d\'agir, consensuel dans ta vision de la politique : tu aimes décider, mais tu crois que les bonnes décisions se construisent avec les autres. Un chef qui négocie.' },
+  { id: 'vert-rupturiste', test: (a, f, t, s, d) => d.ste >= 0.65 && a.chg > 0.4, str: (a, f, t, s, d) => d.ste * a.chg,
+    title: 'La révolution tranquille',
+    text: 'Vert dans ton comportement, rupturiste dans tes idées : tu veux changer le système en profondeur, mais sans éclats ni conflits au quotidien. Une radicalité qui ne hausse pas la voix.' },
+  { id: 'bleu-coeur', test: (a, f, t, s, d) => d.con >= 0.65 && a.aff < -0.4, str: (a, f, t, s, d) => d.con * -a.aff,
+    title: 'La rigueur au service du cœur',
+    text: 'Bleu dans ta méthode, guidé par le cœur dans tes choix : tu veux que ce soit bien fait, et pour de bonnes raisons humaines. Tu vérifies les chiffres de ce qui t\'émeut.' },
+  { id: 'jaune-individualiste', test: (a, f, t, s, d) => d.inf >= 0.65 && a.col < -0.4, str: (a, f, t, s, d) => d.inf * -a.col,
+    title: 'Entouré, jamais attaché',
+    text: 'Jaune dans tes relations, individualiste dans tes valeurs : tu adores les gens, mais tu ne leur dois rien. Toujours entouré, jamais enchaîné.' },
+  { id: 'rouge-democrate', test: (a, f, t, s, d) => d.dom >= 0.65 && a.dem < -0.4, str: (a, f, t, s, d) => d.dom * -a.dem,
+    title: 'Le chef qui veut rendre le pouvoir',
+    text: 'Rouge dans ta façon d\'agir, démocrate direct en politique : tu aimes décider pour toi, mais tu veux que le peuple décide pour tous. Une tension féconde — ou une vocation de tribun.' },
+  { id: 'bleu-ideologue', test: (a, f, t, s, d) => d.con >= 0.65 && a.epi > 0.5, str: (a, f, t, s, d) => d.con * a.epi,
+    title: 'La rigueur des principes',
+    text: 'Bleu et idéologue : tu veux que tout soit exact, y compris la cohérence de tes valeurs. Une exception à un principe te dérange autant qu\'une erreur de calcul.' },
+  { id: 'vert-conflictuel', test: (a, f, t, s, d) => d.ste >= 0.65 && a.cfl > 0.45, str: (a, f, t, s, d) => d.ste * a.cfl,
+    title: 'Doux dans la vie, dur dans les idées',
+    text: 'Vert dans tes relations, conflictuel dans ta vision de la politique : tu évites les disputes autour de toi, mais tu sais que les grands combats ne se gagnent pas en étant aimable. Ton entourage serait surpris de t\'entendre en débat.' },
 ];
 
 // Phrases de résumé par pôle : [léger, marqué, radical]
@@ -529,4 +550,92 @@ const COMPARE_TEXT = {
   },
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT };
+// ---------- DISC : styles, duos de couleurs, dynamiques entre deux personnes ----------
+const DISC_STYLES = {
+  dom: {
+    title: 'Le Meneur',
+    keywords: ['direct', 'décidé', 'compétitif', 'orienté résultats'],
+    desc: 'Tu avances vite et droit au but. Tu aimes les défis, tu prends les décisions que d\'autres repoussent et tu préfères l\'action à la discussion. Ce qui compte pour toi : le résultat, la maîtrise, l\'efficacité.',
+    strengths: ['Décide vite et assume ses choix', 'Tient bon sous la pression', 'Débloque les projets qui piétinent', 'Dit clairement ce qu\'il pense'],
+    watch: ['Peut paraître brusque ou impatient', 'Écoute peu quand il est pressé', 'Sous-estime l\'impact humain de ses décisions'],
+    comm: 'Va droit au but, apporte des solutions plutôt que des problèmes, et laisse le choix final.',
+    motive: 'Relever des défis, garder la main et voir des résultats concrets.',
+    stress: 'Sous pression, le rouge devient autoritaire et tranchant : il prend tout en main et n\'écoute plus personne.',
+    politics: 'En débat, le rouge cherche à gagner. Il respecte ceux qui lui tiennent tête et méprise les demi-mesures.',
+  },
+  inf: {
+    title: 'L\'Inspirateur',
+    keywords: ['enthousiaste', 'sociable', 'persuasif', 'optimiste'],
+    desc: 'Tu embarques les autres. Tu parles facilement, tu crées du lien, tu donnes envie. Tu fonctionnes à l\'enthousiasme, aux idées nouvelles et à la reconnaissance : un projet sans les gens n\'a pas de saveur pour toi.',
+    strengths: ['Crée une ambiance et motive un groupe', 'Convainc et fédère', 'Trouve des idées originales', 'Rebondit vite après un échec'],
+    watch: ['Se disperse et finit moins qu\'il ne commence', 'Promet plus qu\'il ne peut tenir', 'Néglige les détails et les chiffres'],
+    comm: 'Laisse de la place pour échanger, partage l\'enthousiasme, puis fixe ensemble les étapes concrètes par écrit.',
+    motive: 'La reconnaissance, les échanges et la liberté d\'essayer de nouvelles idées.',
+    stress: 'Sous pression, le jaune parle beaucoup, dramatise ou se réfugie dans l\'humour et la désorganisation.',
+    politics: 'En débat, le jaune séduit plus qu\'il ne démontre. Il cherche l\'adhésion de la salle et déteste être mis à l\'écart.',
+  },
+  ste: {
+    title: 'Le Soutien',
+    keywords: ['patient', 'loyal', 'à l\'écoute', 'fiable'],
+    desc: 'Tu es le point d\'appui des autres. Calme, loyal, attentif, tu préfères l\'harmonie à la victoire et la constance aux coups d\'éclat. Tu as besoin de sécurité, de temps et de relations sincères pour donner le meilleur de toi.',
+    strengths: ['Écoute vraiment', 'Apaise les tensions', 'Tient ses engagements dans la durée', 'Crée un climat de confiance'],
+    watch: ['Évite les conflits nécessaires', 'Résiste au changement', 'Dit oui en pensant non'],
+    comm: 'Prends le temps, rassure, explique le pourquoi des changements et ne brusque rien.',
+    motive: 'La sécurité, la confiance et le sentiment d\'être utile à un groupe soudé.',
+    stress: 'Sous pression, le vert se tait, cède en apparence et accumule en silence — jusqu\'à décrocher.',
+    politics: 'En débat, le vert cherche le terrain d\'entente. Il se méfie des tribuns et des grands bouleversements.',
+  },
+  con: {
+    title: 'L\'Analyste',
+    keywords: ['rigoureux', 'précis', 'prudent', 'exigeant'],
+    desc: 'Tu veux que ce soit juste. Méthodique, précis, exigeant, tu analyses avant d\'agir et tu te fies aux faits plus qu\'aux impressions. Tu as besoin de qualité, de logique et de règles claires.',
+    strengths: ['Repère les erreurs que personne ne voit', 'Argumente avec des faits', 'Travaille avec méthode et qualité', 'Anticipe les risques'],
+    watch: ['Peut paraître froid ou distant', 'Se perd dans les détails', 'Tarde à décider par peur de se tromper'],
+    comm: 'Sois précis, apporte des données, laisse le temps de réfléchir et évite les approximations.',
+    motive: 'La qualité, la compétence et des règles claires qui permettent de bien faire.',
+    stress: 'Sous pression, le bleu se replie, devient hypercritique et s\'enferme dans les détails.',
+    politics: 'En débat, le bleu vérifie les chiffres. Un argument émotionnel le laisse froid, une contradiction logique le fait bondir.',
+  },
+};
+
+// Profils à deux couleurs (clé dans l'ordre D, I, S, C)
+const DISC_PAIRS = {
+  DI: { title: 'Le Conquérant',
+    text: 'Rouge et jaune : tu veux gagner et tu sais embarquer les autres. Énergique et charismatique, tu fonces et tu entraînes. Attention : le rythme que tu imposes peut épuiser ceux qui te suivent, et les détails passent souvent à la trappe.' },
+  DS: { title: 'Le Protecteur',
+    text: 'Rouge et vert : une combinaison rare, faite de fermeté et de loyauté. Tu sais trancher, mais d\'abord pour protéger les tiens. Attention : tu oscilles entre prise en main énergique et besoin de stabilité, ce qui déroute parfois ton entourage.' },
+  DC: { title: 'Le Commandant',
+    text: 'Rouge et bleu : exigeant envers toi comme envers les autres, tu vises l\'excellence et l\'efficacité. Tu décides vite, mais sur des bases solides. Attention : tu peux paraître dur, et la chaleur humaine n\'est pas ton premier réflexe.' },
+  IS: { title: 'Le Rassembleur',
+    text: 'Jaune et vert : chaleureux, à l\'écoute et fédérateur, tu crées du lien partout où tu passes. Les gens se sentent bien avec toi. Attention : tu as du mal à dire non et à trancher quand il faut décevoir quelqu\'un.' },
+  IC: { title: 'Le Pédagogue',
+    text: 'Jaune et bleu : tu sais rendre clair ce qui est complexe. Tu allies le sens du contact et le souci de la justesse. Attention : tu oscilles entre spontanéité et besoin de maîtrise, et tu peux t\'épuiser à vouloir plaire tout en faisant parfait.' },
+  SC: { title: 'Le Garant',
+    text: 'Vert et bleu : fiable, méthodique, discret, tu es celui sur qui l\'on compte pour que les choses soient bien faites, et dans les temps. Attention : le changement et l\'improvisation te coûtent, et tu risques de rester en retrait quand il faudrait t\'affirmer.' },
+};
+
+const DISC_BALANCED = 'Aucune couleur ne domine nettement : tu adaptes ton style à la situation. C\'est une force — tu sais parler à tout le monde — et une invitation à choisir consciemment quel style adopter, et quand.';
+
+// Dynamique entre deux personnes selon leur couleur dominante (clé dans l'ordre D, I, S, C)
+const DISC_DUO = {
+  DD: 'Deux rouges : beaucoup d\'énergie et de franchise, mais aussi deux volontés de décider. Répartissez clairement les rôles, sinon ça tourne au bras de fer.',
+  II: 'Deux jaunes : vous vous amusez, vous vous stimulez et les idées fusent. Il faudra juste quelqu\'un pour noter qui fait quoi.',
+  SS: 'Deux verts : une relation paisible et loyale. Le risque : que personne n\'ose aborder ce qui fâche.',
+  CC: 'Deux bleus : vous vous comprenez par la logique et la précision. Le risque : analyser longtemps sans jamais trancher.',
+  DI: 'Rouge et jaune : un duo rapide qui aime l\'action. L\'un veut des résultats, l\'autre de la reconnaissance : pensez à féliciter autant qu\'à décider.',
+  DS: 'Rouge et vert : l\'un accélère, l\'autre stabilise. Très complémentaires, à condition que le rouge ralentisse un peu et que le vert ose dire quand il n\'est pas d\'accord.',
+  DC: 'Rouge et bleu : l\'un veut aller vite, l\'autre bien faire. Le rouge doit accepter les questions, le bleu doit accepter de décider sans tout savoir.',
+  IS: 'Jaune et vert : un duo chaleureux, tourné vers les gens. Vous vous entendez vite ; attention à ne pas éviter ensemble les décisions difficiles.',
+  IC: 'Jaune et bleu : l\'enthousiasme face à la rigueur. Le jaune trouve le bleu froid, le bleu trouve le jaune approximatif — et pourtant, ensemble, vous avez les idées et la méthode.',
+  SC: 'Vert et bleu : deux styles posés, fiables et prudents. Vous travaillez bien ensemble, mais il vous faudra parfois quelqu\'un pour donner le coup d\'envoi.',
+};
+
+// Ce qui manque à un groupe quand une couleur est absente
+const DISC_MISSING = {
+  dom: 'Personne de rouge : qui va trancher quand il faudra décider ?',
+  inf: 'Personne de jaune : qui met l\'ambiance et motive les troupes ?',
+  ste: 'Personne de vert : qui recolle les morceaux après une dispute ?',
+  con: 'Personne de bleu : qui vérifie les détails avant de se lancer ?',
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING };
