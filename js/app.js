@@ -5,17 +5,20 @@
   'use strict';
 
   const { AXES, FOUNDATIONS, TRAITS, QUESTIONS } = window.PRISME_DATA;
-  const { FAMILIES, TEMPERAMENTS, AXIS_PHRASES } = window.PRISME_PROFILES;
+  const { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES } = window.PRISME_PROFILES;
 
-  const STORAGE_PROGRESS = 'prisme.progress.v1';
-  const STORAGE_LAST = 'prisme.last.v1';
+  const STORAGE_PROGRESS = 'prisme.progress.v2';
+  const STORAGE_LAST = 'prisme.last.v2';
   const STORAGE_NAME = 'prisme.name';
   const POLITICAL = AXES.filter(a => a.group === 'politique');
   const META = AXES.filter(a => a.group === 'meta');
+  const PSYCHE = AXES.filter(a => a.group === 'psyche');
+  const EXTREMES_KEPT = 4;
 
   const $ = id => document.getElementById(id);
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
   /* ---------------------------------------------------------
      État du quiz
@@ -23,7 +26,6 @@
   const state = {
     index: 0,
     answers: {},        // questionId -> { v: -100..100, h: bool } | null (passée)
-    touched: false,
   };
 
   function saveProgress() {
@@ -50,7 +52,7 @@
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('is-active'));
     $('screen-' + name).classList.add('is-active');
-    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    window.scrollTo(0, 0);
   }
 
   let toastTimer = null;
@@ -59,7 +61,7 @@
     el.textContent = msg;
     el.classList.add('is-on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('is-on'), 2200);
+    toastTimer = setTimeout(() => el.classList.remove('is-on'), 2400);
   }
 
   /* ---------------------------------------------------------
@@ -75,7 +77,7 @@
       btn.hidden = false;
       btn.querySelector('span').textContent = 'Reprendre';
       info.textContent = `${progress.index}/${QUESTIONS.length} curseurs déjà réglés`;
-      btn.onclick = () => { state.index = progress.index; state.answers = progress.answers; startQuiz(false); };
+      btn.onclick = () => { state.index = progress.index; state.answers = progress.answers; startQuiz(); };
     } else if (last) {
       btn.hidden = false;
       btn.querySelector('span').textContent = 'Voir mon dernier résultat';
@@ -89,15 +91,14 @@
       if (progress && progress.index < QUESTIONS.length && !confirm('Recommencer depuis le début ? Ta progression en cours sera effacée.')) return;
       state.index = 0; state.answers = {};
       clearProgress();
-      startQuiz(true);
+      startQuiz();
     };
 
     $('btn-import').onclick = () => {
       const raw = $('import-input').value.trim();
       const codes = extractCodes(raw);
       if (!codes.length) { toast('Lien ou code non reconnu'); return; }
-      const h = 'p=' + codes[0] + (codes[1] ? '&vs=' + codes[1] : '');
-      location.hash = h;
+      location.hash = 'p=' + codes[0] + (codes[1] ? '&vs=' + codes[1] : '');
     };
     $('import-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-import').click(); });
   }
@@ -109,10 +110,10 @@
   const bubble = $('slider-bubble');
   const heart = $('heart');
 
-  function startQuiz(fresh) {
+  function startQuiz() {
     $('q-total').textContent = QUESTIONS.length;
     showScreen('quiz');
-    renderQuestion(fresh ? 'in' : 'in');
+    renderQuestion('in');
   }
 
   function labelFor(v) {
@@ -133,7 +134,7 @@
     bubble.style.left = `calc(${pct}% + ${(50 - pct) * 0.3}px)`;
     const color = Math.abs(v) < 8 ? '#f3f0ea' : (v < 0 ? '#ff4d6d' : '#4dc9ff');
     bubble.style.background = color;
-    bubble.style.color = Math.abs(v) < 8 ? '#0a0b12' : '#0a0b12';
+    bubble.style.color = '#0a0b12';
     slider.style.setProperty('--thumb', color);
   }
 
@@ -142,7 +143,7 @@
     const card = $('q-card');
     card.classList.remove('is-leaving', 'is-back');
     void card.offsetWidth; // relance l'animation
-    card.classList.add(dir === 'back' ? 'is-back' : 'is-in');
+    if (dir === 'back') card.classList.add('is-back');
 
     $('q-index').textContent = state.index + 1;
     $('q-text').textContent = q.t;
@@ -153,7 +154,6 @@
     const saved = state.answers[q.id];
     slider.value = saved ? saved.v : 0;
     heart.checked = !!(saved && saved.h);
-    state.touched = false;
     paintSlider();
 
     $('btn-prev').disabled = state.index === 0;
@@ -172,11 +172,15 @@
     }
   }
 
+  let transitioning = false;
   function goNext(skip) {
+    if (transitioning) return;
+    transitioning = true;
     commitCurrent(skip);
     const card = $('q-card');
     card.classList.add('is-leaving');
     setTimeout(() => {
+      transitioning = false;
       state.index += 1;
       if (state.index >= QUESTIONS.length) {
         finishQuiz();
@@ -188,7 +192,7 @@
   }
 
   function goPrev() {
-    if (state.index === 0) return;
+    if (state.index === 0 || transitioning) return;
     commitCurrent(false);
     state.index -= 1;
     saveProgress();
@@ -205,7 +209,7 @@
   }
 
   function initQuiz() {
-    slider.addEventListener('input', () => { state.touched = true; paintSlider(); });
+    slider.addEventListener('input', paintSlider);
     slider.addEventListener('change', () => {
       if (Math.abs(Number(slider.value)) < 6) { slider.value = 0; paintSlider(); }
     });
@@ -223,7 +227,7 @@
       else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target !== slider) {
         e.preventDefault();
         slider.value = clamp(Number(slider.value) + (e.key === 'ArrowLeft' ? -5 : 5), -100, 100);
-        state.touched = true; paintSlider();
+        paintSlider();
       }
     });
   }
@@ -241,6 +245,7 @@
     AXES.forEach(a => hearts[a.id] = 0);
 
     let answered = 0, sumAbs = 0, nuanced = 0, radical = 0;
+    const strongest = [];
 
     QUESTIONS.forEach(q => {
       const a = answers[q.id];
@@ -251,6 +256,7 @@
       sumAbs += av;
       if (av <= 0.25) nuanced += 1;
       if (av >= 0.75) radical += 1;
+      if (av >= 0.7) strongest.push({ id: q.id, v: a.v, h: a.h });
       const hf = a.h ? 1.5 : 1;
       Object.entries(q.w).forEach(([dim, w]) => {
         const d = dims[dim];
@@ -295,7 +301,11 @@
 
     const heartAxes = AXES.filter(a => hearts[a.id] >= 0.8).map(a => a.id);
 
-    return { axes, found, traits, stats, heartAxes, answered };
+    // Les curseurs les plus poussés : cœur d'abord, puis intensité
+    strongest.sort((x, y) => (Number(y.h) - Number(x.h)) || (Math.abs(y.v) - Math.abs(x.v)));
+    const extremes = strongest.slice(0, EXTREMES_KEPT).map(e => ({ id: e.id, v: e.v }));
+
+    return { version: 2, axes, found, traits, stats, heartAxes, answered, extremes };
   }
 
   /* ---------------------------------------------------------
@@ -320,39 +330,70 @@
     for (const ch of str) {
       const v = B64.indexOf(ch);
       if (v < 0) return null;
-      buf = (buf << 6) | v; bits += 6;
+      buf = ((buf << 6) | v) & 0xffffff; bits += 6;
       if (bits >= 8) { bits -= 8; bytes.push((buf >> bits) & 255); }
     }
     return bytes;
   }
 
+  // Version 2 : [2, 23 axes, 6 fondements, 3 traits, 4 stats, 3 octets de cœurs, répondu, 4 × (question, valeur)]
   function encodeResult(r) {
-    const bytes = [1];
+    const bytes = [2];
     AXES.forEach(a => bytes.push(Math.round(r.axes[a.id] * 100) + 100));
     FOUNDATIONS.forEach(f => bytes.push(Math.round(r.found[f.id] * 100)));
     TRAITS.forEach(t => bytes.push(Math.round(r.traits[t.id] * 100)));
     bytes.push(Math.round(r.stats.intensity * 100), Math.round(r.stats.nuance * 100), Math.round(r.stats.radical * 100), Math.round(r.stats.coherence * 100));
     let mask = 0;
     AXES.forEach((a, i) => { if (r.heartAxes.includes(a.id)) mask |= (1 << i); });
-    bytes.push(mask & 255, (mask >> 8) & 255);
+    bytes.push(mask & 255, (mask >> 8) & 255, (mask >> 16) & 255);
     bytes.push(Math.min(255, r.answered || 0));
+    for (let i = 0; i < EXTREMES_KEPT; i++) {
+      const e = r.extremes[i];
+      bytes.push(e ? e.id + 1 : 0, e ? e.v + 100 : 0);
+    }
     return bytesToB64(bytes);
   }
 
+  // Version 1 (anciens liens) : 14 axes, masque sur 2 octets, pas de personnalité ni d'extrêmes
+  const V1_AXES = ['eco', 'soc', 'idn', 'aut', 'env', 'geo', 'jus', 'tec', 'epi', 'chg', 'dem', 'cfl', 'vis', 'nat'];
+
   function decodeResult(code) {
     const bytes = b64ToBytes(code);
-    const need = 1 + AXES.length + FOUNDATIONS.length + TRAITS.length + 4 + 2 + 1;
-    if (!bytes || bytes.length < need || bytes[0] !== 1) return null;
-    let i = 1;
+    if (!bytes || bytes.length < 2) return null;
+    const version = bytes[0];
     const axes = {}, found = {}, traits = {};
+    AXES.forEach(a => axes[a.id] = 0);
+    let i = 1;
+
+    if (version === 1) {
+      const need = 1 + V1_AXES.length + FOUNDATIONS.length + TRAITS.length + 4 + 2 + 1;
+      if (bytes.length < need) return null;
+      V1_AXES.forEach(id => axes[id] = clamp((bytes[i++] - 100) / 100, -1, 1));
+      FOUNDATIONS.forEach(f => found[f.id] = clamp(bytes[i++] / 100, 0, 1));
+      TRAITS.forEach(t => traits[t.id] = clamp(bytes[i++] / 100, 0, 1));
+      const stats = { intensity: bytes[i++] / 100, nuance: bytes[i++] / 100, radical: bytes[i++] / 100, coherence: bytes[i++] / 100 };
+      const mask = bytes[i] | (bytes[i + 1] << 8); i += 2;
+      const heartAxes = V1_AXES.filter((id, k) => mask & (1 << k));
+      const answered = bytes[i++];
+      return { version: 1, axes, found, traits, stats, heartAxes, answered, extremes: [], partial: true };
+    }
+
+    if (version !== 2) return null;
+    const need = 1 + AXES.length + FOUNDATIONS.length + TRAITS.length + 4 + 3 + 1 + EXTREMES_KEPT * 2;
+    if (bytes.length < need) return null;
     AXES.forEach(a => axes[a.id] = clamp((bytes[i++] - 100) / 100, -1, 1));
     FOUNDATIONS.forEach(f => found[f.id] = clamp(bytes[i++] / 100, 0, 1));
     TRAITS.forEach(t => traits[t.id] = clamp(bytes[i++] / 100, 0, 1));
     const stats = { intensity: bytes[i++] / 100, nuance: bytes[i++] / 100, radical: bytes[i++] / 100, coherence: bytes[i++] / 100 };
-    const mask = bytes[i] | (bytes[i + 1] << 8); i += 2;
+    const mask = bytes[i] | (bytes[i + 1] << 8) | (bytes[i + 2] << 16); i += 3;
     const heartAxes = AXES.filter((a, k) => mask & (1 << k)).map(a => a.id);
     const answered = bytes[i++];
-    return { axes, found, traits, stats, heartAxes, answered };
+    const extremes = [];
+    for (let k = 0; k < EXTREMES_KEPT; k++) {
+      const id = bytes[i++] - 1, v = bytes[i++] - 100;
+      if (id >= 0 && id < QUESTIONS.length) extremes.push({ id, v });
+    }
+    return { version: 2, axes, found, traits, stats, heartAxes, answered, extremes };
   }
 
   function extractCodes(raw) {
@@ -384,6 +425,18 @@
     const ids = META.map(a => a.id);
     return TEMPERAMENTS.map(t => ({ ...t, score: similarity(r.axes, t.v, ids) })).sort((a, b) => b.score - a.score);
   }
+  function rankPsyche(r) {
+    const ids = PSYCHE.map(a => a.id);
+    return PSYCHE_TYPES.map(t => ({ ...t, score: similarity(r.axes, t.v, ids) })).sort((a, b) => b.score - a.score);
+  }
+
+  function matchSignatures(r) {
+    return SIGNATURES
+      .filter(s => { try { return s.test(r.axes, r.found, r.traits, r.stats); } catch (e) { return false; } })
+      .map(s => ({ ...s, strength: s.str(r.axes, r.found, r.traits, r.stats) }))
+      .sort((a, b) => b.strength - a.strength)
+      .slice(0, 5);
+  }
 
   function tierOf(s) {
     const a = Math.abs(s);
@@ -405,6 +458,10 @@
     return prefix ? prefix + pole.toLowerCase() : pole;
   }
 
+  function shortName(name) {
+    return name.replace(/^(Le |La |L')/, '');
+  }
+
   /* ---------------------------------------------------------
      Résumé
      --------------------------------------------------------- */
@@ -413,82 +470,140 @@
     return items.slice(0, -1).join(', ') + ' et ' + items[items.length - 1];
   }
 
-  function summarize(r, fam, temp) {
+  function axisPhrase(a, s) {
+    return AXIS_PHRASES[a.id][s < 0 ? 'L' : 'R'][tierOf(s)];
+  }
+
+  function sentencesFor(list, r, max) {
+    const strong = list.slice().sort((a, b) => Math.abs(r.axes[b.id]) - Math.abs(r.axes[a.id]))
+      .filter(a => tierOf(r.axes[a.id]) >= 0).slice(0, max);
+    return strong.map(a => axisPhrase(a, r.axes[a.id]));
+  }
+
+  function tornAxes(list, r) {
+    return list.filter(a => tierOf(r.axes[a.id]) === -1);
+  }
+
+  function summarize(r, fam, temp, psy) {
     const parts = [];
 
-    // 1. Ce que tu penses
-    const polSorted = POLITICAL.slice().sort((a, b) => Math.abs(r.axes[b.id]) - Math.abs(r.axes[a.id]));
-    const strong = polSorted.filter(a => tierOf(r.axes[a.id]) >= 0);
-    const torn = polSorted.filter(a => tierOf(r.axes[a.id]) === -1);
-    const sentences = strong.slice(0, 5).map(a => {
-      const s = r.axes[a.id];
-      const ph = AXIS_PHRASES[a.id][s < 0 ? 'L' : 'R'][tierOf(s)];
-      return ph;
-    });
+    // I. Ce que tu penses
+    const polS = sentencesFor(POLITICAL, r, 5);
+    const polTorn = tornAxes(POLITICAL, r);
     let p1 = '';
-    if (sentences.length) {
-      p1 += 'Sur le fond, ' + sentences[0];
-      if (sentences.length > 1) p1 += '. ' + sentences.slice(1).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('. ');
-      p1 += '.';
+    if (polS.length) {
+      p1 += 'Sur le fond, ' + polS[0] + '.';
+      if (polS.length > 1) p1 += ' ' + polS.slice(1).map(cap).join('. ') + '.';
     } else {
-      p1 += 'Sur le fond, tu restes proche du centre sur presque tous les axes : peu de convictions tranchées, beaucoup de « ça dépend ».';
+      p1 += 'Sur le fond, tu restes proche du centre sur presque tous les axes : peu de convictions tranchées, beaucoup de « ça dépend ». Ce n\'est pas de l\'indifférence, c\'est une méfiance envers les réponses toutes faites.';
     }
-    if (torn.length) {
-      p1 += ` Tu es <strong>partagé</strong> sur ${joinFr(torn.map(a => a.left.toLowerCase() + ' / ' + a.right.toLowerCase()))} : là, tes réponses se compensent.`;
+    if (polTorn.length) {
+      p1 += ` Tu es <strong>partagé</strong> sur ${joinFr(polTorn.map(a => a.left.toLowerCase() + ' / ' + a.right.toLowerCase()))} : là, tes réponses tirent dans les deux sens et se compensent.`;
     }
-    p1 += ` Ce mélange te rapproche des <strong>${esc(fam[0].name.toLowerCase())}s</strong> (${Math.round(fam[0].score * 100)} % de proximité)`;
-    if (fam[1] && fam[1].score > fam[0].score - 0.08) p1 += `, à peu de chose près des ${esc(fam[1].name.toLowerCase())}s`;
-    p1 += '.';
+    p1 += ` Ce mélange te rapproche des <strong>${esc(fam[0].name.toLowerCase())}s</strong> (${pct(fam[0].score)} % de proximité)`;
+    if (fam[1] && fam[1].score > fam[0].score - 0.06) p1 += `, à peu de chose près des ${esc(fam[1].name.toLowerCase())}s (${pct(fam[1].score)} %)`;
+    const far = fam[fam.length - 1];
+    p1 += `. À l'opposé, tu n'as presque rien en commun avec les ${esc(far.name.toLowerCase())}s (${pct(far.score)} %).`;
     parts.push({ h: 'Ce que tu penses', p: p1 });
 
-    // 2. Comment tu le penses
-    const metaSorted = META.slice().sort((a, b) => Math.abs(r.axes[b.id]) - Math.abs(r.axes[a.id]));
-    const mStrong = metaSorted.filter(a => tierOf(r.axes[a.id]) >= 0);
-    const mSent = mStrong.slice(0, 4).map(a => {
-      const s = r.axes[a.id];
-      return AXIS_PHRASES[a.id][s < 0 ? 'L' : 'R'][tierOf(s)];
-    });
-    let p2 = `Ton tempérament est celui de <strong>${esc(temp[0].name)}</strong>. `;
-    if (mSent.length) {
-      p2 += 'Dans ta façon d\'aborder la politique, ' + mSent[0];
-      if (mSent.length > 1) p2 += '. ' + mSent.slice(1).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('. ');
-      p2 += '. ';
+    // II. Comment tu le penses
+    const metaS = sentencesFor(META, r, 4);
+    const metaTorn = tornAxes(META, r);
+    let p2 = `Ton tempérament est celui de <strong>${esc(temp[0].name)}</strong>`;
+    if (temp[1] && temp[1].score > temp[0].score - 0.08) p2 += `, avec une nette pointe de ${esc(shortName(temp[1].name))}`;
+    p2 += '. ';
+    if (metaS.length) {
+      p2 += 'Dans ta façon d\'aborder la politique, ' + metaS[0] + '.';
+      if (metaS.length > 1) p2 += ' ' + metaS.slice(1).map(cap).join('. ') + '.';
+      p2 += ' ';
     } else {
       p2 += 'Tu n\'as pas de méthode fixe : tu prends la politique comme elle vient, sans dogme sur la manière. ';
     }
+    if (metaTorn.length) p2 += `Sur ${joinFr(metaTorn.map(a => a.left.toLowerCase() + ' / ' + a.right.toLowerCase()))}, tu n'as pas tranché — et c'est peut-être volontaire. `;
     p2 += temp[0].desc;
     parts.push({ h: 'Comment tu le penses', p: p2 });
 
-    // 3. Ce qui te fait vibrer
+    // III. Comment tu fonctionnes
+    let p3;
+    if (r.partial) {
+      p3 = 'Ce résultat vient d\'une ancienne version du test, sans la partie personnalité. Refais-le pour découvrir ton archétype psychologique et tes signatures.';
+    } else {
+      const psyS = sentencesFor(PSYCHE, r, 5);
+      const psyTorn = tornAxes(PSYCHE, r);
+      p3 = `Sous la politique, il y a une personne : <strong>${esc(psy[0].name)}</strong>`;
+      if (psy[1] && psy[1].score > psy[0].score - 0.08) p3 += ` (à un cheveu de ${esc(shortName(psy[1].name))})`;
+      p3 += '. ';
+      if (psyS.length) {
+        p3 += cap(psyS[0]) + '.';
+        if (psyS.length > 1) p3 += ' ' + psyS.slice(1).map(cap).join('. ') + '.';
+        p3 += ' ';
+      } else {
+        p3 += 'Tu n\'es extrême sur aucun trait de personnalité : tu t\'adaptes, tu doses, tu ajustes selon la situation. ';
+      }
+      if (psyTorn.length) p3 += `Tu oscilles sur ${joinFr(psyTorn.map(a => a.left.toLowerCase() + ' / ' + a.right.toLowerCase()))}, selon les jours ou les sujets. `;
+      p3 += psy[0].desc;
+    }
+    parts.push({ h: 'Comment tu fonctionnes', p: p3 });
+
+    // IV. Ce qui te fait vibrer
     const fSorted = FOUNDATIONS.slice().sort((a, b) => r.found[b.id] - r.found[a.id]);
     const top = fSorted.slice(0, 2), low = fSorted[fSorted.length - 1];
-    let p3 = `Sous les opinions, tes réflexes moraux les plus vifs sont le <strong>${esc(top[0].label.toLowerCase())}</strong> (${Math.round(r.found[top[0].id] * 100)}) et l'<strong>${esc(top[1].label.toLowerCase())}</strong> (${Math.round(r.found[top[1].id] * 100)})`;
-    if (r.found[low.id] < 0.45) p3 += `, tandis que le registre du ${esc(low.label.toLowerCase())} te parle peu (${Math.round(r.found[low.id] * 100)})`;
-    p3 += '. ';
+    const spread = r.found[top[0].id] - r.found[low.id];
+    const art = f => ({ m: 'le ', f: 'la ', v: 'l\'' }[f.gen] || 'le ');
+    const artDe = f => ({ m: 'du ', f: 'de la ', v: 'de l\'' }[f.gen] || 'du ');
+    let p4 = `Tes réflexes moraux les plus vifs sont ${art(top[0])}<strong>${esc(top[0].label.toLowerCase())}</strong> (${pct(r.found[top[0].id])}) et ${art(top[1])}<strong>${esc(top[1].label.toLowerCase())}</strong> (${pct(r.found[top[1].id])})`;
+    if (r.found[low.id] < 0.45) p4 += `, tandis que le registre ${artDe(low)}${esc(low.label.toLowerCase())} te parle peu (${pct(r.found[low.id])})`;
+    p4 += '. ';
+    p4 += spread >= 0.45 ? 'Ta boussole morale est très contrastée : certaines choses te font bondir, d\'autres te laissent de marbre. '
+      : spread <= 0.2 ? 'Ta boussole morale est étonnamment équilibrée : tu réagis à tout un peu, à rien démesurément. '
+      : '';
 
     const inc = r.traits.inc, dog = r.traits.dog, eng = r.traits.eng;
-    p3 += inc >= 0.6 ? 'Tu vis bien avec l\'incertitude, ce qui te permet de suspendre ton jugement. '
+    p4 += inc >= 0.6 ? 'Tu vis bien avec l\'incertitude, ce qui te permet de suspendre ton jugement. '
       : inc <= 0.4 ? 'Tu as besoin de repères clairs : le flou te coûte, et ça se voit dans la netteté de tes positions. '
       : 'Tu tolères moyennement l\'incertitude : tu aimes trancher, mais tu sais attendre. ';
-    p3 += dog >= 0.6 ? 'Tu es plutôt sûr d\'avoir raison, et les avis contraires te semblent souvent mal informés. '
+    p4 += dog >= 0.6 ? 'Tu es plutôt sûr d\'avoir raison, et les avis contraires te semblent souvent mal informés. '
       : dog <= 0.4 ? 'Tu restes ouvert : tu changes d\'avis quand les faits changent, et tu peux débattre sans mépriser. '
       : 'Tu tiens à tes convictions sans fermer la porte au débat. ';
-    p3 += eng >= 0.6 ? 'Et tu ne te contentes pas de penser : tu en parles, tu t\'engages, tu agis. '
-      : eng <= 0.4 ? 'Tu observes plus que tu ne milites : la politique t\'intéresse, mais de loin. '
-      : 'Tu en parles volontiers, sans forcément descendre dans la rue. ';
+    p4 += eng >= 0.6 ? 'Et tu ne te contentes pas de penser : tu en parles, tu t\'engages, tu agis.'
+      : eng <= 0.4 ? 'Tu observes plus que tu ne milites : la politique t\'intéresse, mais de loin.'
+      : 'Tu en parles volontiers, sans forcément descendre dans la rue.';
+    parts.push({ h: 'Ce qui te fait vibrer', p: p4 });
 
+    // V. Ce qui te distingue
+    const all = AXES.filter(a => !r.partial || a.group !== 'psyche');
+    const ranked = all.slice().sort((a, b) => Math.abs(r.axes[b.id]) - Math.abs(r.axes[a.id]));
+    const sharp = ranked.filter(a => Math.abs(r.axes[a.id]) >= 0.45);
+    const grey = ranked.filter(a => Math.abs(r.axes[a.id]) < 0.2);
+    const veryExtreme = ranked.filter(a => Math.abs(r.axes[a.id]) >= 0.85);
+    let p5 = '';
+    if (sharp.length) {
+      const top3 = sharp.slice(0, 3);
+      p5 += `Ce qui te définit le plus nettement : ${joinFr(top3.map(a => `<strong>${esc(nuancedLabel(a, r.axes[a.id]).toLowerCase())}</strong> (${Math.round(Math.abs(r.axes[a.id]) * 100)})`))}. `;
+    }
+    if (veryExtreme.length) {
+      p5 += `Peu de gens poussent ${veryExtreme.length > 1 ? 'des curseurs' : 'un curseur'} aussi loin que toi sur ${joinFr(veryExtreme.slice(0, 3).map(a => a.left.toLowerCase() + ' / ' + a.right.toLowerCase()))} : c'est ta marque. `;
+    }
+    p5 += `Sur ${all.length} axes, tu es tranché sur ${sharp.length}, nuancé sur ${all.length - sharp.length - grey.length} et partagé sur ${grey.length}. `;
     const st = r.stats;
-    if (st.radical >= 0.4) p3 += `Ton style de réponse est <strong>tranché</strong> : ${Math.round(st.radical * 100)} % de tes curseurs sont aux extrêmes. `;
-    else if (st.nuance >= 0.4) p3 += `Ton style de réponse est <strong>nuancé</strong> : ${Math.round(st.nuance * 100)} % de tes curseurs restent près du centre. `;
-    else p3 += 'Ton style de réponse est équilibré, entre convictions fermes et nuances. ';
-    p3 += st.coherence >= 0.75 ? 'Tes réponses sont très cohérentes entre elles : tu sais où tu te situes.'
-      : st.coherence >= 0.55 ? 'Tes réponses sont globalement cohérentes, avec quelques tensions internes — c\'est humain.'
-      : 'Tes réponses contiennent pas mal de tensions internes : sur plusieurs axes, tu tires dans les deux sens. Ce n\'est pas un défaut, c\'est une pensée en mouvement.';
+    if (st.radical >= 0.4) p5 += `Ton style de réponse est <strong>tranché</strong> : ${pct(st.radical)} % de tes curseurs sont aux extrêmes. `;
+    else if (st.nuance >= 0.4) p5 += `Ton style de réponse est <strong>nuancé</strong> : ${pct(st.nuance)} % de tes curseurs restent près du centre. `;
+    else p5 += 'Ton style de réponse est équilibré, entre convictions fermes et nuances. ';
+    p5 += st.coherence >= 0.75 ? 'Tes réponses sont très cohérentes entre elles : tu sais où tu te situes. '
+      : st.coherence >= 0.55 ? 'Tes réponses sont globalement cohérentes, avec quelques tensions internes — c\'est humain. '
+      : 'Tes réponses contiennent pas mal de tensions internes : sur plusieurs axes, tu tires dans les deux sens. Ce n\'est pas un défaut, c\'est une pensée en mouvement. ';
     if (r.heartAxes.length) {
       const names = r.heartAxes.map(id => { const a = AXES.find(x => x.id === id); return a.left.toLowerCase() + ' / ' + a.right.toLowerCase(); });
-      p3 += ` Ce qui te tient vraiment à cœur : ${joinFr(names)}.`;
+      p5 += `Ce qui te tient vraiment à cœur : ${joinFr(names)}. `;
     }
-    parts.push({ h: 'Ce qui te fait vibrer', p: p3 });
+    if (r.extremes && r.extremes.length) {
+      const quotes = r.extremes.slice(0, 3).map(e => {
+        const q = QUESTIONS[e.id];
+        return q ? `« ${esc(q.t)} » <em>(${labelFor(e.v).toLowerCase()})</em>` : '';
+      }).filter(Boolean);
+      if (quotes.length) p5 += `Tes curseurs les plus poussés, mot pour mot : ${quotes.join(' — ')}.`;
+    }
+    parts.push({ h: 'Ce qui te distingue', p: p5.trim() });
 
     return parts;
   }
@@ -557,24 +672,47 @@
     return svg;
   }
 
+  function rankList(items, count, color) {
+    return items.slice(0, count).map(f =>
+      `<li><strong>${esc(f.name)}</strong><span class="pct">${pct(f.score)} %</span><span class="bar"><i data-w="${pct(f.score)}" style="background:${color}"></i></span></li>`).join('');
+  }
+
   function renderResults(mine, theirs, theirName) {
     const fam = rankFamilies(mine);
     const temp = rankTemperaments(mine);
+    const psy = rankPsyche(mine);
+    const sigs = mine.partial ? [] : matchSignatures(mine);
 
     $('res-kicker').textContent = theirs ? 'Ton profil (comparé)' : 'Ton profil';
-    $('res-title').innerHTML = `${esc(fam[0].name)}, <em>${esc(temp[0].name.replace(/^(Le |L')/, ''))}</em>`;
-    $('res-headline').textContent = `${fam[0].desc} ${temp[0].desc}`;
+    $('res-title').innerHTML = mine.partial
+      ? `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>`
+      : `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>, ${esc(shortName(psy[0].name))}`;
+    $('res-headline').textContent = mine.partial
+      ? `${fam[0].desc} ${temp[0].desc}`
+      : `${fam[0].desc} ${temp[0].desc} ${psy[0].desc}`;
 
     $('fam-name').textContent = fam[0].name;
     $('fam-tag').textContent = fam[0].tag;
     $('fam-desc').textContent = fam[0].desc;
-    $('fam-list').innerHTML = fam.slice(0, 5).map(f =>
-      `<li><strong>${esc(f.name)}</strong><span class="pct">${pct(f.score)} %</span><span class="bar"><i data-w="${pct(f.score)}"></i></span></li>`).join('');
+    $('fam-list').innerHTML = rankList(fam, 5, 'var(--accent)');
 
     $('temp-name').textContent = temp[0].name;
     $('temp-desc').textContent = temp[0].desc;
-    $('temp-list').innerHTML = temp.slice(0, 4).map(t =>
-      `<li><strong>${esc(t.name)}</strong><span class="pct">${pct(t.score)} %</span><span class="bar"><i data-w="${pct(t.score)}"></i></span></li>`).join('');
+    $('temp-list').innerHTML = rankList(temp, 4, '#57cc99');
+
+    const psyCard = $('psy-card');
+    const psySection = $('psyche-section');
+    if (mine.partial) {
+      psyCard.hidden = true;
+      psySection.hidden = true;
+    } else {
+      psyCard.hidden = false;
+      psySection.hidden = false;
+      $('psy-name').textContent = psy[0].name;
+      $('psy-desc').textContent = psy[0].desc;
+      $('psy-list').innerHTML = rankList(psy, 4, '#c77dff');
+      $('axes-psyche').innerHTML = PSYCHE.map(a => renderAxisRow(a, mine.axes[a.id], theirs && !theirs.partial ? theirs.axes[a.id] : undefined)).join('');
+    }
 
     $('axes-politique').innerHTML = POLITICAL.map(a => renderAxisRow(a, mine.axes[a.id], theirs ? theirs.axes[a.id] : undefined)).join('');
     $('axes-meta').innerHTML = META.map(a => renderAxisRow(a, mine.axes[a.id], theirs ? theirs.axes[a.id] : undefined)).join('');
@@ -605,6 +743,17 @@
     $('stats-grid').innerHTML = statDefs.map(s =>
       `<div class="stat"><div class="stat-val">${s.val}<small> %</small></div><div class="stat-name">${s.name}</div><div class="stat-desc">${s.desc}</div></div>`).join('');
 
+    // Signatures
+    const sigSec = $('signatures-section');
+    if (sigs.length) {
+      sigSec.hidden = false;
+      $('signatures').innerHTML = sigs.map((s, i) =>
+        `<article class="sig" style="--d:${i * 90}ms"><span class="sig-num">${['I', 'II', 'III', 'IV', 'V'][i]}</span><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></article>`).join('');
+    } else {
+      sigSec.hidden = true;
+    }
+
+    // Sujets de cœur
     const heartsSec = $('hearts-section');
     if (mine.heartAxes.length) {
       heartsSec.hidden = false;
@@ -617,8 +766,9 @@
       heartsSec.hidden = true;
     }
 
-    $('summary').innerHTML = summarize(mine, fam, temp).map((p, i) =>
-      `<h3 data-n="${['I', 'II', 'III'][i]}">${esc(p.h)}</h3><p>${p.p}</p>`).join('');
+    // Résumé
+    $('summary').innerHTML = summarize(mine, fam, temp, psy).map((p, i) =>
+      `<h3 data-n="${['I', 'II', 'III', 'IV', 'V'][i]}">${esc(p.h)}</h3><p>${p.p}</p>`).join('');
 
     // Comparaison
     const cmp = $('compare-block');
@@ -629,8 +779,10 @@
       cmp.hidden = true;
     }
 
+    // En-tête d'impression
+    $('print-meta').textContent = `${current.name ? current.name + ' · ' : ''}${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} · ${QUESTIONS.length} curseurs · kevindsm.github.io/prisme`;
+
     showScreen('results');
-    // animation des barres après insertion
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.querySelectorAll('#screen-results [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
     }));
@@ -639,10 +791,11 @@
   function renderComparison(mine, theirs, theirName) {
     const name = theirName || 'ton ami';
     $('cmp-name').textContent = name;
-    $('legend-them').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+    $('legend-them').textContent = cap(name);
 
+    const both = AXES.filter(a => !(mine.partial || theirs.partial) || a.group !== 'psyche');
     // écart moyen ramené sur ~1.4 (écart typique entre deux profils opposés) plutôt que sur le maximum théorique de 2
-    const axisDiff = clamp(AXES.reduce((s, a) => s + Math.abs(mine.axes[a.id] - theirs.axes[a.id]), 0) / AXES.length / 1.4, 0, 1);
+    const axisDiff = clamp(both.reduce((s, a) => s + Math.abs(mine.axes[a.id] - theirs.axes[a.id]), 0) / both.length / 1.4, 0, 1);
     const foundDiff = FOUNDATIONS.reduce((s, f) => s + Math.abs(mine.found[f.id] - theirs.found[f.id]), 0) / FOUNDATIONS.length;
     const affinity = clamp(1 - (0.75 * axisDiff + 0.25 * foundDiff), 0, 1);
     const p = pct(affinity);
@@ -658,17 +811,30 @@
     $('affinity-label').textContent = label[0];
     $('affinity-desc').textContent = label[1];
 
-    const rows = AXES.map(a => ({ a, m: mine.axes[a.id], t: theirs.axes[a.id], d: Math.abs(mine.axes[a.id] - theirs.axes[a.id]) }));
+    const rows = both.map(a => ({ a, m: mine.axes[a.id], t: theirs.axes[a.id], d: Math.abs(mine.axes[a.id] - theirs.axes[a.id]) }));
     const agree = rows.filter(r => r.d < 0.3 && Math.sign(r.m) === Math.sign(r.t) && Math.abs(r.m) >= 0.2)
       .sort((x, y) => (Math.abs(y.m) + Math.abs(y.t)) - (Math.abs(x.m) + Math.abs(x.t))).slice(0, 4);
     const disagree = rows.slice().sort((x, y) => y.d - x.d).slice(0, 4).filter(r => r.d >= 0.35);
 
     $('cmp-agree').innerHTML = agree.length ? agree.map(r =>
-      `<li><b>${esc(poleLabel(r.a, r.m))}${r.m < 0 ? 's' : 's'}, tous les deux</b><span>${esc(r.a.left)} / ${esc(r.a.right)} · toi ${Math.round(Math.abs(r.m) * 100)}, ${esc(name)} ${Math.round(Math.abs(r.t) * 100)}</span></li>`).join('')
+      `<li><b>${esc(poleLabel(r.a, r.m))}s, tous les deux</b><span>${esc(r.a.left)} / ${esc(r.a.right)} · toi ${Math.round(Math.abs(r.m) * 100)}, ${esc(name)} ${Math.round(Math.abs(r.t) * 100)}</span></li>`).join('')
       : '<li><span>Pas de terrain commun net : vous êtes proches surtout là où vous êtes tous les deux partagés.</span></li>';
     $('cmp-disagree').innerHTML = disagree.length ? disagree.map(r =>
       `<li><b>${esc(r.a.left)} / ${esc(r.a.right)}</b><span>toi : ${esc(nuancedLabel(r.a, r.m).toLowerCase())} · ${esc(name)} : ${esc(nuancedLabel(r.a, r.t).toLowerCase())}</span></li>`).join('')
       : '<li><span>Aucune fracture notable. Impressionnant.</span></li>';
+
+    // Un mot sur les personnalités si les deux profils en ont une
+    const psyNote = $('cmp-psy');
+    if (!mine.partial && !theirs.partial) {
+      const mp = rankPsyche(mine)[0], tp = rankPsyche(theirs)[0];
+      const mt = rankTemperaments(mine)[0], tt = rankTemperaments(theirs)[0];
+      psyNote.hidden = false;
+      psyNote.innerHTML = mp.name === tp.name
+        ? `Même archétype de personnalité : vous êtes tous les deux <strong>${esc(mp.name)}</strong>. ${mt.name === tt.name ? 'Et même tempérament politique. Vous devez finir les phrases l\'un de l\'autre.' : `Mais pas le même tempérament : ${esc(mt.name)} face à ${esc(tt.name)}.`}`
+        : `Toi <strong>${esc(mp.name)}</strong>, ${esc(name)} <strong>${esc(tp.name)}</strong>. ${mt.name === tt.name ? `Même tempérament politique (${esc(mt.name)}) : vous abordez la politique de la même façon, avec des personnalités différentes.` : `Et ${esc(mt.name)} face à ${esc(tt.name)} : deux manières d'habiter la politique.`}`;
+    } else {
+      psyNote.hidden = true;
+    }
   }
 
   /* ---------------------------------------------------------
@@ -710,8 +876,7 @@
   let current = { code: null, name: null };
 
   function parseHash() {
-    const h = location.hash.replace(/^#/, '');
-    const params = new URLSearchParams(h);
+    const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     return { p: params.get('p'), vs: params.get('vs'), n: params.get('n'), vn: params.get('vn') };
   }
 
@@ -737,7 +902,7 @@
       if (!confirm('Refaire le test depuis le début ?')) return;
       state.index = 0; state.answers = {}; clearProgress();
       history.replaceState(null, '', location.pathname + location.search);
-      startQuiz(true);
+      startQuiz();
     };
     $('btn-copy').onclick = async () => {
       const name = current.name || getName();
@@ -745,6 +910,13 @@
       const url = shareUrl(current.code, name);
       const ok = await copyText(url);
       toast(ok ? 'Lien copié — envoie-le à tes amis' : 'Impossible de copier, sélectionne l\'adresse de la page');
+    };
+    $('btn-pdf').onclick = () => {
+      const name = current.name || getName();
+      current.name = name;
+      $('print-meta').textContent = `${name ? name + ' · ' : ''}${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} · ${QUESTIONS.length} curseurs · kevindsm.github.io/prisme`;
+      toast('Dans la fenêtre d\'impression, choisis « Enregistrer en PDF »');
+      setTimeout(() => window.print(), 350);
     };
     $('btn-compare-open').onclick = () => {
       const panel = $('compare-panel');

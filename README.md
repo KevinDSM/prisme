@@ -4,14 +4,16 @@
 
 Un test politique en profondeur, inspiré de Politiscales mais poussé plus loin :
 
-- **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu.
-- **14 axes** — 8 axes politiques (économie, société, identité, autorité, écologie, géopolitique, justice, technologie) et 6 axes **méta-politiques** (pragmatique / idéologue, réformiste / rupturiste, populaire / technocrate, consensuel / conflictuel, optimiste / décliniste, confiant / méfiant).
+- **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu. 141 curseurs, ~14 minutes.
+- **23 axes** — 8 axes politiques (économie, société, identité, autorité, écologie, géopolitique, justice, technologie), 6 axes **méta-politiques** (pragmatique / idéologue, réformiste / rupturiste, populaire / technocrate, consensuel / conflictuel, optimiste / décliniste, confiant / méfiant) et 9 axes de **personnalité** (cœur / tête, acteur / porté, prudent / audacieux, improvisateur / structuré, serein / vigilant, individualiste / collectiviste, présent / long terme, coopératif / compétitif, explorateur / enraciné).
 - **6 fondements moraux** (Haidt) — soin, équité, loyauté, autorité, sacré, liberté.
 - **3 traits** — tolérance à l'incertitude, dogmatisme, engagement.
 - **Statistiques de style** — intensité, nuance, radicalité, cohérence interne.
-- **Famille politique** la plus proche (13 familles) et **tempérament** (10 tempéraments).
+- **Trois portraits** — famille politique (13), tempérament politique (10), archétype de personnalité (12).
+- **Signatures** — 44 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
 - **Sujets de cœur** — un cœur par question pour marquer ce qui compte vraiment (et le pondérer).
-- **Résumé** en trois temps, généré à partir des réponses.
+- **Résumé** en cinq temps, généré à partir des réponses, avec les curseurs les plus poussés cités mot pour mot.
+- **PDF** — bouton « Télécharger en PDF » (mise en page d'impression dédiée).
 - **Comparaison entre amis** — un lien par résultat, affinité en %, points d'accord et lignes de fracture.
 
 Tout se passe dans le navigateur : rien n'est envoyé nulle part. Le résultat est encodé dans l'URL.
@@ -24,8 +26,8 @@ https://kevindsm.github.io/prisme/
 
 - `index.html` — les trois écrans (accueil, quiz, résultats)
 - `css/style.css` — le style
-- `js/questions.js` — axes, fondements, traits, banque de 96 affirmations et leurs pondérations
-- `js/profiles.js` — familles politiques, tempéraments, phrases de résumé
+- `js/questions.js` — axes, fondements, traits, banque de 141 affirmations et leurs pondérations
+- `js/profiles.js` — familles politiques, tempéraments, archétypes de personnalité, signatures, phrases de résumé
 - `js/app.js` — logique du quiz, calcul, encodage du résultat, rendu, comparaison
 
 ## Ajouter ou modifier une question

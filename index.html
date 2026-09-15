@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Prisme — cartographie de ce que tu penses vraiment</title>
-  <meta name="description" content="Un test politique en profondeur : 96 curseurs, 14 axes, tes fondements moraux et ton tempérament politique. Compare avec tes amis.">
+  <meta name="description" content="Un test politique en profondeur : 141 curseurs, 23 axes politiques, méta-politiques et de personnalité, tes fondements moraux, tes signatures. Compare avec tes amis.">
   <meta name="theme-color" content="#0a0b12">
   <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
-  <meta property="og:description" content="14 axes politiques et méta-politiques, 6 fondements moraux, un tempérament. À comparer entre amis.">
+  <meta property="og:description" content="23 axes politiques, méta-politiques et de personnalité, 6 fondements moraux, un tempérament, un archétype. À comparer entre amis.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d6d'/%3E%3Cstop offset='.5' stop-color='%23ffd60a'/%3E%3Cstop offset='1' stop-color='%234dc9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,6 60,56 4,56' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -41,9 +41,9 @@
 
     <div class="intro-grid">
       <article class="intro-card">
-        <span class="intro-card-num">14</span>
+        <span class="intro-card-num">23</span>
         <h3>axes</h3>
-        <p>8 axes politiques classiques + 6 axes <strong>méta-politiques</strong> : pragmatique ou idéologue, réformiste ou rupturiste, consensuel ou conflictuel…</p>
+        <p>8 axes politiques, 6 axes <strong>méta-politiques</strong> (pragmatique ou idéologue, consensuel ou conflictuel…) et 9 axes de <strong>personnalité</strong> : cœur ou tête, prudent ou audacieux, serein ou vigilant…</p>
       </article>
       <article class="intro-card">
         <span class="intro-card-num">6</span>
@@ -51,21 +51,21 @@
         <p>Soin, équité, loyauté, autorité, sacré, liberté : les intuitions profondes qui précèdent tes opinions.</p>
       </article>
       <article class="intro-card">
-        <span class="intro-card-num">1</span>
-        <h3>tempérament</h3>
-        <p>Bâtisseur, Tribun, Gardien, Insurgé… ta façon d'habiter la politique, au-delà du camp.</p>
+        <span class="intro-card-num">3</span>
+        <h3>portraits</h3>
+        <p>Une famille politique, un tempérament (Bâtisseur, Tribun, Gardien…) et un archétype de personnalité (Architecte, Funambule, Pilier…).</p>
       </article>
       <article class="intro-card">
         <span class="intro-card-num">∞</span>
-        <h3>comparaisons</h3>
-        <p>Un lien par résultat. Colle celui d'un ami : affinité, points d'accord, lignes de fracture.</p>
+        <h3>signatures</h3>
+        <p>Les combinaisons et tensions qui n'appartiennent qu'à toi, un résumé sur mesure, un PDF à partager, et la comparaison avec tes amis.</p>
       </article>
     </div>
 
     <div class="intro-actions">
       <button id="btn-start" class="btn btn-primary">
         <span>Commencer</span>
-        <small>96 curseurs · ~10 min</small>
+        <small>141 curseurs · ~14 min</small>
       </button>
       <button id="btn-resume" class="btn btn-ghost" hidden>
         <span>Reprendre</span>
@@ -90,7 +90,7 @@
   <section id="screen-quiz" class="screen">
     <div class="quiz-top">
       <button id="btn-quit" class="link-btn" type="button">← Accueil</button>
-      <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">96</span></div>
+      <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">141</span></div>
     </div>
     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div id="progress-fill" class="progress-fill"></div>
@@ -144,9 +144,11 @@
     <div class="res-hero">
       <p class="res-kicker" id="res-kicker">Ton profil</p>
       <h1 class="res-title" id="res-title"></h1>
+      <p class="print-meta" id="print-meta"></p>
       <p class="res-headline" id="res-headline"></p>
       <div class="res-share">
         <button id="btn-copy" class="btn btn-primary" type="button"><span>Copier mon lien</span></button>
+        <button id="btn-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
         <button id="btn-compare-open" class="btn btn-ghost" type="button">Comparer avec un ami</button>
         <button id="btn-retake" class="btn btn-ghost" type="button">Refaire le test</button>
       </div>
@@ -193,11 +195,12 @@
           <ul id="cmp-disagree"></ul>
         </div>
       </div>
+      <p class="cmp-psy" id="cmp-psy" hidden></p>
       <button id="btn-compare-close" class="link-btn" type="button">Fermer la comparaison</button>
     </section>
 
-    <!-- Famille + tempérament -->
-    <section class="res-section res-duo">
+    <!-- Famille + tempérament + archétype -->
+    <section class="res-section res-trio">
       <article class="res-card family-card">
         <p class="card-kicker">Famille politique la plus proche</p>
         <h2 id="fam-name"></h2>
@@ -211,6 +214,21 @@
         <p class="fam-desc" id="temp-desc"></p>
         <ul class="fam-list" id="temp-list"></ul>
       </article>
+      <article class="res-card psy-card" id="psy-card">
+        <p class="card-kicker">Archétype de personnalité</p>
+        <h2 id="psy-name"></h2>
+        <p class="fam-desc" id="psy-desc"></p>
+        <ul class="fam-list" id="psy-list"></ul>
+      </article>
+    </section>
+
+    <!-- Signatures -->
+    <section class="res-section" id="signatures-section" hidden>
+      <div class="section-head">
+        <h2>Tes signatures</h2>
+        <p>Les combinaisons et les tensions que tes réponses dessinent — ce qui te distingue d'un profil moyen.</p>
+      </div>
+      <div id="signatures" class="signatures"></div>
     </section>
 
     <!-- Axes politiques -->
@@ -229,6 +247,15 @@
         <p>Comment tu penses : ta manière d'aborder le pouvoir, le changement, l'adversaire.</p>
       </div>
       <div id="axes-meta" class="axes"></div>
+    </section>
+
+    <!-- Axes personnalité -->
+    <section class="res-section" id="psyche-section">
+      <div class="section-head">
+        <h2>Personnalité</h2>
+        <p>Qui tu es sous la politique : ta façon de décider, de risquer, de regarder le monde et les autres.</p>
+      </div>
+      <div id="axes-psyche" class="axes"></div>
     </section>
 
     <!-- Psyché -->
@@ -260,7 +287,7 @@
     <section class="res-section summary">
       <div class="section-head">
         <h2>En résumé</h2>
-        <p>Un portrait en trois temps, généré à partir de tes réponses.</p>
+        <p>Un portrait en cinq temps, écrit à partir de tes réponses — et d'elles seules.</p>
       </div>
       <div class="summary-body" id="summary"></div>
     </section>
@@ -273,8 +300,8 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=2"></script>
-  <script src="js/profiles.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/questions.js?v=3"></script>
+  <script src="js/profiles.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>

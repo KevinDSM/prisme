@@ -67,16 +67,55 @@ const AXES = [
     leftFull: 'Confiant en l\'humain', rightFull: 'Méfiant envers l\'humain',
     colorL: '#f9c74f', colorR: '#577590',
     desc: 'L\'être humain est-il bon par nature, ou faut-il le tenir ?' },
+
+  // ---------- Axes bipolaires : personnalité & vision du monde ----------
+  { id: 'aff', group: 'psyche', left: 'Cœur', right: 'Tête',
+    leftFull: 'Guidé par le cœur', rightFull: 'Guidé par la tête',
+    colorL: '#ff7096', colorR: '#4cc9f0',
+    desc: 'Tu tranches avec ce que tu ressens, ou avec ce que tu peux démontrer ?' },
+  { id: 'loc', group: 'psyche', left: 'Acteur', right: 'Porté',
+    leftFull: 'Acteur de sa vie', rightFull: 'Porté par le contexte',
+    colorL: '#ffd60a', colorR: '#8d99ae',
+    desc: 'Ta vie dépend de tes choix, ou du milieu, de la chance et de l\'époque ?' },
+  { id: 'rsk', group: 'psyche', left: 'Prudent', right: 'Audacieux',
+    leftFull: 'Prudent', rightFull: 'Audacieux',
+    colorL: '#a8dadc', colorR: '#fb5607',
+    desc: 'Un tiens vaut mieux que deux tu l\'auras, ou qui ne tente rien n\'a rien ?' },
+  { id: 'ord', group: 'psyche', left: 'Improvisateur', right: 'Structuré',
+    leftFull: 'Improvisateur', rightFull: 'Structuré',
+    colorL: '#c77dff', colorR: '#90be6d',
+    desc: 'Tu avances au feeling, ou tu as besoin d\'un plan et de règles ?' },
+  { id: 'thr', group: 'psyche', left: 'Serein', right: 'Vigilant',
+    leftFull: 'Serein face au monde', rightFull: 'Vigilant face au monde',
+    colorL: '#57cc99', colorR: '#e63946',
+    desc: 'Le monde est-il plutôt sûr, ou faut-il rester sur ses gardes ?' },
+  { id: 'col', group: 'psyche', left: 'Individualiste', right: 'Collectiviste',
+    leftFull: 'Individualiste', rightFull: 'Collectiviste',
+    colorL: '#f4a261', colorR: '#2ec4b6',
+    desc: 'Ta liberté d\'abord, ou ce que tu dois aux autres d\'abord ?' },
+  { id: 'tmp', group: 'psyche', left: 'Présent', right: 'Long terme',
+    leftFull: 'Ancré dans le présent', rightFull: 'Tourné vers le long terme',
+    colorL: '#ffb703', colorR: '#7b2cbf',
+    desc: 'Vivre maintenant, ou penser à dans cinquante ans ?' },
+  { id: 'cmp', group: 'psyche', left: 'Coopératif', right: 'Compétitif',
+    leftFull: 'Coopératif', rightFull: 'Compétitif',
+    colorL: '#b5e48c', colorR: '#d00000',
+    desc: 'Gagner ensemble, ou gagner tout court ?' },
+  { id: 'opn', group: 'psyche', left: 'Explorateur', right: 'Enraciné',
+    leftFull: 'Explorateur', rightFull: 'Enraciné',
+    colorL: '#00f5d4', colorR: '#e76f51',
+    desc: 'La nouveauté t\'attire, ou tu as besoin de racines et d\'habitudes ?' },
 ];
 
 // ---------- Fondements moraux (Haidt, unipolaires) ----------
+// gen : m = masculin (le / du), f = féminin (la / de la), v = commence par une voyelle (l' / de l')
 const FOUNDATIONS = [
-  { id: 'care', label: 'Soin',       desc: 'Sensibilité à la souffrance, compassion, protection des vulnérables.', color: '#ff7096' },
-  { id: 'fair', label: 'Équité',     desc: 'Justice, réciprocité, refus de la triche et du passe-droit.', color: '#4cc9f0' },
-  { id: 'loy',  label: 'Loyauté',    desc: 'Attachement au groupe, fidélité, fierté d\'appartenance.', color: '#f8961e' },
-  { id: 'auth', label: 'Autorité',   desc: 'Respect de la hiérarchie, de l\'ordre et des traditions établies.', color: '#90be6d' },
-  { id: 'sanc', label: 'Sacré',      desc: 'Sens du pur et de l\'impur, de ce qui ne doit pas être profané.', color: '#b388eb' },
-  { id: 'lib',  label: 'Liberté',    desc: 'Aversion pour la domination et la contrainte, autonomie.', color: '#ffd60a' },
+  { id: 'care', label: 'Soin',       gen: 'm', desc: 'Sensibilité à la souffrance, compassion, protection des vulnérables.', color: '#ff7096' },
+  { id: 'fair', label: 'Équité',     gen: 'v', desc: 'Justice, réciprocité, refus de la triche et du passe-droit.', color: '#4cc9f0' },
+  { id: 'loy',  label: 'Loyauté',    gen: 'f', desc: 'Attachement au groupe, fidélité, fierté d\'appartenance.', color: '#f8961e' },
+  { id: 'auth', label: 'Autorité',   gen: 'v', desc: 'Respect de la hiérarchie, de l\'ordre et des traditions établies.', color: '#90be6d' },
+  { id: 'sanc', label: 'Sacré',      gen: 'm', desc: 'Sens du pur et de l\'impur, de ce qui ne doit pas être profané.', color: '#b388eb' },
+  { id: 'lib',  label: 'Liberté',    gen: 'f', desc: 'Aversion pour la domination et la contrainte, autonomie.', color: '#ffd60a' },
 ];
 
 // ---------- Traits psychologiques (unipolaires) ----------
@@ -219,6 +258,69 @@ const QUESTION_BANK = [
   { t: 'Je suis prêt à donner de mon temps (manifester, militer, m\'engager) pour mes idées.', w: { eng: 1 } },
   { t: 'Je parle souvent de politique avec mes proches.', w: { eng: 0.8 } },
   { t: 'Ne pas s\'intéresser à la politique, c\'est laisser les autres décider à sa place.', w: { eng: 0.7 } },
+
+  // Personnalité : cœur / tête
+  { t: 'Quand je dois trancher, j\'écoute d\'abord ce que je ressens.', w: { aff: -1 } },
+  { t: 'Une décision juste est une décision qu\'on peut justifier avec des chiffres.', w: { aff: 1, epi: -0.3 } },
+  { t: 'Un témoignage poignant me convainc plus qu\'une statistique.', w: { aff: -1 } },
+  { t: 'Je me méfie de mes émotions quand il s\'agit de sujets sérieux.', w: { aff: 1 } },
+  { t: 'Face à un problème, je commence par faire la liste des causes.', w: { aff: 0.7, ord: 0.4 } },
+
+  // Personnalité : acteur / porté
+  { t: 'Ce qui m\'arrive dépend surtout de mes choix.', w: { loc: -1 } },
+  { t: 'On ne choisit pas vraiment sa vie : le milieu, la chance et l\'époque décident pour nous.', w: { loc: 1 } },
+  { t: 'Quand quelque chose rate, je cherche d\'abord ce que j\'aurais pu faire autrement.', w: { loc: -0.8 } },
+  { t: 'Les gens qui réussissent ont surtout eu de la chance.', w: { loc: 0.8, eco: -0.3 } },
+  { t: 'Je peux changer les choses autour de moi si je m\'en donne la peine.', w: { loc: -0.8, eng: 0.3 } },
+
+  // Personnalité : prudent / audacieux
+  { t: 'Je préfère une situation sûre à une situation prometteuse mais incertaine.', w: { rsk: -1 } },
+  { t: 'Il faut parfois tout miser pour obtenir quelque chose de grand.', w: { rsk: 1 } },
+  { t: 'Avant de me lancer, j\'ai besoin d\'avoir tout vérifié.', w: { rsk: -0.8, ord: 0.3 } },
+  { t: 'Je m\'ennuie vite quand rien ne bouge.', w: { rsk: 0.7, opn: -0.4 } },
+  { t: 'Un tiens vaut mieux que deux tu l\'auras.', w: { rsk: -0.8 } },
+
+  // Personnalité : improvisateur / structuré
+  { t: 'J\'ai besoin d\'un plan clair avant d\'agir.', w: { ord: 1 } },
+  { t: 'Je fonctionne mieux dans le désordre que dans les règles.', w: { ord: -1 } },
+  { t: 'Les règles existent pour être adaptées à chaque situation.', w: { ord: -0.7, epi: -0.3 } },
+  { t: 'Je tiens mes engagements même quand plus personne n\'y prête attention.', w: { ord: 0.8, fair: 0.3 } },
+  { t: 'Un monde bien rangé est un monde plus juste.', w: { ord: 0.8, aut: 0.3 } },
+
+  // Personnalité : serein / vigilant
+  { t: 'Le monde est un endroit dangereux et il faut rester sur ses gardes.', w: { thr: 1, nat: 0.3 } },
+  { t: 'Je me fais rarement du souci pour ce qui pourrait mal tourner.', w: { thr: -1 } },
+  { t: 'Quand j\'entends parler d\'une menace, je pense d\'abord à me protéger, moi et les miens.', w: { thr: 0.8 } },
+  { t: 'Les médias exagèrent les dangers.', w: { thr: -0.7 } },
+  { t: 'Il y a toujours quelqu\'un qui cherche à profiter de nous.', w: { thr: 0.8, nat: 0.4 } },
+
+  // Personnalité : individualiste / collectiviste
+  { t: 'Ma liberté personnelle passe avant les besoins du groupe.', w: { col: -1, lib: 0.3 } },
+  { t: 'On est d\'abord ce qu\'on doit aux autres.', w: { col: 1 } },
+  { t: 'Je préfère me débrouiller seul plutôt que de dépendre de quelqu\'un.', w: { col: -0.8 } },
+  { t: 'Sacrifier un peu de confort personnel pour le bien commun me semble naturel.', w: { col: 1 } },
+  { t: 'Le bonheur se trouve dans les liens, pas dans l\'accomplissement personnel.', w: { col: 0.7 } },
+
+  // Personnalité : présent / long terme
+  { t: 'Je pense souvent à ce que le monde sera dans cinquante ans.', w: { tmp: 1 } },
+  { t: 'Il faut vivre maintenant : on ne sait pas de quoi demain sera fait.', w: { tmp: -1 } },
+  { t: 'J\'accepte volontiers un sacrifice aujourd\'hui pour un bénéfice dans dix ans.', w: { tmp: 1 } },
+  { t: 'Les projets à très long terme me semblent abstraits.', w: { tmp: -0.8 } },
+  { t: 'Nous devons des comptes aux générations qui ne sont pas encore nées.', w: { tmp: 0.8, env: 0.3 } },
+
+  // Personnalité : coopératif / compétitif
+  { t: 'La compétition fait sortir le meilleur de chacun.', w: { cmp: 1, eco: 0.3 } },
+  { t: 'Je préfère gagner ensemble que gagner seul.', w: { cmp: -1 } },
+  { t: 'Dans la vie, il y a des gagnants et des perdants, c\'est ainsi.', w: { cmp: 0.8, nat: 0.2 } },
+  { t: 'Je ressens de la gêne quand je réussis là où un proche échoue.', w: { cmp: -0.7, care: 0.3 } },
+  { t: 'Se comparer aux autres est un moteur.', w: { cmp: 0.7 } },
+
+  // Personnalité : explorateur / enraciné
+  { t: 'J\'aime les idées qui bousculent ce que je croyais.', w: { opn: -1, dog: -0.3 } },
+  { t: 'J\'ai besoin de racines : un lieu, des habitudes, des visages connus.', w: { opn: 1 } },
+  { t: 'Je changerais volontiers de pays, de métier ou de vie.', w: { opn: -0.8 } },
+  { t: 'Les traditions me rassurent plus qu\'elles ne m\'ennuient.', w: { opn: 0.8, soc: 0.3 } },
+  { t: 'La nouveauté m\'attire par principe.', w: { opn: -0.8 } },
 ];
 
 // Ordre fixe mais mélangé (même ordre pour tout le monde → comparable entre amis)
