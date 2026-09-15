@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Prisme — cartographie de ce que tu penses vraiment</title>
-  <meta name="description" content="Un test politique en profondeur : 141 curseurs, 23 axes politiques, méta-politiques et de personnalité, tes fondements moraux, tes signatures. Compare avec tes amis.">
+  <meta name="description" content="Un test politique en profondeur : 171 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, tes signatures. Compare-toi à tes amis.">
   <meta name="theme-color" content="#0a0b12">
   <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
-  <meta property="og:description" content="23 axes politiques, méta-politiques et de personnalité, 6 fondements moraux, un tempérament, un archétype. À comparer entre amis.">
+  <meta property="og:description" content="24 axes politiques, méta-politiques et de personnalité, 6 fondements moraux, un tempérament, un archétype. Compare-toi à tes amis.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d6d'/%3E%3Cstop offset='.5' stop-color='%23ffd60a'/%3E%3Cstop offset='1' stop-color='%234dc9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,6 60,56 4,56' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -39,11 +39,13 @@
       </p>
     </div>
 
+    <p id="intro-circle" class="intro-circle" hidden></p>
+
     <div class="intro-grid">
       <article class="intro-card">
-        <span class="intro-card-num">23</span>
+        <span class="intro-card-num">24</span>
         <h3>axes</h3>
-        <p>8 axes politiques, 6 axes <strong>méta-politiques</strong> (pragmatique ou idéologue, consensuel ou conflictuel…) et 9 axes de <strong>personnalité</strong> : cœur ou tête, prudent ou audacieux, serein ou vigilant…</p>
+        <p>9 axes politiques (dont économie, égalité, identité), 6 axes <strong>méta-politiques</strong> et 9 axes de <strong>personnalité</strong> : cœur ou tête, prudent ou audacieux, serein ou vigilant…</p>
       </article>
       <article class="intro-card">
         <span class="intro-card-num">6</span>
@@ -57,15 +59,15 @@
       </article>
       <article class="intro-card">
         <span class="intro-card-num">∞</span>
-        <h3>signatures</h3>
-        <p>Les combinaisons et tensions qui n'appartiennent qu'à toi, un résumé sur mesure, un PDF à partager, et la comparaison avec tes amis.</p>
+        <h3>amis</h3>
+        <p>Ton cercle d'amis sur une carte, vos affinités, vos lignes de fracture en graphiques et des commentaires sur ce qui vous sépare.</p>
       </article>
     </div>
 
     <div class="intro-actions">
       <button id="btn-start" class="btn btn-primary">
         <span>Commencer</span>
-        <small>141 curseurs · ~14 min</small>
+        <small>171 curseurs · ~17 min</small>
       </button>
       <button id="btn-resume" class="btn btn-ghost" hidden>
         <span>Reprendre</span>
@@ -82,7 +84,7 @@
     </details>
 
     <footer class="intro-foot">
-      <p>Aucune donnée n'est envoyée nulle part : tout reste dans ton navigateur et dans le lien que tu choisis de partager.</p>
+      <p>Aucune donnée n'est envoyée nulle part : tout reste dans ton navigateur et dans les liens que tu choisis de partager.</p>
     </footer>
   </section>
 
@@ -90,7 +92,7 @@
   <section id="screen-quiz" class="screen">
     <div class="quiz-top">
       <button id="btn-quit" class="link-btn" type="button">← Accueil</button>
-      <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">141</span></div>
+      <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">171</span></div>
     </div>
     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div id="progress-fill" class="progress-fill"></div>
@@ -146,28 +148,81 @@
       <h1 class="res-title" id="res-title"></h1>
       <p class="print-meta" id="print-meta"></p>
       <p class="res-headline" id="res-headline"></p>
-      <div class="res-share">
-        <button id="btn-copy" class="btn btn-primary" type="button"><span>Copier mon lien</span></button>
+      <div class="res-share" id="res-share">
+        <button id="btn-copy" class="btn btn-primary" type="button"><span>Inviter mes amis</span></button>
+        <button id="btn-circle-open" class="btn btn-ghost" type="button">Me comparer à mes amis</button>
         <button id="btn-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
-        <button id="btn-compare-open" class="btn btn-ghost" type="button">Comparer avec un ami</button>
         <button id="btn-retake" class="btn btn-ghost" type="button">Refaire le test</button>
       </div>
-      <div id="compare-panel" class="compare-panel" hidden>
-        <label for="compare-input">Colle le lien (ou le code) de ton ami</label>
-        <div class="import-row">
-          <input id="compare-input" type="text" placeholder="https://kevindsm.github.io/prisme/#p=…" autocomplete="off" spellcheck="false">
-          <button id="btn-compare" class="btn btn-primary btn-sm" type="button"><span>Comparer</span></button>
+
+      <div id="visitor-banner" class="visitor" hidden>
+        <p id="visitor-text"></p>
+        <div class="visitor-actions">
+          <button id="btn-visitor-compare" class="btn btn-primary" type="button"><span>Me comparer</span></button>
+          <button id="btn-visitor-take" class="btn btn-primary" type="button"><span>Faire le test et me comparer</span></button>
+          <button id="btn-visitor-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
+          <button id="btn-visitor-me" class="link-btn" type="button">C'est mon propre résultat</button>
         </div>
-        <p class="compare-tip">Astuce : tu peux aussi comparer deux liens sans avoir fait le test, en collant les deux sur l'accueil (le tien d'abord).</p>
       </div>
     </div>
 
-    <!-- Comparaison -->
+    <!-- Cercle d'amis -->
+    <section id="circle-section" class="res-section circle" hidden>
+      <div class="section-head">
+        <h2>Mon cercle <span class="count" id="circle-count"></span></h2>
+        <p>Les amis qui ont fait le test. Ils restent enregistrés dans ce navigateur, rien n'est envoyé sur un serveur.</p>
+      </div>
+
+      <div class="circle-toolbar">
+        <div class="circle-add">
+          <input id="circle-input" type="text" placeholder="Colle le lien de résultat d'un ami" autocomplete="off" spellcheck="false">
+          <input id="circle-name" class="name" type="text" placeholder="Son prénom" maxlength="24" autocomplete="off">
+          <button id="btn-circle-add" class="btn btn-primary btn-sm" type="button"><span>Ajouter</span></button>
+        </div>
+        <div class="circle-actions">
+          <button id="btn-invite" class="btn btn-ghost btn-sm" type="button">Copier mon lien d'invitation</button>
+          <button id="btn-share-circle" class="btn btn-ghost btn-sm" type="button">Partager tout le cercle</button>
+        </div>
+      </div>
+
+      <div id="circle-empty" class="circle-empty">
+        <strong>Ton cercle est vide pour l'instant.</strong>
+        <ol>
+          <li>Envoie ton <b>lien d'invitation</b> à tes amis.</li>
+          <li>En l'ouvrant, ils voient ton profil et font le test à leur tour : ils sont aussitôt comparés à toi.</li>
+          <li>Ils te renvoient leur lien de résultat : colle-le ci-dessus, et ils apparaissent ici, sur la carte et dans les comparaisons.</li>
+        </ol>
+      </div>
+
+      <div id="circle-body" hidden>
+        <div class="circle-grid">
+          <article class="res-card">
+            <p class="card-kicker">Affinités</p>
+            <h2>Qui te ressemble ?</h2>
+            <ul id="circle-ranking" class="ranking"></ul>
+            <ul id="circle-facts" class="circle-facts"></ul>
+          </article>
+          <article class="res-card">
+            <p class="card-kicker">Carte du cercle</p>
+            <h2>Où chacun se place</h2>
+            <div class="map-controls">
+              <label>Horizontal<select id="map-x"></select></label>
+              <label>Vertical<select id="map-y"></select></label>
+            </div>
+            <div id="circle-map" class="circle-map"></div>
+            <p id="map-note" class="map-note"></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparaison détaillée -->
     <section id="compare-block" class="res-section compare-block" hidden>
       <div class="section-head">
-        <h2>Toi <span class="vs">vs</span> <span id="cmp-name">ton ami</span></h2>
-        <p>Où vous vous rejoignez, où ça frotte.</p>
+        <h2><span id="cmp-me">Toi</span> <span class="vs">vs</span> <span id="cmp-name">ton ami</span></h2>
+        <p>Où vous vous rejoignez, où ça frotte, et ce que ça dit de vous deux.</p>
       </div>
+
       <div class="affinity">
         <div class="affinity-ring" id="affinity-ring">
           <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -180,11 +235,37 @@
           <h3 id="affinity-label"></h3>
           <p id="affinity-desc"></p>
           <div class="legend">
-            <span class="legend-me">Toi</span>
+            <span class="legend-me" id="legend-me">Toi</span>
             <span class="legend-them" id="legend-them">Ami</span>
           </div>
         </div>
       </div>
+
+      <div id="dim-affinity" class="dim-rings"></div>
+
+      <h3 class="sub-head">Ce que ça dit de vous deux</h3>
+      <div id="cmp-comments" class="comments"></div>
+
+      <div class="cmp-charts">
+        <article class="res-card">
+          <p class="card-kicker">Écarts</p>
+          <h2>Là où vous divergez le plus</h2>
+          <div id="gap-chart" class="gap-chart"></div>
+        </article>
+        <article class="res-card">
+          <p class="card-kicker">Fondements moraux</p>
+          <h2>Vos boussoles</h2>
+          <div id="cmp-radar" class="radar"></div>
+          <ul id="cmp-found" class="found-cmp"></ul>
+        </article>
+      </div>
+
+      <article class="res-card dumbbell-card">
+        <p class="card-kicker">Face à face</p>
+        <h2>Tous les axes, côte à côte</h2>
+        <div id="dumbbell" class="dumbbell"></div>
+      </article>
+
       <div class="cmp-cols">
         <div class="cmp-col">
           <h4>Vous êtes d'accord sur</h4>
@@ -225,8 +306,8 @@
     <!-- Signatures -->
     <section class="res-section" id="signatures-section" hidden>
       <div class="section-head">
-        <h2>Tes signatures</h2>
-        <p>Les combinaisons et les tensions que tes réponses dessinent — ce qui te distingue d'un profil moyen.</p>
+        <h2>Signatures</h2>
+        <p>Les combinaisons et les tensions que les réponses dessinent — ce qui distingue ce profil d'un profil moyen.</p>
       </div>
       <div id="signatures" class="signatures"></div>
     </section>
@@ -277,8 +358,8 @@
     <!-- Sujets de cœur -->
     <section class="res-section" id="hearts-section" hidden>
       <div class="section-head">
-        <h2>Tes sujets de cœur</h2>
-        <p>Les thèmes que tu as marqués comme te tenant particulièrement à cœur.</p>
+        <h2>Sujets de cœur</h2>
+        <p>Les thèmes marqués comme tenant particulièrement à cœur.</p>
       </div>
       <div id="hearts" class="hearts"></div>
     </section>
@@ -287,21 +368,21 @@
     <section class="res-section summary">
       <div class="section-head">
         <h2>En résumé</h2>
-        <p>Un portrait en cinq temps, écrit à partir de tes réponses — et d'elles seules.</p>
+        <p>Un portrait en cinq temps, écrit à partir des réponses — et d'elles seules.</p>
       </div>
       <div class="summary-body" id="summary"></div>
     </section>
 
     <footer class="res-foot">
-      <p>Prisme est un miroir, pas un verdict. Les familles et tempéraments sont des approximations : ton profil réel est la somme des curseurs, pas l'étiquette.</p>
+      <p>Prisme est un miroir, pas un verdict. Les familles, tempéraments et archétypes sont des approximations : le profil réel est la somme des curseurs, pas l'étiquette.</p>
       <p><a href="https://github.com/KevinDSM/prisme" target="_blank" rel="noopener">Code source</a> · Les réponses ne quittent jamais ton navigateur.</p>
     </footer>
   </section>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=3"></script>
-  <script src="js/profiles.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/questions.js?v=4"></script>
+  <script src="js/profiles.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>

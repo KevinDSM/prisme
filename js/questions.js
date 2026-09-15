@@ -13,6 +13,10 @@ const AXES = [
     leftFull: 'Interventionniste', rightFull: 'Libéral',
     colorL: '#ff4d6d', colorR: '#4dc9ff',
     desc: 'Qui doit piloter l\'économie : la puissance publique ou le marché ?' },
+  { id: 'egl', group: 'politique', left: 'Égalitariste', right: 'Méritocrate',
+    leftFull: 'Égalitariste', rightFull: 'Méritocrate',
+    colorL: '#f15bb5', colorR: '#fca311',
+    desc: 'Réduire les écarts entre les gens, ou récompenser ceux qui apportent plus ?' },
   { id: 'soc', group: 'politique', left: 'Progressiste', right: 'Conservateur',
     leftFull: 'Progressiste', rightFull: 'Conservateur',
     colorL: '#c77dff', colorR: '#ffb703',
@@ -135,10 +139,10 @@ const QUESTION_BANK = [
   { t: 'L\'État devrait plafonner le prix des biens essentiels : énergie, loyers, produits de base.', w: { eco: -1 } },
   { t: 'Moins il y a de règles pour les entreprises, plus l\'économie prospère.', w: { eco: 1 } },
   { t: 'Les services publics (santé, transports, énergie) fonctionnent mieux quand ils sont confiés au privé.', w: { eco: 1 } },
-  { t: 'Il est normal que les plus riches paient une part bien plus grande de leurs revenus en impôts.', w: { eco: -1, fair: 0.5 } },
-  { t: 'L\'héritage devrait être lourdement taxé pour que chacun parte avec des chances comparables.', w: { eco: -1, fair: 0.4 } },
-  { t: 'Un revenu universel versé à tous, sans condition, serait une bonne chose.', w: { eco: -0.8, care: 0.4 } },
-  { t: 'La réussite financière dépend d\'abord du mérite et des efforts de chacun.', w: { eco: 1, nat: -0.2 } },
+  { t: 'Il est normal que les plus riches paient une part bien plus grande de leurs revenus en impôts.', w: { eco: -1, egl: -0.5, fair: 0.5 } },
+  { t: 'L\'héritage devrait être lourdement taxé pour que chacun parte avec des chances comparables.', w: { eco: -1, egl: -0.6, fair: 0.4 } },
+  { t: 'Un revenu universel versé à tous, sans condition, serait une bonne chose.', w: { eco: -0.8, egl: -0.4, care: 0.4 } },
+  { t: 'La réussite financière dépend d\'abord du mérite et des efforts de chacun.', w: { eco: 1, egl: 0.6, nat: -0.2 } },
 
   // Société
   { t: 'La société change trop vite ; il faudrait préserver davantage les traditions.', w: { soc: 1, vis: 0.3 } },
@@ -239,7 +243,7 @@ const QUESTION_BANK = [
   { t: 'Voir quelqu\'un souffrir, même un inconnu, me touche profondément.', w: { care: 1 } },
   { t: 'La compassion est la vertu la plus importante.', w: { care: 1 } },
   { t: 'Tricher pour gagner est inacceptable, même si personne ne le saura jamais.', w: { fair: 1 } },
-  { t: 'Il est injuste que certains obtiennent plus sans l\'avoir mérité.', w: { fair: 1 } },
+  { t: 'Il est injuste que certains obtiennent plus sans l\'avoir mérité.', w: { fair: 1, egl: 0.3 } },
   { t: 'Trahir son groupe (famille, pays, équipe) est l\'une des pires choses qu\'on puisse faire.', w: { loy: 1 } },
   { t: 'Je suis fier de mon pays.', w: { loy: 0.8, idn: 0.3 } },
   { t: 'Les enfants doivent avant tout apprendre à respecter l\'autorité.', w: { auth: 1, aut: 0.3 } },
@@ -270,7 +274,7 @@ const QUESTION_BANK = [
   { t: 'Ce qui m\'arrive dépend surtout de mes choix.', w: { loc: -1 } },
   { t: 'On ne choisit pas vraiment sa vie : le milieu, la chance et l\'époque décident pour nous.', w: { loc: 1 } },
   { t: 'Quand quelque chose rate, je cherche d\'abord ce que j\'aurais pu faire autrement.', w: { loc: -0.8 } },
-  { t: 'Les gens qui réussissent ont surtout eu de la chance.', w: { loc: 0.8, eco: -0.3 } },
+  { t: 'Les gens qui réussissent ont surtout eu de la chance.', w: { loc: 0.8, eco: -0.3, egl: -0.4 } },
   { t: 'Je peux changer les choses autour de moi si je m\'en donne la peine.', w: { loc: -0.8, eng: 0.3 } },
 
   // Personnalité : prudent / audacieux
@@ -309,7 +313,7 @@ const QUESTION_BANK = [
   { t: 'Nous devons des comptes aux générations qui ne sont pas encore nées.', w: { tmp: 0.8, env: 0.3 } },
 
   // Personnalité : coopératif / compétitif
-  { t: 'La compétition fait sortir le meilleur de chacun.', w: { cmp: 1, eco: 0.3 } },
+  { t: 'La compétition fait sortir le meilleur de chacun.', w: { cmp: 1, eco: 0.3, egl: 0.3 } },
   { t: 'Je préfère gagner ensemble que gagner seul.', w: { cmp: -1 } },
   { t: 'Dans la vie, il y a des gagnants et des perdants, c\'est ainsi.', w: { cmp: 0.8, nat: 0.2 } },
   { t: 'Je ressens de la gêne quand je réussis là où un proche échoue.', w: { cmp: -0.7, care: 0.3 } },
@@ -321,6 +325,41 @@ const QUESTION_BANK = [
   { t: 'Je changerais volontiers de pays, de métier ou de vie.', w: { opn: -0.8 } },
   { t: 'Les traditions me rassurent plus qu\'elles ne m\'ennuient.', w: { opn: 0.8, soc: 0.3 } },
   { t: 'La nouveauté m\'attire par principe.', w: { opn: -0.8 } },
+  // Égalitarisme
+  { t: 'Les écarts de salaire entre un patron et ses employés devraient être plafonnés par la loi.', w: { egl: -1, eco: -0.4 } },
+  { t: 'Les inégalités sont le prix normal d\'une société qui récompense l\'effort.', w: { egl: 1 } },
+  { t: 'Une société juste est une société où chacun vit à peu près dans les mêmes conditions.', w: { egl: -1 } },
+  { t: 'Il est normal qu\'un chirurgien gagne beaucoup plus qu\'un caissier.', w: { egl: 1 } },
+  { t: 'Personne ne devrait être milliardaire.', w: { egl: -1, eco: -0.5 } },
+  { t: 'Le mérite est largement un mythe : on hérite de ses talents comme de son argent.', w: { egl: -0.8, loc: 0.4 } },
+  { t: 'Des quotas (femmes, milieux modestes, minorités) sont nécessaires pour corriger les inégalités.', w: { egl: -0.8, soc: -0.3 } },
+  { t: 'Les filières d\'élite et les grandes écoles sélectives devraient être supprimées ou ouvertes à tous.', w: { egl: -0.8 } },
+  { t: 'Certaines personnes apportent tout simplement plus à la société que d\'autres, et il est normal qu\'elles en soient récompensées.', w: { egl: 1, auth: 0.2 } },
+  { t: 'Les notes et les classements à l\'école font plus de mal que de bien.', w: { egl: -0.7, cmp: -0.3 } },
+
+  // Identité
+  { t: 'Il existe une identité nationale qu\'il faut défendre.', w: { idn: 1, loy: 0.3 } },
+  { t: 'Un pays peut perdre son âme si sa population change trop vite.', w: { idn: 1, vis: 0.2 } },
+  { t: 'Les enfants d\'immigrés nés ici sont aussi français que n\'importe qui.', w: { idn: -1 } },
+  { t: 'Le droit du sol (devenir citoyen parce qu\'on est né dans le pays) devrait être supprimé.', w: { idn: 0.9 } },
+  { t: 'La diversité culturelle rend une société plus forte.', w: { idn: -1 } },
+  { t: 'On devrait pouvoir retirer la nationalité aux binationaux condamnés pour des crimes graves.', w: { idn: 0.8, jus: 0.4 } },
+  { t: 'Afficher son appartenance religieuse dans l\'espace public ne pose aucun problème.', w: { idn: -0.7, soc: -0.3 } },
+  { t: 'Je me sens plus proche d\'un étranger qui partage mes valeurs que d\'un compatriote qui ne les partage pas.', w: { idn: -0.8 } },
+  { t: 'L\'histoire du pays devrait d\'abord être enseignée pour transmettre la fierté d\'en faire partie.', w: { idn: 0.8, loy: 0.4 } },
+  { t: 'Les frontières devraient être beaucoup plus contrôlées qu\'aujourd\'hui.', w: { idn: 0.8, geo: 0.4 } },
+
+  // Économie
+  { t: 'Les syndicats ont trop de pouvoir.', w: { eco: 0.8 } },
+  { t: 'Les secteurs stratégiques (énergie, autoroutes, banques) devraient être nationalisés.', w: { eco: -1 } },
+  { t: 'Il faut réduire les dépenses publiques, même si cela touche certaines aides sociales.', w: { eco: 1, egl: 0.3 } },
+  { t: 'Le salaire minimum devrait être fortement augmenté.', w: { eco: -0.8, egl: -0.3 } },
+  { t: 'Un chômeur devrait être obligé d\'accepter un emploi raisonnable qu\'on lui propose.', w: { eco: 0.7, aut: 0.3 } },
+  { t: 'Les actionnaires captent une part trop importante de la richesse créée par les salariés.', w: { eco: -0.8, egl: -0.4 } },
+  { t: 'Créer et gérer une entreprise devrait être bien plus simple, quitte à protéger un peu moins les salariés.', w: { eco: 1 } },
+  { t: 'Malgré ses défauts, le capitalisme est le meilleur système économique jamais inventé.', w: { eco: 1 } },
+  { t: 'La dette publique n\'est pas un problème tant qu\'elle finance des investissements d\'avenir.', w: { eco: -0.6 } },
+  { t: 'Réduire le temps de travail (32 heures, semaine de quatre jours) serait bon pour tout le monde.', w: { eco: -0.7 } },
 ];
 
 // Ordre fixe mais mélangé (même ordre pour tout le monde → comparable entre amis)

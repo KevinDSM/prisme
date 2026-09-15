@@ -4,17 +4,23 @@
 
 Un test politique en profondeur, inspiré de Politiscales mais poussé plus loin :
 
-- **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu. 141 curseurs, ~14 minutes.
-- **23 axes** — 8 axes politiques (économie, société, identité, autorité, écologie, géopolitique, justice, technologie), 6 axes **méta-politiques** (pragmatique / idéologue, réformiste / rupturiste, populaire / technocrate, consensuel / conflictuel, optimiste / décliniste, confiant / méfiant) et 9 axes de **personnalité** (cœur / tête, acteur / porté, prudent / audacieux, improvisateur / structuré, serein / vigilant, individualiste / collectiviste, présent / long terme, coopératif / compétitif, explorateur / enraciné).
+- **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu. 171 curseurs, ~17 minutes.
+- **24 axes** — 9 axes politiques (économie, égalité, société, identité, autorité, écologie, géopolitique, justice, technologie), 6 axes **méta-politiques** (pragmatique / idéologue, réformiste / rupturiste, populaire / technocrate, consensuel / conflictuel, optimiste / décliniste, confiant / méfiant) et 9 axes de **personnalité** (cœur / tête, acteur / porté, prudent / audacieux, improvisateur / structuré, serein / vigilant, individualiste / collectiviste, présent / long terme, coopératif / compétitif, explorateur / enraciné).
 - **6 fondements moraux** (Haidt) — soin, équité, loyauté, autorité, sacré, liberté.
 - **3 traits** — tolérance à l'incertitude, dogmatisme, engagement.
 - **Statistiques de style** — intensité, nuance, radicalité, cohérence interne.
 - **Trois portraits** — famille politique (13), tempérament politique (10), archétype de personnalité (12).
-- **Signatures** — 44 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
+- **Signatures** — 53 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
 - **Sujets de cœur** — un cœur par question pour marquer ce qui compte vraiment (et le pondérer).
 - **Résumé** en cinq temps, généré à partir des réponses, avec les curseurs les plus poussés cités mot pour mot.
 - **PDF** — bouton « Télécharger en PDF » (mise en page d'impression dédiée).
-- **Comparaison entre amis** — un lien par résultat, affinité en %, points d'accord et lignes de fracture.
+- **Cercle d'amis** — les liens de résultat de tes amis restent enregistrés dans ton navigateur : classement par affinité, « le cercle en bref » et **carte** où chacun est placé sur deux axes au choix.
+- **Invitation** — un ami qui ouvre ton lien voit ton profil, fait le test et se retrouve aussitôt comparé à toi. Un **lien de groupe** partage tout le cercle d'un coup.
+- **Comparaison détaillée** — affinité globale et par dimension (politique, méta, personnalité, morale), commentaires générés sur vos différences (camps opposés, terrain commun, caractère, boussole morale, style de débat), graphique des plus grands écarts, radars superposés et tous les axes face à face.
+
+### Pourquoi sans base de données
+
+Le site est statique (GitHub Pages). Chaque résultat est encodé dans son lien (~70 caractères) : le lien *est* le résultat. Le cercle d'amis est stocké localement (`localStorage`). Rien n'est envoyé nulle part — des opinions politiques n'ont rien à faire sur un serveur. Les anciens liens (versions 1 et 2 du test) restent lisibles : les axes qu'ils ne contiennent pas sont simplement ignorés dans les comparaisons.
 
 Tout se passe dans le navigateur : rien n'est envoyé nulle part. Le résultat est encodé dans l'URL.
 
@@ -26,8 +32,8 @@ https://kevindsm.github.io/prisme/
 
 - `index.html` — les trois écrans (accueil, quiz, résultats)
 - `css/style.css` — le style
-- `js/questions.js` — axes, fondements, traits, banque de 141 affirmations et leurs pondérations
-- `js/profiles.js` — familles politiques, tempéraments, archétypes de personnalité, signatures, phrases de résumé
+- `js/questions.js` — axes, fondements, traits, banque de 171 affirmations et leurs pondérations
+- `js/profiles.js` — familles politiques, tempéraments, archétypes de personnalité, signatures, phrases de résumé, textes de comparaison
 - `js/app.js` — logique du quiz, calcul, encodage du résultat, rendu, comparaison
 
 ## Ajouter ou modifier une question
