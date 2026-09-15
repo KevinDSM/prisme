@@ -1208,3 +1208,54 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   }
   a { color: var(--ink); }
 }
+
+/* ============================================================
+   MISE EN PAGE DU PDF : ordre des sections, sauts de page, colonnes
+   (placé en fin de fichier pour l'emporter sur les règles d'impression précédentes)
+   ============================================================ */
+@media print {
+  #screen-results { display: flex !important; flex-direction: column; }
+  #screen-results > * { order: 20; }
+  #screen-results > .res-head { order: 1; }
+  #screen-results > .res-hero { order: 2; }
+  #screen-results > .res-trio { order: 3; }
+  #screen-results > #signatures-section { order: 4; }
+  #screen-results > #disc-section { order: 5; break-before: page; }
+  #screen-results > .res-section:has(#axes-politique) { order: 6; break-before: page; }
+  #screen-results > .res-section:has(#axes-meta) { order: 7; }
+  #screen-results > #psyche-section { order: 8; }
+  #screen-results > .res-duo.psyche { order: 9; }
+  #screen-results > #hearts-section { order: 10; }
+  #screen-results > .summary { order: 11; }
+  #screen-results > #compare-block { order: 12; break-before: page; }
+  #screen-results > #circle-section { order: 13; break-before: page; }
+  #screen-results > .res-foot { order: 14; }
+
+  .res-section, .compare-block, .summary-body, .dumbbell-card, .axes, .signatures, .comments, .cmp-cols { break-inside: auto; }
+  .res-section { margin-top: 18px; }
+  .section-head, .sub-head, .card-kicker, .res-card h2, .db-group h4, .summary-body h3 { break-after: avoid; }
+  .axis, .sig, .comment, .dim, .stat, .disc-card, .disc-style, .gap-row, .db-row, .cmp-col li, .rank, .trait,
+  .found-list li, .res-trio .res-card, .res-duo .res-card, .cmp-disc, .circle-disc-card, .circle-grid .res-card,
+  .cmp-charts .res-card, .affinity, .dim-rings { break-inside: avoid; }
+  .summary-body p { orphans: 3; widows: 3; }
+
+  .res-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .res-trio .res-card { margin-bottom: 0; padding: 14px 14px 16px; }
+  .res-trio .res-card h2 { font-size: 17pt; }
+  .res-trio .fam-desc { font-size: 9.5pt; }
+  .res-trio .fam-list { margin-top: 12px; padding-top: 10px; }
+  .res-trio .fam-list li { padding: 4px 0; font-size: 9.5pt; }
+
+  .res-duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .res-duo .res-card { margin-bottom: 0; padding: 14px 16px 16px; }
+  .res-duo .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .circle-grid, .cmp-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+  .circle-grid .res-card, .cmp-charts .res-card { margin-bottom: 0; padding: 14px 16px; }
+  .circle-disc-card { margin-top: 10px; }
+  .dumbbell-card { margin-bottom: 10px; }
+  .signatures { gap: 10px; }
+  .axes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .axis-meta { flex-wrap: wrap; }
+  .res-section:has(#axes-politique), .res-section:has(#axes-meta), #psyche-section, #hearts-section, #signatures-section { break-inside: avoid; }
+}
