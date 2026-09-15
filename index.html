@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Prisme — cartographie de ce que tu penses vraiment</title>
+  <meta name="description" content="Un test politique en profondeur : 96 curseurs, 14 axes, tes fondements moraux et ton tempérament politique. Compare avec tes amis.">
+  <meta name="theme-color" content="#0a0b12">
+  <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
+  <meta property="og:description" content="14 axes politiques et méta-politiques, 6 fondements moraux, un tempérament. À comparer entre amis.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d6d'/%3E%3Cstop offset='.5' stop-color='%23ffd60a'/%3E%3Cstop offset='1' stop-color='%234dc9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,6 60,56 4,56' fill='url(%23g)'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=2">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="aurora" aria-hidden="true"></div>
+
+  <!-- ===================== INTRO ===================== -->
+  <section id="screen-intro" class="screen is-active">
+    <header class="intro-head">
+      <div class="brand">
+        <span class="brand-prism" aria-hidden="true"></span>
+        <span class="brand-name">Prisme</span>
+      </div>
+      <p class="brand-sub">Cartographie de ce que tu penses vraiment</p>
+    </header>
+
+    <div class="intro-hero">
+      <h1 class="intro-title">
+        <span class="line">Pas des cases.</span>
+        <span class="line">Des <em>curseurs</em>.</span>
+      </h1>
+      <p class="intro-lede">
+        Politiscale t'a dit <em>quoi</em> tu penses. Prisme te dit aussi <em>comment</em> tu penses la politique —
+        et ce qui, en dessous, fait bouger tes convictions.
+      </p>
+    </div>
+
+    <div class="intro-grid">
+      <article class="intro-card">
+        <span class="intro-card-num">14</span>
+        <h3>axes</h3>
+        <p>8 axes politiques classiques + 6 axes <strong>méta-politiques</strong> : pragmatique ou idéologue, réformiste ou rupturiste, consensuel ou conflictuel…</p>
+      </article>
+      <article class="intro-card">
+        <span class="intro-card-num">6</span>
+        <h3>fondements moraux</h3>
+        <p>Soin, équité, loyauté, autorité, sacré, liberté : les intuitions profondes qui précèdent tes opinions.</p>
+      </article>
+      <article class="intro-card">
+        <span class="intro-card-num">1</span>
+        <h3>tempérament</h3>
+        <p>Bâtisseur, Tribun, Gardien, Insurgé… ta façon d'habiter la politique, au-delà du camp.</p>
+      </article>
+      <article class="intro-card">
+        <span class="intro-card-num">∞</span>
+        <h3>comparaisons</h3>
+        <p>Un lien par résultat. Colle celui d'un ami : affinité, points d'accord, lignes de fracture.</p>
+      </article>
+    </div>
+
+    <div class="intro-actions">
+      <button id="btn-start" class="btn btn-primary">
+        <span>Commencer</span>
+        <small>96 curseurs · ~10 min</small>
+      </button>
+      <button id="btn-resume" class="btn btn-ghost" hidden>
+        <span>Reprendre</span>
+        <small id="resume-info"></small>
+      </button>
+    </div>
+
+    <details class="intro-import">
+      <summary>J'ai déjà un lien de résultat</summary>
+      <div class="import-row">
+        <input id="import-input" type="text" placeholder="Colle le lien ou le code ici" autocomplete="off" spellcheck="false">
+        <button id="btn-import" class="btn btn-ghost btn-sm">Afficher</button>
+      </div>
+    </details>
+
+    <footer class="intro-foot">
+      <p>Aucune donnée n'est envoyée nulle part : tout reste dans ton navigateur et dans le lien que tu choisis de partager.</p>
+    </footer>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-top">
+      <button id="btn-quit" class="link-btn" type="button">← Accueil</button>
+      <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">96</span></div>
+    </div>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progress-fill" class="progress-fill"></div>
+    </div>
+
+    <div class="quiz-stage">
+      <article id="q-card" class="q-card">
+        <p class="q-kicker">Dans quelle mesure es-tu d'accord ?</p>
+        <h2 id="q-text" class="q-text"></h2>
+
+        <div class="slider-wrap">
+          <div id="slider-bubble" class="slider-bubble">Neutre</div>
+          <input id="slider" class="slider" type="range" min="-100" max="100" step="1" value="0" aria-label="Degré d'accord">
+          <div class="slider-ticks" aria-hidden="true">
+            <span></span><span></span><span class="mid"></span><span></span><span></span>
+          </div>
+          <div class="slider-ends" aria-hidden="true">
+            <span>Absolument pas d'accord</span>
+            <span>Absolument d'accord</span>
+          </div>
+        </div>
+
+        <label class="heart-toggle">
+          <input id="heart" type="checkbox">
+          <span class="heart-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.8 6.6 4.8c2 0 3.4 1 4.2 2.3.8-1.3 2.2-2.3 4.2-2.3 3.6 0 5.7 3.5 4.2 6.9C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>
+          </span>
+          <span class="heart-label">Ce sujet me tient particulièrement à cœur</span>
+        </label>
+      </article>
+    </div>
+
+    <div class="quiz-actions">
+      <button id="btn-prev" class="btn btn-ghost" type="button">Précédent</button>
+      <button id="btn-skip" class="btn btn-ghost" type="button">Passer</button>
+      <button id="btn-next" class="btn btn-primary" type="button"><span>Suivant</span></button>
+    </div>
+    <p class="quiz-hint">Flèches ← → pour ajuster · Entrée pour valider · H pour le cœur</p>
+  </section>
+
+  <!-- ===================== RÉSULTATS ===================== -->
+  <section id="screen-results" class="screen">
+    <header class="res-head">
+      <div class="brand">
+        <span class="brand-prism" aria-hidden="true"></span>
+        <span class="brand-name">Prisme</span>
+      </div>
+      <button id="btn-home" class="link-btn" type="button">Accueil</button>
+    </header>
+
+    <div class="res-hero">
+      <p class="res-kicker" id="res-kicker">Ton profil</p>
+      <h1 class="res-title" id="res-title"></h1>
+      <p class="res-headline" id="res-headline"></p>
+      <div class="res-share">
+        <button id="btn-copy" class="btn btn-primary" type="button"><span>Copier mon lien</span></button>
+        <button id="btn-compare-open" class="btn btn-ghost" type="button">Comparer avec un ami</button>
+        <button id="btn-retake" class="btn btn-ghost" type="button">Refaire le test</button>
+      </div>
+      <div id="compare-panel" class="compare-panel" hidden>
+        <label for="compare-input">Colle le lien (ou le code) de ton ami</label>
+        <div class="import-row">
+          <input id="compare-input" type="text" placeholder="https://kevindsm.github.io/prisme/#p=…" autocomplete="off" spellcheck="false">
+          <button id="btn-compare" class="btn btn-primary btn-sm" type="button"><span>Comparer</span></button>
+        </div>
+        <p class="compare-tip">Astuce : tu peux aussi comparer deux liens sans avoir fait le test, en collant les deux sur l'accueil (le tien d'abord).</p>
+      </div>
+    </div>
+
+    <!-- Comparaison -->
+    <section id="compare-block" class="res-section compare-block" hidden>
+      <div class="section-head">
+        <h2>Toi <span class="vs">vs</span> <span id="cmp-name">ton ami</span></h2>
+        <p>Où vous vous rejoignez, où ça frotte.</p>
+      </div>
+      <div class="affinity">
+        <div class="affinity-ring" id="affinity-ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="ring-fg" id="affinity-arc" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="affinity-val"><span id="affinity-pct">0</span><small>%</small></div>
+        </div>
+        <div class="affinity-text">
+          <h3 id="affinity-label"></h3>
+          <p id="affinity-desc"></p>
+          <div class="legend">
+            <span class="legend-me">Toi</span>
+            <span class="legend-them" id="legend-them">Ami</span>
+          </div>
+        </div>
+      </div>
+      <div class="cmp-cols">
+        <div class="cmp-col">
+          <h4>Vous êtes d'accord sur</h4>
+          <ul id="cmp-agree"></ul>
+        </div>
+        <div class="cmp-col">
+          <h4>Ça frotte sur</h4>
+          <ul id="cmp-disagree"></ul>
+        </div>
+      </div>
+      <button id="btn-compare-close" class="link-btn" type="button">Fermer la comparaison</button>
+    </section>
+
+    <!-- Famille + tempérament -->
+    <section class="res-section res-duo">
+      <article class="res-card family-card">
+        <p class="card-kicker">Famille politique la plus proche</p>
+        <h2 id="fam-name"></h2>
+        <p class="fam-tag" id="fam-tag"></p>
+        <p class="fam-desc" id="fam-desc"></p>
+        <ul class="fam-list" id="fam-list"></ul>
+      </article>
+      <article class="res-card temper-card">
+        <p class="card-kicker">Tempérament politique</p>
+        <h2 id="temp-name"></h2>
+        <p class="fam-desc" id="temp-desc"></p>
+        <ul class="fam-list" id="temp-list"></ul>
+      </article>
+    </section>
+
+    <!-- Axes politiques -->
+    <section class="res-section">
+      <div class="section-head">
+        <h2>Axes politiques</h2>
+        <p>Ce que tu penses : les grandes lignes de fracture du débat public.</p>
+      </div>
+      <div id="axes-politique" class="axes"></div>
+    </section>
+
+    <!-- Axes méta -->
+    <section class="res-section">
+      <div class="section-head">
+        <h2>Méta-politique</h2>
+        <p>Comment tu penses : ta manière d'aborder le pouvoir, le changement, l'adversaire.</p>
+      </div>
+      <div id="axes-meta" class="axes"></div>
+    </section>
+
+    <!-- Psyché -->
+    <section class="res-section res-duo psyche">
+      <article class="res-card">
+        <p class="card-kicker">Fondements moraux</p>
+        <h2>Ce qui te fait réagir</h2>
+        <div id="radar" class="radar"></div>
+        <ul id="found-list" class="found-list"></ul>
+      </article>
+      <article class="res-card">
+        <p class="card-kicker">Traits</p>
+        <h2>Ta façon d'y aller</h2>
+        <div id="traits" class="traits"></div>
+        <div class="stats-grid" id="stats-grid"></div>
+      </article>
+    </section>
+
+    <!-- Sujets de cœur -->
+    <section class="res-section" id="hearts-section" hidden>
+      <div class="section-head">
+        <h2>Tes sujets de cœur</h2>
+        <p>Les thèmes que tu as marqués comme te tenant particulièrement à cœur.</p>
+      </div>
+      <div id="hearts" class="hearts"></div>
+    </section>
+
+    <!-- Résumé -->
+    <section class="res-section summary">
+      <div class="section-head">
+        <h2>En résumé</h2>
+        <p>Un portrait en trois temps, généré à partir de tes réponses.</p>
+      </div>
+      <div class="summary-body" id="summary"></div>
+    </section>
+
+    <footer class="res-foot">
+      <p>Prisme est un miroir, pas un verdict. Les familles et tempéraments sont des approximations : ton profil réel est la somme des curseurs, pas l'étiquette.</p>
+      <p><a href="https://github.com/KevinDSM/prisme" target="_blank" rel="noopener">Code source</a> · Les réponses ne quittent jamais ton navigateur.</p>
+    </footer>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/questions.js?v=2"></script>
+  <script src="js/profiles.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+</body>
+</html>
