@@ -2,7 +2,7 @@
 
 **Cartographie de ce que tu penses vraiment.**
 
-Un test politique en profondeur, inspiré de Politiscales mais poussé plus loin :
+Un test politique en profondeur, qui va plus loin que les boussoles politiques habituelles :
 
 - **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu. 201 curseurs, ~20 minutes.
 - **Profil DISC en couleurs** — 30 questions dédiées : Rouge (Dominance), Jaune (Influence), Vert (Stabilité), Bleu (Conformité). Une couleur dominante ou un duo (le Conquérant, le Commandant, le Rassembleur…), une roue DISC, les forces, points de vigilance, motivations, façon de communiquer, réaction sous pression et comportement en débat.
@@ -33,6 +33,7 @@ https://kevindsm.github.io/prisme/
 ## Structure
 
 - `index.html` — les trois écrans (accueil, quiz, résultats)
+- `guide.html` + `js/guide.js` — le mode d'emploi, généré à partir des données du test (méthode, chaque axe et ses deux pôles, fondements, traits, portraits, DISC, signatures, comparaison)
 - `css/style.css` — le style
 - `js/questions.js` — axes, fondements, traits, styles DISC, banque de 201 affirmations et leurs pondérations
 - `js/profiles.js` — familles politiques, tempéraments, archétypes de personnalité, signatures, phrases de résumé, textes de comparaison, textes DISC (styles, duos, dynamiques entre deux personnes)

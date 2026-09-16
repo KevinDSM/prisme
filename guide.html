@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mode d'emploi — Prisme</title>
+  <meta name="description" content="Comment lire les résultats de Prisme : la méthode de calcul, chaque axe et ses deux pôles, les fondements moraux, les portraits, le profil DISC, les signatures et la comparaison entre amis.">
+  <meta name="theme-color" content="#f5efe4">
+  <script>try { if (localStorage.getItem('prisme.theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d6d'/%3E%3Cstop offset='.5' stop-color='%23ffd60a'/%3E%3Cstop offset='1' stop-color='%234dc9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,6 60,56 4,56' fill='url(%23g)'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=7">
+</head>
+<body class="guide-body">
+  <div class="grain" aria-hidden="true"></div>
+  <div class="aurora" aria-hidden="true"></div>
+
+  <section id="screen-guide" class="screen is-active guide">
+    <header class="res-head">
+      <a class="brand" href="index.html">
+        <span class="brand-prism" aria-hidden="true"></span>
+        <span class="brand-name">Prisme</span>
+      </a>
+      <div class="head-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Passer en mode sombre">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
+        </button>
+        <a class="link-btn" href="index.html">Accueil</a>
+      </div>
+    </header>
+
+    <div class="res-hero">
+      <p class="res-kicker">Mode d'emploi</p>
+      <h1 class="res-title">Comment lire <em>tes résultats</em></h1>
+      <p class="res-headline">Tout ce que Prisme mesure, comment il le calcule, et ce que veut dire chaque chiffre, chaque axe, chaque couleur et chaque portrait. Rien n'est caché : ce guide est généré à partir des mêmes données que le test.</p>
+      <div class="res-share">
+        <a class="btn btn-primary" href="index.html"><span>Faire le test</span></a>
+        <button id="btn-print-guide" class="btn btn-ghost" type="button">Télécharger en PDF</button>
+      </div>
+    </div>
+
+    <nav class="guide-toc" aria-label="Sommaire">
+      <p class="card-kicker">Sommaire</p>
+      <ol id="toc"></ol>
+    </nav>
+
+    <div id="guide"></div>
+
+    <footer class="res-foot">
+      <p>Prisme est un miroir, pas un verdict. Les familles, tempéraments, archétypes et couleurs sont des approximations construites pour aider à se comprendre et à discuter, pas des diagnostics.</p>
+      <p><a href="index.html">Accueil</a> · <a href="https://github.com/KevinDSM/prisme" target="_blank" rel="noopener">Code source</a> · Les réponses ne quittent jamais ton navigateur.</p>
+    </footer>
+  </section>
+
+  <script src="js/questions.js?v=7"></script>
+  <script src="js/profiles.js?v=7"></script>
+  <script src="js/guide.js?v=7"></script>
+</body>
+</html>
