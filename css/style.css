@@ -457,7 +457,6 @@ button { font-family: inherit; cursor: pointer; }
 
 .res-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .res-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.print-meta { display: none; }
 
 /* ---------- signatures ---------- */
 .signatures { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
@@ -847,7 +846,8 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- comparaison ---------- */
 .dim-rings { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 8px; }
-.dim {
+/* .dim est aussi le nom du pôle estompé d'un axe : on limite la carte aux anneaux */
+.dim-rings > .dim {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   padding: 16px 8px 14px;
   border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(var(--ink-rgb), 0.03);
@@ -1384,7 +1384,6 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 }
 /* Trait de rappel entre le repère et sa pastille quand celle-ci a dû être écartée */
 .xs-lead { position: absolute; width: 1.5px; margin-left: -0.75px; transform-origin: top center; opacity: 0.55; border-radius: 1px; }
-.xs-print { display: none; }
 
 .xs-group { margin-top: 14px; border-top: 1px solid var(--line); }
 .xs-group summary { display: flex; align-items: baseline; gap: 12px; padding: 14px 2px 10px; cursor: pointer; list-style: none; }
@@ -1419,25 +1418,6 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   .xs-track { grid-area: t; margin: 0 11px; }
   .xs-legend { position: static; }
 }
-@media print {
-  .xs-legend { position: static; backdrop-filter: none; background: #fff; }
-  .xs-group > *:not(summary) { display: grid !important; }
-  .xs-group summary .chev { display: none; }
-  .xs-row { break-inside: avoid; padding: 4px 0; }
-  .xs-tick, .xs-track::before, .xs-mean, .xs-print b { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  /* Les pastilles sont placées au pixel près par le script : sur papier la largeur
-     change et ce calcul ne vaut plus rien. On garde la ligne et ses repères, et
-     l'ordre exact passe dans une ligne de texte sous la ligne. */
-  .xs-track .xs-dot, .xs-lead { display: none !important; }
-  .xs-dot.static { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-color: #fff; }
-  .xs-dot.static.me { background: var(--ink) !important; color: #fff; }
-  .xs-tick { height: 14px; width: 4px; box-shadow: none; }
-  .xs-track { height: auto !important; min-height: 0; padding-bottom: 1px; }
-  .xs-print { display: block; padding-top: 20px; font-size: 8.5pt; line-height: 1.5; color: var(--ink-2); }
-  .xs-print b { font-weight: 800; }
-  #g-strips-card, #strips-card { break-before: page; break-inside: auto; }
-}
-
 /* ============================================================
    HÉMICYCLE
    ============================================================ */
@@ -1476,16 +1456,6 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .hemi-blocs small { color: var(--ink-3); font-weight: 600; }
 
 @media (max-width: 860px) { .assembly, .group-assembly { grid-template-columns: 1fr; } .assembly { padding: 20px 16px; } }
-@media print {
-  #screen-results > #assembly-section { order: 3; }
-  .assembly { grid-template-columns: 1.2fr 1fr; box-shadow: none; background: #fff !important; break-inside: avoid; }
-  .group-assembly { grid-template-columns: 1.2fr 1fr; }
-  .hemi-me .hemi-halo { animation: none; }
-  .hemi svg *, .hemi-key i, .hemi-blocs li { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .hemi-me circle.me { fill: #14131a !important; }
-  .hemi-me text.me { fill: #fff; }
-}
-
 /* ============================================================
    CERCLE : portrait-robot, gouvernement, clans
    ============================================================ */
@@ -1523,15 +1493,6 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .clan p:last-child { margin-bottom: 0; }
 .clan p b { color: var(--ink); }
 .circle-disc-notes .who { vertical-align: baseline; }
-
-@media print {
-  .gov, .clan { break-inside: avoid; background: #fff !important; animation: none; }
-  .gov.pm { background: color-mix(in srgb, #b8860b 8%, #fff) !important; }
-  .robot { background: #fff !important; }
-  .robot-title em { -webkit-text-fill-color: initial; color: #b8860b; background: none; }
-  .govs, .clans { grid-template-columns: 1fr 1fr; }
-  .clan, .gov, .robot-rank .bar i { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-}
 
 /* ============================================================
    CERCLES PAR URL : panneaux « créer un cercle », « mon URL », « ajouter une personne »
@@ -1629,187 +1590,6 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   .maker { padding: 18px 16px; }
   .maker-actions .btn { width: 100%; }
 }
-@media print {
-  .maker, .group-url, #btn-group-addone { display: none !important; }
-  #screen-results > #cast-section { order: 5; break-before: page; }
-  .lic { break-inside: avoid; overflow: visible; background: #fff !important; }
-  .lic, .lic-char, .lic-kind { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .lic .chev, .lic-cta { display: none; }
-  .lic-body { animation: none; padding: 0 14px 10px; }
-  /* Sur papier, les volets de familles s'effacent : tout est déplié */
-  .cast-stack { display: block; padding: 0; animation: none; }
-  .cast-group .cast-stack { padding: 0; }
-  .cast-stack .lic { display: flow-root; break-inside: avoid; page-break-inside: avoid; margin: 0 0 8px; }
-  .lic summary { break-after: avoid; break-inside: avoid; }
-  .lic-body { break-inside: avoid; }
-  .lic-body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 0 18px; align-items: start; }
-  .lic-k, .lic-char, .lic-tag, .lic-body > p:not([class]) { grid-column: 1; }
-  .lic-why, .lic-others { grid-column: 2; }
-  .lic-why { margin-top: 2px; }
-  .lic-body .casting { grid-column: 1 / -1; }
-  /* une famille par page : ni intertitre orphelin, ni fiche coupée en deux */
-  .cast-group { border: 0; border-radius: 0; background: none !important; overflow: visible; }
-  .cast-group + .cast-group { break-before: page; }
-  .cast-group > summary { display: block; padding: 0 0 6px; break-after: avoid; }
-  .cg-name { font-size: 12pt; }
-  .cg-count, .cg-list, .cast-group > summary .chev { display: none; }
-  .lic summary { padding: 7px 14px 2px; }
-  .lic-kind { font-size: 7pt; }
-  .lic-name { font-size: 12.5pt; }
-  .lic-k { font-size: 7pt; }
-  .lic-char { font-size: 14pt; margin-top: 2px; }
-  .lic-char .pct { font-size: 10pt; }
-  .lic-tag { margin: 1px 0 6px; font-size: 10pt; }
-  .lic-body p { font-size: 9pt; line-height: 1.38; margin-bottom: 5px; }
-  .lic-why { padding: 6px 8px; }
-  .lic-others { font-size: 8.5pt !important; }
-  /* Dans un cercle, chaque univers liste tout le monde : on resserre, sans toucher aux colonnes */
-  .casting li { break-inside: avoid; font-size: 9pt; padding: 3px 0; }
-  .casting .role b { font-size: 11pt; }
-  .casting .role em { display: inline; font-size: 9pt; }
-  .casting .role em::before { content: ' — '; }
-  .casting .because { font-size: 8pt; }
-}
-
-/* ============================================================
-   IMPRESSION / PDF — fond clair, sans boutons, compact
-   ============================================================ */
-@media print {
-  @page { margin: 14mm 12mm; }
-  :root, :root[data-theme="dark"] {
-    --bg: #ffffff; --bg-2: #ffffff; --bg-3: #f5f3ee;
-    --ink: #14131a; --ink-2: #3f3d47; --ink-3: #7a777f;
-    --line: rgba(20, 19, 26, 0.12); --line-2: rgba(20, 19, 26, 0.22);
-    --accent: #b8860b;
-    --accent-rgb: 184, 134, 11; --ink-rgb: 20, 19, 26; --bg-rgb: 255, 255, 255;
-    --panel-rgb: 255, 255, 255; --panel2-rgb: 255, 255, 255; --shadow-rgb: 0, 0, 0;
-    --ink-strong: #000; --neg: #d62850; --pos: #1c86c9; --label-mix: 70%; --label-toward: #000;
-    --disc-d: #e03a3e; --disc-i: #eaa800; --disc-s: #2f9e62; --disc-c: #2b7bc4;
-    --shadow: none; --grain: 0; --aurora: 0;
-  }
-  html, body { background: #fff !important; color: var(--ink); font-size: 11.5pt; }
-  .grain, .aurora, .toast, #screen-intro, #screen-quiz { display: none !important; }
-  #screen-results { display: block !important; width: 100%; padding: 0; animation: none; }
-  .brand-prism { animation: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .res-head .link-btn, .res-share, .compare-panel, #btn-compare-close, .res-foot a { display: none !important; }
-  .print-meta { display: block; margin: 6px 0 0; font-size: 10pt; color: var(--ink-3); }
-  .res-hero { margin: 18px 0 8px; }
-  .res-title { font-size: 34pt; }
-  .res-title em { -webkit-text-fill-color: initial; color: #b8860b; background: none; }
-  .res-headline { font-size: 11.5pt; margin-top: 10px; }
-  .res-section { margin-top: 22px; break-inside: avoid; }
-  .res-trio, .res-duo { display: block; }
-  .res-trio .res-card, .res-duo .res-card { break-inside: avoid; margin-bottom: 12px; }
-  .res-card, .axis, .sig, .summary-body, .compare-block, .stat, .cmp-col li, .cmp-psy {
-    background: #fff !important; border: 1px solid var(--line-2) !important; box-shadow: none !important;
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  }
-  .res-card { padding: 16px 18px; }
-  .res-card h2, .section-head h2 { font-size: 20pt; }
-  .fam-list li .bar i, .found-list li .bar i, .trait-track i, .axis-fill, .axis-marker, .axis-track, .ring-fg, .ring-bg, .heart-chip, .sig::before {
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  }
-  .axes { gap: 8px; }
-  .axis { padding: 10px 14px 12px; break-inside: avoid; }
-  .axis-desc { display: none; }
-  .axis-track { height: 10px; margin: 8px 0 6px; }
-  .axis-marker { width: 16px; height: 16px; border-color: #fff; box-shadow: 0 0 0 1.5px var(--ink); background: var(--ink); }
-  .axis-marker.them { background: #b8860b; box-shadow: 0 0 0 1.5px #b8860b; }
-  .axis-meta .val { color: var(--ink); }
-  .radar .lbl { fill: var(--ink-2); }
-  .radar .area { fill: rgba(184, 134, 11, 0.18); stroke: #b8860b; }
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .signatures { grid-template-columns: 1fr 1fr; }
-  .sig { animation: none; padding: 14px 16px 14px 18px; }
-  .sig h3 { font-size: 14pt; }
-  .summary-body { padding: 18px 22px; }
-  .summary-body p { font-size: 11pt; color: var(--ink-2); }
-  .heart-chip { border-color: #d48aa0; background: #fff; }
-  .affinity-val { color: var(--ink); }
-  .legend-me::before { background: var(--ink); }
-  .res-foot { margin-top: 20px; font-size: 9pt; }
-  .visitor, .circle-toolbar, .circle-empty, .map-controls, .rank-remove, .map-note { display: none !important; }
-  .circle-grid, .cmp-charts { display: block; }
-  .circle-grid .res-card, .cmp-charts .res-card { break-inside: avoid; margin-bottom: 12px; }
-  .circle-map { max-width: 420px; margin: 0 auto; }
-  .rank-main, .comment, .dim { background: #fff !important; border-color: var(--line-2) !important; break-inside: avoid; }
-  .comment { border-top-width: 3px !important; }
-  .comment.hot { border-top-color: #d6335a !important; }
-  .comment.cool { border-top-color: #2f9e6e !important; }
-  .comment h4 { font-size: 13pt; }
-  .comments { grid-template-columns: 1fr 1fr; }
-  .map-pt text { stroke: #fff; }
-  .map-pt.me circle { fill: var(--ink); stroke: #fff; }
-  .db-dot { border-color: #fff; }
-  .db-dot.me, .duo-bars .me i { background: var(--ink); }
-  .db-dot.them, .duo-bars .them i, .dim-arc { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .rank-bar i, .gap-track i, .db-seg, .map-pt circle, .comment { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .theme-toggle, .disc-chips + .res-headline:empty { display: none !important; }
-  .disc { break-before: page; }
-  .disc-hero { grid-template-columns: 1fr 1fr; padding: 22px 20px; box-shadow: none; background: #fff !important; break-inside: avoid; }
-  .disc-cards { grid-template-columns: 1fr 1fr; }
-  .disc-legend { grid-template-columns: repeat(4, 1fr); }
-  .disc-card, .disc-style { background: #fff !important; break-inside: avoid; }
-  .disc-style.is-mine { background: color-mix(in srgb, var(--c) 10%, #fff) !important; }
-  .disc-title { font-size: 30pt; }
-  .circle-disc, .cmp-disc-grid { grid-template-columns: 1fr 1fr; }
-  .disc-hero, .disc-hero *, .disc-cards *, .disc-legend, .disc-legend *, .disc-chips *, .disc-mini, .cmp-disc *, .circle-disc * {
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  }
-  a { color: var(--ink); }
-}
-
-/* ============================================================
-   MISE EN PAGE DU PDF : ordre des sections, sauts de page, colonnes
-   (placé en fin de fichier pour l'emporter sur les règles d'impression précédentes)
-   ============================================================ */
-@media print {
-  #screen-results { display: flex !important; flex-direction: column; }
-  #screen-results > * { order: 20; }
-  #screen-results > .res-head { order: 1; }
-  #screen-results > .res-hero { order: 2; }
-  #screen-results > .res-trio { order: 3; }
-  #screen-results > #signatures-section { order: 4; }
-  #screen-results > #disc-section { order: 5; break-before: page; }
-  #screen-results > .res-section:has(#axes-politique) { order: 6; break-before: page; }
-  #screen-results > .res-section:has(#axes-meta) { order: 7; }
-  #screen-results > #psyche-section { order: 8; }
-  #screen-results > .res-duo.psyche { order: 9; }
-  #screen-results > #hearts-section { order: 10; }
-  #screen-results > .summary { order: 11; }
-  #screen-results > #compare-block { order: 12; break-before: page; }
-  #screen-results > #circle-section { order: 13; break-before: page; }
-  #screen-results > .res-foot { order: 14; }
-
-  .res-section, .compare-block, .summary-body, .dumbbell-card, .axes, .signatures, .comments, .cmp-cols { break-inside: auto; }
-  .res-section { margin-top: 18px; }
-  .section-head, .sub-head, .card-kicker, .res-card h2, .db-group h4, .summary-body h3 { break-after: avoid; }
-  .axis, .sig, .comment, .dim, .stat, .disc-card, .disc-style, .gap-row, .db-row, .cmp-col li, .rank, .trait,
-  .found-list li, .res-trio .res-card, .res-duo .res-card, .cmp-disc, .circle-disc-card, .circle-grid .res-card,
-  .cmp-charts .res-card, .affinity, .dim-rings { break-inside: avoid; }
-  .summary-body p { orphans: 3; widows: 3; }
-
-  .res-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .res-trio .res-card { margin-bottom: 0; padding: 14px 14px 16px; }
-  .res-trio .res-card h2 { font-size: 17pt; }
-  .res-trio .fam-desc { font-size: 9.5pt; }
-  .res-trio .fam-list { margin-top: 12px; padding-top: 10px; }
-  .res-trio .fam-list li { padding: 4px 0; font-size: 9.5pt; }
-
-  .res-duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .res-duo .res-card { margin-bottom: 0; padding: 14px 16px 16px; }
-  .res-duo .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-  .circle-grid, .cmp-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
-  .circle-grid .res-card, .cmp-charts .res-card { margin-bottom: 0; padding: 14px 16px; }
-  .circle-disc-card { margin-top: 10px; }
-  .dumbbell-card { margin-bottom: 10px; }
-  .signatures { gap: 10px; }
-  .axes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .axis-meta { flex-wrap: wrap; }
-  .res-section:has(#axes-politique), .res-section:has(#axes-meta), #psyche-section, #hearts-section, #signatures-section { break-inside: avoid; }
-}
-
 /* ============================================================
    MODE D'EMPLOI (guide.html)
    ============================================================ */
@@ -1903,54 +1683,80 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   .gax-poles, .gdisc-cols, .gdisc-intro { grid-template-columns: 1fr; }
   .gtable td:first-child { white-space: normal; }
 }
-@media print {
-  .guide-body .grain, .guide-body .aurora, .guide .res-share, .guide .theme-toggle, .guide .link-btn { display: none !important; }
-  .guide { display: block !important; width: 100%; padding: 0; }
-  .guide-toc, .gcard, .gax, .gportrait, .gdisc, .gtable tr { break-inside: avoid; }
-  .guide-toc, .gcard, .gax, .gax-pole, .gportrait, .gdisc, .gchip { background: #fff !important; }
-  .gsection { break-before: page; }
-  .gsection:first-child { break-before: auto; }
-  .gsub, .section-head { break-after: avoid; }
+
+/* ============================================================
+   PAGE LARGE : sommaire et colonnes
+   Plus de contrainte papier : on occupe la largeur et on donne
+   de quoi se déplacer dans une page qui est longue.
+   ============================================================ */
+#screen-results, #screen-group { width: min(1280px, 100%); }
+
+.res-nav .nav-title {
+  margin: 0 0 12px; font-size: 12px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);
+}
+.res-nav ol { list-style: none; margin: 0; padding: 0; }
+.res-nav a {
+  display: block; text-decoration: none; color: var(--ink-2);
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
 }
 
-/* PDF : place des nouvelles sections (valeurs, qualités, vie, palmarès) */
-@media print {
-  #screen-results > #qualities-section { order: 4; break-before: page; }
-  #awards-card, #matrix-card { break-before: page; }
-  #screen-results > #disc-section { order: 5; }
-  #screen-results > #values-section { order: 5; break-before: page; }
-  #screen-results > #life-section { order: 5; }
-  #screen-results > #values-teaser-section, .btn-upgrade { display: none !important; }
-  .values-hero { grid-template-columns: 1fr 1fr; }
-  .values-grid, .qual-split { display: block; }
-  .qual-split .res-card { margin-top: 12px; }
-  .quals, .val-cards, .life-cards, .awards { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .quals.two { grid-template-columns: 1fr 1fr; }
-  .qual, .val-card, .life-card, .award, .duo-card, .val-pole-card, .strip, .matrix tr { break-inside: avoid; background: #fff !important; animation: none; }
-  .val-pole-card.is-mine { background: color-mix(in srgb, var(--c) 10%, #fff) !important; }
-  .award.is-me { background: color-mix(in srgb, #b8860b 9%, #fff) !important; }
-  .group-card { break-inside: auto; }
-  .topics { grid-template-columns: 1fr 1fr; }
-  .values-hero *, .val-bars *, .val-cards *, .val-poles *, .qual-track i, .qual-list .bar i, .matrix td, .strip-dot, .who .dot, .medal b, .topics-h {
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+/* Jusqu'à 1179 px : un bandeau de pastilles collé en haut */
+@media (max-width: 1179px) {
+  .res-nav {
+    position: sticky; top: 0; z-index: 20;
+    margin: 14px -20px 0; padding: 10px 20px;
+    background: color-mix(in srgb, rgb(var(--bg-rgb)) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
   }
-  .medal b { background: var(--ink); color: #fff; }
+  .res-nav::-webkit-scrollbar { display: none; }
+  .res-nav .nav-title { display: none; }
+  .res-nav ol { display: flex; gap: 8px; width: max-content; }
+  .res-nav a {
+    padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: rgba(var(--panel-rgb), 0.75); white-space: nowrap;
+    font-size: 13.5px; font-weight: 700;
+  }
+  .res-nav a.is-on { border-color: transparent; background: var(--ink); color: var(--bg); }
 }
 
-/* PDF de la page de cercle : comparatifs, puis les profils dépliés */
-@media print {
-  body.is-group #screen-results { display: none !important; }
-  body.is-group #screen-group { display: block !important; width: 100%; padding: 0; animation: none; }
-  #screen-group .res-share, #screen-group .link-btn, #screen-group .people-tools, #screen-group .map-controls, #screen-group .map-note, #screen-group .person-links { display: none !important; }
-  #screen-group .group-duo { display: grid; grid-template-columns: 1fr 1fr; }
-  #screen-group #g-awards-card, #screen-group #g-matrix-card { break-before: page; }
-  #screen-group .stat-val.sm { font-size: 14pt; }
-  .person { background: #fff !important; border: 0 !important; }
-  .person:not([open]) { display: none; }
-  .person[open] { break-before: page; }
-  .person summary { padding: 0 0 8px; border-bottom: 2px solid var(--ink); border-radius: 0; }
-  .person .chev, .person-tags { display: none; }
-  .person-body { padding: 0; }
-  .person-body .res-section { margin-top: 18px; }
-  .person .dot, .group-people .dot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+/* À partir de 1180 px : un rail à gauche, qui suit la lecture */
+@media (min-width: 1180px) {
+  #screen-results.is-active, #screen-group.is-active {
+    display: grid; grid-template-columns: 206px minmax(0, 1fr); column-gap: 48px; align-items: start;
+  }
+  #screen-results.is-active > .res-head, #screen-group.is-active > .res-head { grid-column: 1 / -1; }
+  .res-body { min-width: 0; }
+  .res-nav {
+    position: sticky; top: 24px; align-self: start;
+    max-height: calc(100vh - 48px); overflow-y: auto; scrollbar-width: thin;
+    margin-top: 48px; padding-right: 8px;
+  }
+  .res-nav ol { display: grid; gap: 1px; counter-reset: nav; }
+  .res-nav a {
+    position: relative; padding: 7px 10px 7px 26px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; line-height: 1.35;
+  }
+  .res-nav a::before {
+    counter-increment: nav; content: counter(nav);
+    position: absolute; left: 8px; top: 8px;
+    font-size: 11px; font-weight: 800; color: var(--ink-3); font-variant-numeric: tabular-nums;
+  }
+  .res-nav a:hover { background: rgba(var(--ink-rgb), 0.05); color: var(--ink); }
+  .res-nav a.is-on { background: rgba(var(--ink-rgb), 0.08); color: var(--ink); font-weight: 800; }
+  .res-nav a.is-on::before { color: var(--accent); }
+}
+
+/* La largeur gagnée sert à mettre deux colonnes là où ça se lit mieux */
+@media (min-width: 1180px) {
+  .axes { grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); column-gap: 34px; }
+  .summary-body { columns: 2; column-gap: 46px; }
+  .summary-body h3 { break-after: avoid; }
+  .summary-body p { break-inside: avoid-column; }
+  .section-head p { max-width: 92ch; }
+}
+@media (max-width: 560px) {
+  .res-nav { margin-inline: -16px; padding-inline: 16px; }
 }

@@ -134,6 +134,64 @@
     window.scrollTo(0, 0);
   }
 
+
+  /* ---------------------------------------------------------
+     Sommaire : la page de résultats est longue, on donne de quoi s'y déplacer.
+     Construit après le rendu, à partir des titres réellement affichés.
+     --------------------------------------------------------- */
+  let navObserver = null;
+
+  function buildNav(screenId, navId) {
+    const screen = $(screenId), nav = $(navId);
+    if (!screen || !nav) return;
+    // Une entrée par section. Une section sans titre propre (le cercle) donne une entrée par carte.
+    const heads = [];
+    screen.querySelectorAll('.res-body > .res-section').forEach(sec => {
+      if (sec.hidden || sec.offsetParent === null) return;
+      const own = sec.querySelector(':scope > .section-head > h2');
+      if (own) { heads.push(own); return; }
+      sec.querySelectorAll(':scope > .res-card > h2, :scope > div > .res-card > h2').forEach(h => {
+        if (h.offsetParent !== null) heads.push(h);
+      });
+    });
+    if (heads.length < 4) { nav.hidden = true; nav.innerHTML = ''; return; }
+
+    const targets = heads.map((h, i) => {
+      const anchor = h.closest('.res-section, .res-card') || h;
+      if (!anchor.id) anchor.id = navId + '-s' + i;
+      // Le titre d'une carte est souvent une valeur (« Le Gardien ») : le chapô décrit mieux la section
+      const kicker = anchor.querySelector(':scope > .card-kicker');
+      const label = h.dataset.nav || (kicker ? kicker.textContent : h.textContent);
+      return { id: anchor.id, label: label.replace(/\s+/g, ' ').trim(), el: anchor };
+    });
+    nav.innerHTML = `<p class="nav-title">Sommaire</p><ol>${targets
+      .map(t => `<li><a href="#${t.id}" data-nav-to="${t.id}">${esc(t.label)}</a></li>`).join('')}</ol>`;
+    nav.hidden = false;
+
+    nav.onclick = e => {
+      const a = e.target.closest('[data-nav-to]');
+      if (!a) return;
+      e.preventDefault();
+      const el = $(a.dataset.navTo);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Surligne la section en cours de lecture
+    if (navObserver) navObserver.disconnect();
+    const links = new Map(targets.map(t => [t.id, nav.querySelector(`[data-nav-to="${t.id}"]`)]));
+    const seen = new Set();
+    navObserver = new IntersectionObserver(entries => {
+      entries.forEach(en => (en.isIntersecting ? seen.add(en.target.id) : seen.delete(en.target.id)));
+      const first = targets.find(t => seen.has(t.id));
+      links.forEach(l => l.classList.remove('is-on'));
+      if (!first) return;
+      const link = links.get(first.id);
+      link.classList.add('is-on');
+      if (nav.scrollWidth > nav.clientWidth + 4) link.scrollIntoView({ block: 'nearest', inline: 'center' });
+    }, { rootMargin: '-72px 0px -62% 0px' });
+    targets.forEach(t => navObserver.observe(t.el));
+  }
+
   let toastTimer = null;
   function toast(msg) {
     const el = $('toast');
@@ -2026,11 +2084,7 @@
         + `<i class="xs-lead" style="left:${it.pos.toFixed(2)}%;background:${it.p.color}" aria-hidden="true"></i>`
         + `<span class="xs-dot ${it.p.me ? 'me' : ''}" data-pos="${it.pos.toFixed(2)}" style="left:${it.pos.toFixed(2)}%;background:${it.p.color}" title="${title}">${esc(it.p.tag)}</span>`;
     }).join('');
-    /* Sur papier, la mise en page en pixels ne survit pas au changement de largeur :
-       on garde la ligne et ses repères, et on ajoute l'ordre exact, de gauche à droite. */
-    const order = sorted.map(it =>
-      `<b style="color:${it.p.color}">${esc(it.p.tag)}</b> ${Math.round(it.pos)}`).join(' · ');
-    return html + `<span class="xs-print" aria-hidden="true">${order}</span>`;
+    return html;
   }
 
   const TICK_H = 18;   // bas du repère sur la ligne (6 px de marge + 12 px de repère)
@@ -2105,7 +2159,6 @@
     clearTimeout(stripTimer);
     stripTimer = setTimeout(() => layoutStrips(), 150);
   });
-  window.addEventListener('beforeprint', () => layoutStrips());
 
   function renderStrips(people, pre) {
     const card = $(pre + 'strips-card');
@@ -2651,13 +2704,13 @@
     $('compare-block').hidden = !friend;
     if (friend) renderComparison(cur, friend);
 
-    $('print-meta').textContent = printMeta(cur, friend);
 
     if (silent) return;
     showScreen('results');
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.querySelectorAll('#screen-results [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
       document.querySelectorAll('#screen-results [data-off]').forEach(el => { el.style.strokeDashoffset = el.dataset.off; });
+      buildNav('screen-results', 'res-nav');
     }));
     if (scrollTarget) {
       const target = scrollTarget;
@@ -2666,12 +2719,6 @@
     }
   }
 
-  function printMeta(cur, friend) {
-    const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const who = cur.name ? cur.name + ' · ' : '';
-    const vs = friend ? ` · comparé à ${friend.name}` : '';
-    return `${who}${date}${vs} · ${QUESTIONS.length} curseurs · kevindsm.github.io/prisme`;
-  }
 
   /* ---------------------------------------------------------
      Rendu : cercle d'amis
@@ -3048,17 +3095,6 @@
         `Lien du cercle copié (${members.length} personnes) : chacun pourra importer tout le monde d'un coup`);
     };
 
-    const pdf = () => {
-      if (current && current.isMine) {
-        const name = askMyName();
-        current.name = name;
-      }
-      $('print-meta').textContent = printMeta(current, null);
-      toast('Dans la fenêtre d\'impression, choisis « Enregistrer en PDF »');
-      setTimeout(() => window.print(), 350);
-    };
-    $('btn-pdf').onclick = pdf;
-    $('btn-visitor-pdf').onclick = pdf;
 
 
     // Ajout d'un ami par lien collé
@@ -3185,7 +3221,6 @@
 
     $('group-title').innerHTML = `Le cercle, <em>${n} profils</em>`;
     $('group-people').innerHTML = people.map(p => `<a class="medal" href="#person-${p.code}" data-jump="${p.code}">${who(p)}</a>`).join('');
-    $('group-print-meta').textContent = `${people.map(p => p.name).join(', ')} · ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} · kevindsm.github.io/prisme`;
 
     // Cohésion : affinité moyenne entre toutes les paires
     let sum = 0, count = 0;
@@ -3244,6 +3279,7 @@
     $('group-url').value = location.href;
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.querySelectorAll('#screen-group [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+      buildNav('screen-group', 'group-nav');
     }));
   }
 
@@ -3269,7 +3305,7 @@
       + '</p>';
     body.appendChild(head);
 
-    document.querySelectorAll('#screen-results > .res-section').forEach(sec => {
+    document.querySelectorAll('#screen-results .res-body > .res-section').forEach(sec => {
       if (sec.hidden || skip.has(sec.id)) return;
       const clone = sec.cloneNode(true);
       clone.removeAttribute('id');
@@ -3305,10 +3341,6 @@
     $('btn-group-copy').onclick = async () => {
       const ok = await copyText(location.href);
       toast(ok ? 'URL du cercle copiée — envoie-la à tout le monde' : 'Impossible de copier : sélectionne l\'URL à la main');
-    };
-    $('btn-group-pdf').onclick = () => {
-      toast('Le PDF contient les comparatifs et les profils dépliés. Choisis « Enregistrer en PDF ».');
-      setTimeout(() => window.print(), 400);
     };
     $('group-list').addEventListener('toggle', e => {
       if (e.target.matches && e.target.matches('details.person') && e.target.open) fillPerson(e.target);
@@ -3485,14 +3517,6 @@
     });
   }
 
-  // Impression : on déplie les licences le temps d'imprimer
-  window.addEventListener('beforeprint', () => {
-    document.querySelectorAll('.screen.is-active details.cast-group:not([open]), .screen.is-active details.lic:not([open])')
-      .forEach(d => { d.open = true; d.dataset.printOpened = '1'; });
-  });
-  window.addEventListener('afterprint', () => {
-    document.querySelectorAll('details[data-print-opened]').forEach(d => { d.open = false; delete d.dataset.printOpened; });
-  });
 
   /* ---------------------------------------------------------
      Cercles par URL : rien à enregistrer, on colle des URL et on obtient l'URL du cercle
@@ -3638,7 +3662,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 18;
+  const BUILD = 19;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

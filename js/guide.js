@@ -484,5 +484,4 @@
     try { localStorage.setItem('prisme.theme', dark ? 'dark' : 'light'); } catch (e) { /* ignore */ }
     applyTheme(dark);
   }));
-  $('btn-print-guide').onclick = () => window.print();
 })();

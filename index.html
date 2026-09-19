@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=18">
+  <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -190,16 +190,18 @@
       </div>
     </header>
 
+    <nav class="res-nav" id="res-nav" aria-label="Sommaire du profil" hidden></nav>
+
+    <div class="res-body">
+
     <div class="res-hero">
       <p class="res-kicker" id="res-kicker">Ton profil</p>
       <h1 class="res-title" id="res-title"></h1>
-      <p class="print-meta" id="print-meta"></p>
       <div id="disc-chips" class="disc-chips" hidden></div>
       <p class="res-headline" id="res-headline"></p>
       <div class="res-share" id="res-share">
         <button id="btn-copy" class="btn btn-primary" type="button"><span>Générer mon URL</span></button>
         <button id="btn-make-circle" class="btn btn-ghost" type="button">Créer un cercle</button>
-        <button id="btn-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
         <button id="btn-retake" class="btn btn-ghost" type="button">Refaire le test</button>
       </div>
 
@@ -220,7 +222,6 @@
         <div class="visitor-actions">
           <button id="btn-visitor-compare" class="btn btn-primary" type="button"><span>Me comparer</span></button>
           <button id="btn-visitor-take" class="btn btn-primary" type="button"><span>Faire le test et me comparer</span></button>
-          <button id="btn-visitor-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
           <button id="btn-visitor-me" class="link-btn" type="button">C'est mon propre résultat</button>
         </div>
       </div>
@@ -345,7 +346,7 @@
 
         <article class="res-card group-card" id="clans-card" hidden>
           <p class="card-kicker">Alliances et clans</p>
-          <h2>Les sous-groupes naturels du cercle</h2>
+          <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
           <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
           <div id="clans" class="clans"></div>
           <p id="clans-notes" class="circle-disc-notes"></p>
@@ -353,14 +354,14 @@
 
         <article class="res-card group-card" id="matrix-card" hidden>
           <p class="card-kicker">Affinités croisées</p>
-          <h2>Qui est proche de qui</h2>
+          <h2 data-nav="Affinités">Qui est proche de qui</h2>
           <div id="matrix-duos" class="duo-cards"></div>
           <div id="matrix" class="matrix-wrap"></div>
         </article>
 
         <article class="res-card group-card" id="topics-card" hidden>
           <p class="card-kicker">Les sujets du groupe</p>
-          <h2>Ce qui vous rassemble, ce qui vous fâche</h2>
+          <h2 data-nav="Sujets du groupe">Ce qui vous rassemble, ce qui vous fâche</h2>
           <div class="topics">
             <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="topics-divide"></div></div>
             <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="topics-unite"></div></div>
@@ -473,20 +474,20 @@
     <section class="res-section res-trio">
       <article class="res-card family-card">
         <p class="card-kicker">Famille politique la plus proche</p>
-        <h2 id="fam-name"></h2>
+        <h2 id="fam-name" data-nav="Famille politique"></h2>
         <p class="fam-tag" id="fam-tag"></p>
         <p class="fam-desc" id="fam-desc"></p>
         <ul class="fam-list" id="fam-list"></ul>
       </article>
       <article class="res-card temper-card">
         <p class="card-kicker">Tempérament politique</p>
-        <h2 id="temp-name"></h2>
+        <h2 id="temp-name" data-nav="Tempérament"></h2>
         <p class="fam-desc" id="temp-desc"></p>
         <ul class="fam-list" id="temp-list"></ul>
       </article>
       <article class="res-card psy-card" id="psy-card">
         <p class="card-kicker">Archétype de personnalité</p>
-        <h2 id="psy-name"></h2>
+        <h2 id="psy-name" data-nav="Archétype"></h2>
         <p class="fam-desc" id="psy-desc"></p>
         <ul class="fam-list" id="psy-list"></ul>
       </article>
@@ -495,7 +496,7 @@
     <!-- Hémicycle -->
     <section class="res-section" id="assembly-section">
       <div class="section-head">
-        <h2>Ta place dans l'hémicycle</h2>
+        <h2 data-nav="Hémicycle">Ta place dans l'hémicycle</h2>
         <p>Si l'Assemblée nationale comptait un 577<sup>e</sup> siège pour toi : l'angle vient de ta position gauche-droite, le rang de ton engagement.</p>
       </div>
       <div class="assembly">
@@ -603,7 +604,7 @@
     <!-- Quel personnage -->
     <section class="res-section" id="cast-section" hidden>
       <div class="section-head">
-        <h2>Quel personnage serais-tu ?</h2>
+        <h2 data-nav="Personnages">Quel personnage serais-tu ?</h2>
         <p>D'après ton profil psychologique — tes qualités, tes couleurs DISC, tes valeurs, ton caractère — et pas tes opinions. Vingt-et-un univers, de Zelda à Friends : clique sur l'un d'eux pour découvrir ton personnage, et pourquoi c'est lui.</p>
       </div>
       <div id="cast" class="cast"></div>
@@ -640,13 +641,13 @@
     <section class="res-section res-duo psyche">
       <article class="res-card">
         <p class="card-kicker">Fondements moraux</p>
-        <h2>Ce qui te fait réagir</h2>
+        <h2 data-nav="Fondements moraux">Ce qui te fait réagir</h2>
         <div id="radar" class="radar"></div>
         <ul id="found-list" class="found-list"></ul>
       </article>
       <article class="res-card">
         <p class="card-kicker">Traits</p>
-        <h2>Ta façon d'y aller</h2>
+        <h2 data-nav="Traits et style">Ta façon d'y aller</h2>
         <div id="traits" class="traits"></div>
         <div class="stats-grid" id="stats-grid"></div>
       </article>
@@ -674,6 +675,7 @@
       <p>Prisme est un miroir, pas un verdict. Les familles, tempéraments et archétypes sont des approximations : le profil réel est la somme des curseurs, pas l'étiquette.</p>
       <p><a href="guide.html">Mode d'emploi</a> : comment lire chaque axe, chaque portrait et le DISC · <a href="https://github.com/KevinDSM/prisme" target="_blank" rel="noopener">Code source</a> · Les réponses ne quittent jamais ton navigateur.</p>
     </footer>
+    </div>
   </section>
 
   <!-- ===================== CERCLE (lien de groupe) ===================== -->
@@ -693,15 +695,17 @@
       </div>
     </header>
 
+    <nav class="res-nav" id="group-nav" aria-label="Sommaire du cercle" hidden></nav>
+
+    <div class="res-body">
+
     <div class="res-hero">
       <p class="res-kicker" id="group-kicker">Le cercle</p>
       <h1 class="res-title" id="group-title"></h1>
-      <p class="print-meta" id="group-print-meta"></p>
       <div id="group-people" class="medals group-people"></div>
       <p class="res-headline" id="group-headline"></p>
       <div class="res-share">
         <button id="btn-group-addone" class="btn btn-primary" type="button"><span>Ajouter une personne</span></button>
-        <button id="btn-group-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
         <button id="btn-group-test" class="btn btn-ghost" type="button">Faire le test</button>
       </div>
       <div id="group-add-panel" class="maker" hidden>
@@ -769,7 +773,7 @@
 
       <article class="res-card group-card" id="g-cast-card" hidden>
         <p class="card-kicker">Le casting du cercle</p>
-        <h2>Qui serait quel personnage</h2>
+        <h2 data-nav="Casting du cercle">Qui serait quel personnage</h2>
         <p class="group-intro">D'après le profil psychologique de chacun : qualités, DISC, valeurs, caractère. Dans chaque univers, chacun reçoit un personnage différent — le plus ressemblant est servi en premier. Clique sur une licence pour voir le casting.</p>
         <div id="g-cast" class="cast"></div>
       </article>
@@ -793,7 +797,7 @@
 
       <article class="res-card group-card" id="g-clans-card" hidden>
         <p class="card-kicker">Alliances et clans</p>
-        <h2>Les sous-groupes naturels du cercle</h2>
+        <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
         <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
         <div id="g-clans" class="clans"></div>
         <p id="g-clans-notes" class="circle-disc-notes"></p>
@@ -801,14 +805,14 @@
 
       <article class="res-card group-card" id="g-matrix-card" hidden>
         <p class="card-kicker">Affinités croisées</p>
-        <h2>Qui est proche de qui</h2>
+        <h2 data-nav="Affinités">Qui est proche de qui</h2>
         <div id="g-matrix-duos" class="duo-cards"></div>
         <div id="g-matrix" class="matrix-wrap"></div>
       </article>
 
       <article class="res-card group-card" id="g-topics-card" hidden>
         <p class="card-kicker">Les sujets du groupe</p>
-        <h2>Ce qui vous rassemble, ce qui vous fâche</h2>
+        <h2 data-nav="Sujets du groupe">Ce qui vous rassemble, ce qui vous fâche</h2>
         <div class="topics">
           <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="g-topics-divide"></div></div>
           <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="g-topics-unite"></div></div>
@@ -853,6 +857,7 @@
       <p>Prisme est un miroir, pas un verdict. Les titres du palmarès sont un jeu : ils disent qui a le score le plus haut dans ce cercle, pas qui vaut mieux que qui.</p>
       <p><a href="guide.html">Mode d'emploi</a> · Rien n'est envoyé sur un serveur : ce cercle n'existe que dans le lien.</p>
     </footer>
+    </div>
   </section>
 
   <div id="pause-modal" class="modal" hidden>
@@ -874,9 +879,9 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=18"></script>
-  <script src="js/profiles.js?v=18"></script>
-  <script src="js/characters.js?v=18"></script>
-  <script src="js/app.js?v=18"></script>
+  <script src="js/questions.js?v=19"></script>
+  <script src="js/profiles.js?v=19"></script>
+  <script src="js/characters.js?v=19"></script>
+  <script src="js/app.js?v=19"></script>
 </body>
 </html>
