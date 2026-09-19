@@ -2233,8 +2233,8 @@
 
   function renderClans(people, pre) {
     const card = $(pre + 'clans-card');
-    card.hidden = people.length < 4;
-    if (people.length < 4) return;
+    card.hidden = people.length < 3;
+    if (people.length < 3) return;
     const n = people.length;
     const aff = people.map(() => new Array(n).fill(1));
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const ideas = sharedAxes(people[i].r, people[j].r).filter(x => x.group !== 'psyche');
@@ -2269,7 +2269,12 @@
     const combos = (k, from = 0, acc = []) => (k === 0 ? [acc] : everyone.slice(from, n - k + 1).flatMap(i => combos(k - 1, i + 1, acc.concat(i))));
     const maxK = n >= 9 ? 4 : n >= 6 ? 3 : 2;
     let bestSplit = null;
-    for (let k = 2; k <= maxK; k++) {
+    if (n === 3) {
+      // à trois : le duo le plus proche, et la troisième personne en solo
+      const pairs = [[0, 1], [0, 2], [1, 2]].sort((x, y) => aff[y[0]][y[1]] - aff[x[0]][x[1]]);
+      bestSplit = { groups: [pairs[0], everyone.filter(i => !pairs[0].includes(i))], score: 0 };
+    }
+    for (let k = 2; k <= maxK && n > 3; k++) {
       combos(k).forEach(heads => {
         const groups = split(heads);
         const biggest = Math.max(...groups.map(g => g.length)) / n;
@@ -2324,7 +2329,7 @@
       }
       const A = clans[worst.a], B = clans[worst.b];
       const split = shared.map(x => ({ x, g: meanOf(A.inside.map(p => p.r.axes[x.id])) - meanOf(B.inside.map(p => p.r.axes[x.id])) })).sort((p, q) => Math.abs(q.g) - Math.abs(p.g))[0];
-      notes.push(`<b>La ligne de fracture :</b> entre « ${esc(A.label)} » et « ${esc(B.label)} » (${pct(worst.l)} % d'affinité seulement)${split ? `, surtout sur ${esc(theme(split.x.id))}` : ''}.`);
+      notes.push(`<b>La ligne de fracture :</b> entre « ${esc(A.label)} » et « ${esc(B.label)} » (${pct(worst.l)} % d'affinité${worst.l < 0.6 ? ' seulement' : ''})${split ? `, surtout sur ${esc(theme(split.x.id))}` : ''}.`);
     }
     $(pre + 'clans-notes').innerHTML = notes.map(x => `<span>${x}</span>`).join('');
   }
@@ -3281,6 +3286,28 @@
   }
 
   /* ---------------------------------------------------------
+     Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
+     à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
+     --------------------------------------------------------- */
+  const BUILD = 15;
+  function checkForUpdate() {
+    if (!window.fetch || location.protocol === 'file:') return;
+    fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
+      .then(res => (res.ok ? res.text() : ''))
+      .then(text => {
+        const remote = parseInt(text, 10);
+        if (!remote || remote <= BUILD) return;
+        let tried = null;
+        try { tried = sessionStorage.getItem('prisme.reload'); } catch (e) { /* ignore */ }
+        if (tried === String(remote)) return;
+        try { sessionStorage.setItem('prisme.reload', String(remote)); } catch (e) { return; }
+        if ($('screen-quiz').classList.contains('is-active')) { saveProgress(); }
+        location.replace(location.pathname + '?v=' + remote + location.hash);
+      })
+      .catch(() => { /* hors ligne : tant pis */ });
+  }
+
+  /* ---------------------------------------------------------
      Démarrage
      --------------------------------------------------------- */
   initTheme();
@@ -3289,4 +3316,5 @@
   initGroup();
   window.addEventListener('hashchange', route);
   route();
+  checkForUpdate();
 })();
