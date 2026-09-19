@@ -1806,3 +1806,7 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   .animal { padding: 20px 18px 22px; }
   .animal-next { padding: 18px 16px; }
 }
+.cg-note {
+  grid-column: 1; margin-top: 7px; padding: 7px 11px; border-radius: 8px;
+  background: rgba(var(--ink-rgb), 0.05); font-size: 13px; line-height: 1.45; color: var(--ink-3);
+}

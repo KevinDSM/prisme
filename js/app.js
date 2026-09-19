@@ -3447,6 +3447,11 @@
     return out;
   }
 
+  // Certaines familles méritent un avertissement sous leur titre
+  const GROUP_NOTES = {
+    'Le monde réel': 'Des personnes réelles. Seul le tempérament public est comparé — ni les idées, ni la vie privée, ni le bilan.',
+  };
+
   // Une famille = un volet replié : on ne déroule que l'univers qui intéresse
   function castHtml(build) {
     return licenseGroups().map(({ g, list }) => {
@@ -3458,6 +3463,7 @@
         <summary>
           <span class="cg-head"><span class="cg-name">${esc(g)}</span><span class="cg-count">${kept.length} univers</span></span>
           <span class="cg-list">${esc(kept.map(l => l.name).join(' · '))}</span>
+          ${GROUP_NOTES[g] ? `<span class="cg-note">${esc(GROUP_NOTES[g])}</span>` : ''}
           <span class="chev" aria-hidden="true"></span>
         </summary>
         <div class="cast-stack">${inner}</div>
@@ -3728,7 +3734,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 22;
+  const BUILD = 23;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
