@@ -1470,6 +1470,53 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 }
 
 /* ============================================================
+   CERCLE : portrait-robot, gouvernement, clans
+   ============================================================ */
+.robot { background: linear-gradient(150deg, rgba(var(--accent-rgb), 0.09), rgba(var(--panel-rgb), 0.9) 55%); }
+.res-card .robot-title { font-size: clamp(30px, 4.6vw, 50px); font-weight: 400; letter-spacing: -0.025em; }
+.robot-title em { font-style: italic; font-weight: 500; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.robot .disc-chips { margin-top: 14px; }
+.robot-text { margin: 16px 0 0; max-width: 860px; font-size: 16.5px; line-height: 1.7; color: var(--ink-2); }
+.robot-text b { color: var(--ink); }
+.robot-k { margin: 22px 0 0; }
+.robot-rank { margin-top: 10px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 28px; }
+.robot-rank li { grid-template-columns: 110px 1fr 40px; }
+
+.govs { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.gov {
+  display: flex; flex-direction: column;
+  padding: 16px 18px; border-radius: var(--radius-sm); border: 1px solid var(--line);
+  background: rgba(var(--bg-rgb), 0.5);
+  animation: rise 0.5s var(--ease) both; animation-delay: var(--d, 0ms);
+}
+.gov.pm { grid-column: 1 / -1; border: 2px solid var(--accent); background: rgba(var(--accent-rgb), 0.08); }
+.gov.pm .gov-role { font-size: 27px; }
+.gov.is-me { border-color: rgba(var(--accent-rgb), 0.6); }
+.gov-role { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 21px; line-height: 1.2; }
+.gov-place { margin: 2px 0 10px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+
+.clans { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; margin-top: 16px; }
+.clan { padding: 18px 20px; border-radius: var(--radius-sm); border: 1px solid var(--line); border-top: 5px solid var(--c); background: rgba(var(--bg-rgb), 0.5); }
+.clan-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.clan-head h4 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 24px; letter-spacing: -0.01em; }
+.clan-head .pct { font-family: var(--font-display); font-size: 20px; white-space: nowrap; }
+.clan-head .pct small { font-family: var(--font-body); font-size: 12px; color: var(--ink-3); }
+.clan-people { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 12px; font-size: 15px; }
+.clan p { margin: 0 0 8px; font-size: 14.5px; line-height: 1.6; color: var(--ink-2); }
+.clan p:last-child { margin-bottom: 0; }
+.clan p b { color: var(--ink); }
+.circle-disc-notes .who { vertical-align: baseline; }
+
+@media print {
+  .gov, .clan { break-inside: avoid; background: #fff !important; animation: none; }
+  .gov.pm { background: color-mix(in srgb, #b8860b 8%, #fff) !important; }
+  .robot { background: #fff !important; }
+  .robot-title em { -webkit-text-fill-color: initial; color: #b8860b; background: none; }
+  .govs, .clans { grid-template-columns: 1fr 1fr; }
+  .clan, .gov, .robot-rank .bar i { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ============================================================
    IMPRESSION / PDF — fond clair, sans boutons, compact
    ============================================================ */
 @media print {

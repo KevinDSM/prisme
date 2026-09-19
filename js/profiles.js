@@ -880,4 +880,53 @@ const LIFE = [
   } },
 ];
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE };
+// ---------- Gouvernement du cercle ----------
+// comps : [source, identifiant, sens, poids] — source : qual (qualité 0 → 1), axis, found, disc
+const MINISTRIES = [
+  { id: 'pm', name: 'Premier ministre', place: 'Matignon', comps: [['qual', 'lea', 1, 1], ['qual', 'det', 1, 0.6], ['qual', 'dip', 1, 0.4]],
+    line: 'Quand il faut trancher et embarquer tout le monde, c\'est vers cette personne que les regards se tournent.' },
+  { id: 'eco', name: 'Économie et Comptes publics', place: 'Bercy', comps: [['qual', 'rig', 1, 1], ['qual', 'san', 1, 0.5], ['disc', 'con', 1, 0.4]],
+    line: 'On lui confie la caisse les yeux fermés : chaque ligne sera vérifiée, deux fois.' },
+  { id: 'int', name: 'Intérieur', place: 'Place Beauvau', comps: [['qual', 'vig', 1, 1], ['qual', 'fia', 1, 0.5], ['axis', 'aut', 1, 0.4]],
+    line: 'Voit venir les ennuis avant tout le monde, et dort d\'un œil pour que les autres dorment des deux.' },
+  { id: 'aff', name: 'Affaires étrangères', place: 'Quai d\'Orsay', comps: [['qual', 'dip', 1, 1], ['qual', 'ouv', 1, 0.7], ['axis', 'geo', -1, 0.3]],
+    line: 'Capable de dîner avec n\'importe qui et de repartir avec un accord.' },
+  { id: 'sol', name: 'Solidarités et Santé', place: 'avenue Duquesne', comps: [['qual', 'emp', 1, 1], ['found', 'care', 1, 0.6]],
+    line: 'Personne ne sera laissé sur le bord de la route tant que cette personne tiendra le ministère.' },
+  { id: 'jus', name: 'Justice', place: 'Place Vendôme', comps: [['found', 'fair', 1, 1], ['qual', 'fia', 1, 0.6], ['qual', 'san', 1, 0.5]],
+    line: 'Le sens de l\'équité chevillé au corps, et assez de sang-froid pour ne pas juger sous le coup de l\'émotion.' },
+  { id: 'edu', name: 'Éducation', place: 'rue de Grenelle', comps: [['qual', 'ouv', 1, 0.7], ['qual', 'ide', 1, 0.6], ['axis', 'tmp', 1, 0.6], ['qual', 'emp', 1, 0.4]],
+    line: 'Pense à la génération d\'après, et croit qu\'on peut encore changer quelqu\'un en lui expliquant bien.' },
+  { id: 'env', name: 'Transition écologique', place: 'hôtel de Roquelaure', comps: [['axis', 'env', 1, 1], ['axis', 'tmp', 1, 0.6], ['qual', 'ide', 1, 0.4]],
+    line: 'La planète avant le confort, et 2100 dans le viseur.' },
+  { id: 'cul', name: 'Culture', place: 'rue de Valois', comps: [['axis', 'opn', -1, 1], ['axis', 'ord', -1, 0.5], ['qual', 'ouv', 1, 0.5]],
+    line: 'Curieux de tout, allergique aux cases : un ministère fait pour les esprits qui débordent.' },
+  { id: 'por', name: 'Porte-parole du gouvernement', place: 'au micro', comps: [['qual', 'soc', 1, 1], ['disc', 'inf', 1, 0.7], ['qual', 'com', 1, 0.4]],
+    line: 'Ferait applaudir une hausse d\'impôts. Donnez-lui un micro, il s\'occupe du reste.' },
+  { id: 'arm', name: 'Armées', place: 'hôtel de Brienne', comps: [['qual', 'att', 1, 0.8], ['qual', 'det', 1, 0.7], ['found', 'loy', 1, 0.5]],
+    line: 'Loyal, déterminé, attaché aux siens : on ne passe pas.' },
+  { id: 'inn', name: 'Innovation et Numérique', place: 'en mode start-up', comps: [['qual', 'aud', 1, 1], ['axis', 'tec', -1, 0.7], ['axis', 'rsk', 1, 0.4]],
+    line: '« On a toujours fait comme ça » est la phrase qui lui donne envie de tout refaire.' },
+  { id: 'par', name: 'Relations avec le Parlement', place: 'dans l\'arène', comps: [['qual', 'com', 1, 1], ['trait', 'eng', 1, 0.5], ['axis', 'cfl', 1, 0.4]],
+    line: 'Ne refuse jamais un débat, et en sort rarement perdant : parfait pour affronter l\'opposition.' },
+  { id: 'spo', name: 'Jeunesse et Sports', place: 'sur le terrain', comps: [['qual', 'opt', 1, 1], ['axis', 'cmp', 1, 0.5], ['qual', 'soc', 1, 0.4]],
+    line: 'Le moral de l\'équipe, c\'est cette personne. Et si on peut gagner en plus, tant mieux.' },
+  { id: 'lib', name: 'Libertés et Droits', place: 'hors les murs', comps: [['qual', 'ind', 1, 1], ['found', 'lib', 1, 0.7], ['axis', 'aut', -1, 0.4]],
+    line: 'Le premier à démissionner si le gouvernement va trop loin — et c\'est exactement pour ça qu\'on le nomme.' },
+  { id: 'ter', name: 'Agriculture et Territoires', place: 'loin de Paris', comps: [['qual', 'att', 1, 1], ['axis', 'opn', 1, 0.7], ['axis', 'col', 1, 0.3]],
+    line: 'Des racines, des habitudes, des visages connus : le pays réel n\'a pas de meilleur avocat.' },
+];
+
+// ---------- Noms de clans : [pôle gauche, pôle droit] de chaque axe ----------
+const CLAN_NAMES = {
+  eco: ['Les partageux', 'Les entrepreneurs'], egl: ['Les égalitaires', 'Les méritocrates'], soc: ['Les modernes', 'Les gardiens du temple'],
+  idn: ['Les citoyens du monde', 'Les patriotes'], aut: ['Les libertaires', 'Les partisans de l\'ordre'], env: ['Les productivistes', 'Les écolos'],
+  geo: ['Les sans-frontières', 'Les souverainistes'], jus: ['Les réparateurs', 'Les justiciers'], tec: ['Les technophiles', 'Les technosceptiques'],
+  epi: ['Les pragmatiques', 'Les puristes'], chg: ['Les réformateurs', 'Les révolutionnaires'], dem: ['Les démocrates directs', 'Les experts'],
+  cfl: ['Les diplomates', 'Les combattants'], vis: ['Les optimistes', 'Les inquiets'], nat: ['Les confiants', 'Les méfiants'],
+  aff: ['Les cœurs', 'Les têtes froides'], loc: ['Les volontaires', 'Les fatalistes'], rsk: ['Les prudents', 'Les audacieux'],
+  ord: ['Les improvisateurs', 'Les organisés'], thr: ['Les sereins', 'Les vigilants'], col: ['Les indépendants', 'Les solidaires'],
+  tmp: ['Les épicuriens', 'Les long-termistes'], cmp: ['Les coopératifs', 'Les compétiteurs'], opn: ['Les explorateurs', 'Les casaniers'],
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES };

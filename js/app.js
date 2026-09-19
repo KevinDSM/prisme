@@ -10,7 +10,7 @@
   const {
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
-    VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE,
+    VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -2095,6 +2095,241 @@
   }
 
   /* ---------------------------------------------------------
+     Cercle : portrait-robot, gouvernement, clans
+     --------------------------------------------------------- */
+  const whoChip = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.me ? 'Toi' : p.name)}</span>`;
+  const meanOf = list => (list.length ? list.reduce((s, v) => s + v, 0) / list.length : 0);
+
+  // Profil moyen du groupe, au même format qu'un résultat décodé
+  function averageProfile(people) {
+    const rs = people.map(p => p.r);
+    const axes = {}, known = new Set();
+    AXES.forEach(a => {
+      const have = rs.filter(r => r.known.has(a.id));
+      axes[a.id] = meanOf(have.map(r => r.axes[a.id]));
+      if (have.length >= Math.max(2, rs.length / 2)) known.add(a.id);
+    });
+    const avgMap = (list, pick) => {
+      const have = rs.map(pick).filter(Boolean);
+      if (!have.length) return null;
+      const out = {};
+      list.forEach(x => { out[x.id] = meanOf(have.map(m => m[x.id])); });
+      return out;
+    };
+    const stat = k => meanOf(rs.map(r => r.stats[k]));
+    return {
+      version: CURRENT_VERSION, axes, known,
+      found: avgMap(FOUNDATIONS, r => r.found), traits: avgMap(TRAITS, r => r.traits),
+      disc: avgMap(DISC, r => r.disc), values: avgMap(VALUES, r => r.values),
+      stats: { intensity: stat('intensity'), nuance: stat('nuance'), radical: stat('radical'), coherence: stat('coherence') },
+      heartAxes: [], extremes: [], answered: 0, partial: !known.has('aff'),
+    };
+  }
+
+  function renderRobot(people, pre) {
+    const card = $(pre + 'robot-card');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    const avg = averageProfile(people);
+    const fam = rankFamilies(avg), temp = rankTemperaments(avg), psy = rankPsyche(avg);
+    const dp = discProfile(avg.disc), vp = valueProfile(avg);
+    const spot = seatOf(avg, null);
+
+    $(pre + 'robot-title').innerHTML = `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>${psy.length ? ', ' + esc(shortName(psy[0].name)) : ''}`;
+    $(pre + 'robot-chips').innerHTML =
+      (dp ? discPills(dp, true) : '')
+      + (vp ? `<span class="disc-pill sm" style="--c:${vp.flat ? 'var(--ink-3)' : vp.primary.color}"><b>★</b>${esc(valueTitle(vp))}</span>` : '')
+      + `<span class="disc-pill sm" style="--c:${spot.bloc.color}"><b>§</b>siège n° ${spot.seat.num} · ${esc(spot.bloc.label.toLowerCase())}</span>`;
+
+    const marked = knownList(AXES, avg).map(a => ({ a, s: avg.axes[a.id] })).filter(x => Math.abs(x.s) >= 0.25).sort((x, y) => Math.abs(y.s) - Math.abs(x.s)).slice(0, 4);
+    const quals = qualityScores(avg).filter(q => q.score !== null).sort((x, y) => y.score - x.score);
+    let text = `Si ce cercle était une seule personne, ce serait un profil <b>${esc(fam[0].name.toLowerCase())}</b> (${pct(fam[0].score)} %), de tempérament « <b>${esc(temp[0].name)}</b> »`;
+    if (psy.length) text += ` et de personnalité « <b>${esc(psy[0].name)}</b> »`;
+    text += `. Il s'assiérait ${esc(spot.bloc.bench)}, au siège n° ${spot.seat.num}.`;
+    if (marked.length) text += ` Ce qui marque le plus le groupe : ${joinFr(marked.map(x => `<b>${esc(nuancedLabel(x.a, x.s).toLowerCase())}</b> (${pct(Math.abs(x.s))})`))}.`;
+    if (quals.length >= 3) text += ` Ses qualités collectives : ${esc(joinFr(quals.slice(0, 3).map(q => `${q.name.toLowerCase()} (${pct(q.score)})`)))} ; son point faible : ${esc(quals[quals.length - 1].name.toLowerCase())} (${pct(quals[quals.length - 1].score)}).`;
+    text += ' Une moyenne gomme les extrêmes : ce portrait est forcément plus modéré que chacun d\'entre vous.';
+    $(pre + 'robot-text').innerHTML = text;
+
+    const ranked = people.map(p => ({ p, a: affinityBetween(p.r, avg).total })).sort((x, y) => y.a - x.a);
+    const best = ranked[0], far = ranked[ranked.length - 1];
+    const farGap = diffRows(far.p.r, avg, sharedAxes(far.p.r, avg)).sort((x, y) => y.d - x.d)[0];
+    $(pre + 'robot-people').innerHTML = `
+      <article class="duo-card"><p class="k">L'incarnation du groupe</p><h4>${whoChip(best.p)}<span class="pct">${pct(best.a)} %</span></h4>
+        <p>Le profil le plus proche de la moyenne du cercle : si quelqu'un devait parler au nom de tous, ce serait cette personne.</p></article>
+      <article class="duo-card"><p class="k">Le plus loin de la moyenne</p><h4>${whoChip(far.p)}<span class="pct">${pct(far.a)} %</span></h4>
+        <p>Celui ou celle qui tire le groupe ailleurs${farGap ? ` — surtout sur ${esc(theme(farGap.x.id))} : ${esc(nuancedLabel(farGap.x, farGap.m).toLowerCase())}, quand le groupe est ${esc(nuancedLabel(farGap.x, farGap.t).toLowerCase())}` : ''}.</p></article>`;
+    $(pre + 'robot-rank').innerHTML = ranked.map(x =>
+      `<li>${whoChip(x.p)}<span class="bar"><i data-w="${pct(x.a)}" style="background:${x.p.color}"></i></span><span class="num">${pct(x.a)}</span></li>`).join('');
+  }
+
+  function ministryScore(r, m) {
+    const quals = qualityScores(r);
+    let num = 0, den = 0;
+    m.comps.forEach(c => {
+      let v;
+      if (c[0] === 'qual') { const q = quals.find(x => x.id === c[1]); v = q && q.score !== null ? q.score : null; }
+      else v = componentValue(r, c);
+      if (v === null || v === undefined) return;
+      if (c[0] === 'qual' && c[2] < 0) v = 1 - v;
+      num += v * c[3]; den += c[3];
+    });
+    return den ? num / den : null;
+  }
+
+  function ministryWhy(r, m) {
+    const quals = qualityScores(r);
+    const parts = m.comps.map(c => {
+      if (c[0] === 'qual') {
+        const q = quals.find(x => x.id === c[1]);
+        return q && q.score !== null ? { v: q.score, w: c[3], label: `${q.name.toLowerCase()} ${pct(q.score)}` } : null;
+      }
+      const v = componentValue(r, c);
+      return v === null ? null : { v, w: c[3], label: componentLabel(r, c) };
+    }).filter(Boolean).filter(x => x.v >= 0.6).sort((x, y) => y.v * y.w - x.v * x.w).slice(0, 3);
+    return parts.length ? joinFr(parts.map(x => x.label)) : 'personne d\'autre ne s\'en sortait mieux';
+  }
+
+  function renderGovernment(people, pre) {
+    const card = $(pre + 'gov-card');
+    card.hidden = people.length < 3;
+    if (people.length < 3) return;
+    // score brut de chacun pour chaque ministère, puis écart à la moyenne du cercle : on nomme celui qui se distingue
+    const raw = MINISTRIES.map(m => people.map(p => ministryScore(p.r, m)));
+    const z = raw.map(row => {
+      const vals = row.filter(v => v !== null);
+      const mu = meanOf(vals), sd = Math.sqrt(meanOf(vals.map(v => (v - mu) ** 2))) || 1;
+      return row.map(v => (v === null ? -9 : (v - mu) / sd));
+    });
+    const freeP = new Set(people.map((p, i) => i)), freeM = new Set(MINISTRIES.map((m, i) => i));
+    const cabinet = [];
+    const name = (mi, pi, second) => { cabinet.push({ m: MINISTRIES[mi], p: people[pi], score: raw[mi][pi], second }); freeP.delete(pi); if (!second) freeM.delete(mi); };
+    // Matignon d'abord : le meilleur score brut
+    const pmRow = raw[0].map((v, i) => ({ v: v === null ? -1 : v, i })).sort((a, b) => b.v - a.v);
+    name(0, pmRow[0].i, false);
+    while (freeP.size && freeM.size) {
+      let best = null;
+      freeM.forEach(mi => freeP.forEach(pi => { if (!best || z[mi][pi] > best.z) best = { mi, pi, z: z[mi][pi] }; }));
+      name(best.mi, best.pi, false);
+    }
+    [...freeP].forEach(pi => {
+      const mi = MINISTRIES.map((m, i) => i).filter(i => i > 0).sort((a, b) => z[b][pi] - z[a][pi])[0];
+      name(mi, pi, true);
+    });
+
+    $(pre + 'gov').innerHTML = cabinet.map((c, k) => `
+      <article class="gov ${k === 0 ? 'pm' : ''} ${c.p.me ? 'is-me' : ''}" style="--d:${Math.min(k, 10) * 40}ms">
+        <p class="gov-role">${c.second ? 'Secrétaire d\'État · ' : ''}${esc(c.m.name)}</p>
+        <p class="gov-place">${esc(c.m.place)}</p>
+        <div class="award-who">${whoChip(c.p)}<span class="award-score">${c.score === null ? '' : pct(c.score)}</span></div>
+        <p class="award-text">${esc(c.m.line)}</p>
+        <p class="award-next">Parce que : ${esc(ministryWhy(c.p.r, c.m))}.</p>
+      </article>`).join('');
+    const vacant = [...freeM].map(i => MINISTRIES[i].name);
+    $(pre + 'gov-note').textContent = vacant.length
+      ? `Un portefeuille par personne, attribué à celui ou celle qui s'y distingue le plus par rapport au reste du cercle. Postes restés vacants faute de monde : ${joinFr(vacant.slice(0, 6).map(v => v.toLowerCase()))}${vacant.length > 6 ? '…' : ''}.`
+      : 'Un portefeuille par personne, attribué à celui ou celle qui s\'y distingue le plus par rapport au reste du cercle.';
+  }
+
+  function renderClans(people, pre) {
+    const card = $(pre + 'clans-card');
+    card.hidden = people.length < 4;
+    if (people.length < 4) return;
+    const n = people.length;
+    const aff = people.map(() => new Array(n).fill(1));
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const ideas = sharedAxes(people[i].r, people[j].r).filter(x => x.group !== 'psyche');
+      aff[i][j] = aff[j][i] = ideas.length ? axisAffinity(people[i].r, people[j].r, ideas) : affinityBetween(people[i].r, people[j].r).total; // les clans se forment sur les idées et la manière, pas sur le caractère
+    }
+    const link = (A, B) => meanOf(A.flatMap(i => B.map(j => aff[i][j])));
+
+    // Meilleur découpage en 2 à 4 clans d'au moins deux personnes : on essaie tous les jeux de « chefs de file »,
+    // chacun rejoint celui dont il est le plus proche, et on garde le découpage où l'on ressemble le plus aux siens
+    // et le moins aux autres.
+    const everyone = people.map((p, i) => i);
+    const split = heads => {
+      const groups = heads.map(h => [h]);
+      everyone.forEach(i => {
+        if (heads.includes(i)) return;
+        let best = 0;
+        heads.forEach((h, k) => { if (aff[i][h] > aff[i][heads[best]]) best = k; });
+        groups[best].push(i);
+      });
+      return groups;
+    };
+    const contrast = groups => {
+      if (groups.some(g => g.length < 2)) return -1;
+      let total = 0;
+      groups.forEach((g, gi) => g.forEach(i => {
+        const mine = meanOf(g.filter(j => j !== i).map(j => aff[i][j]));
+        const others = Math.max(...groups.filter((o, oi) => oi !== gi).map(o => meanOf(o.map(j => aff[i][j]))));
+        total += mine - others;
+      }));
+      return total / n;
+    };
+    const combos = (k, from = 0, acc = []) => (k === 0 ? [acc] : everyone.slice(from, n - k + 1).flatMap(i => combos(k - 1, i + 1, acc.concat(i))));
+    const maxK = n >= 9 ? 4 : n >= 6 ? 3 : 2;
+    let bestSplit = null;
+    for (let k = 2; k <= maxK; k++) {
+      combos(k).forEach(heads => {
+        const groups = split(heads);
+        const biggest = Math.max(...groups.map(g => g.length)) / n;
+        const score = contrast(groups) - 0.006 * (k - 2) - 0.3 * (biggest - 1 / k); // légère préférence pour des clans équilibrés
+        if (!bestSplit || score > bestSplit.score) bestSplit = { groups, score };
+      });
+    }
+    const clusters = bestSplit.groups.slice().sort((x, y) => y.length - x.length);
+
+    const shared = AXES.filter(a => people.every(p => p.r.known.has(a.id)));
+    const usedNames = new Set();
+    const clans = clusters.map(idx => {
+      const inside = idx.map(i => people[i]), outside = people.filter((p, i) => !idx.includes(i));
+      const stats = shared.map(a => {
+        const mIn = meanOf(inside.map(p => p.r.axes[a.id])), mOut = meanOf(outside.map(p => p.r.axes[a.id]));
+        const sd = Math.sqrt(meanOf(inside.map(p => (p.r.axes[a.id] - mIn) ** 2)));
+        return { a, mIn, mOut, sd, gap: mIn - mOut };
+      });
+      const distinct = stats.slice().sort((x, y) => Math.abs(y.gap) - Math.abs(x.gap));
+      const pick = distinct.find(s => !usedNames.has(CLAN_NAMES[s.a.id][s.gap < 0 ? 0 : 1])) || distinct[0];
+      const label = CLAN_NAMES[pick.a.id][pick.gap < 0 ? 0 : 1];
+      usedNames.add(label);
+      const glue = stats.filter(s => Math.abs(s.mIn) >= 0.3 && s.sd <= 0.3).sort((x, y) => Math.abs(y.mIn) - Math.abs(x.mIn)).slice(0, 3);
+      const cohesion = idx.length > 1 ? meanOf(idx.flatMap((i, k) => idx.slice(k + 1).map(j => aff[i][j]))) : null;
+      return { idx, inside, label: idx.length === 1 ? `${inside[0].me ? 'Toi' : inside[0].name}, en solo` : label, distinct: distinct.slice(0, 2), glue, cohesion };
+    });
+
+    $(pre + 'clans').innerHTML = clans.map((c, k) => `
+      <article class="clan" style="--c:${FRIEND_COLORS[(k * 3 + 1) % FRIEND_COLORS.length]}">
+        <div class="clan-head"><h4>${esc(c.label)}</h4>${c.cohesion !== null ? `<span class="pct">${pct(c.cohesion)} %<small> d'accord entre eux</small></span>` : ''}</div>
+        <div class="clan-people">${c.inside.map(whoChip).join('')}</div>
+        ${c.inside.length > 1
+          ? `<p><b>Ce qui les soude :</b> ${c.glue.length ? 'le même penchant — ' + esc(joinFr(c.glue.map(s => nuancedLabel(s.a, s.mIn).toLowerCase()))) : 'une ressemblance d\'ensemble plus qu\'un sujet précis'}.</p>`
+          : '<p>Ne ressemble vraiment à aucun des groupes : une voix à part, qui peut faire pencher la balance.</p>'}
+        <p><b>Ce qui ${c.inside.length > 1 ? 'les' : 'le'} distingue du reste du cercle :</b> ${esc(c.distinct.map(s => `${cap(theme(s.a.id))} — ici : ${nuancedLabel(s.a, s.mIn).toLowerCase()} ; ailleurs : ${nuancedLabel(s.a, s.mOut).toLowerCase()}`).join('. ') )}.</p>
+      </article>`).join('');
+
+    // Le pont et la ligne de fracture
+    const notes = [];
+    if (clans.length >= 2) {
+      let bridge = null;
+      clans.forEach((c, ci) => c.idx.forEach(i => clans.forEach((o, oi) => {
+        if (oi === ci) return;
+        const a = meanOf(o.idx.map(j => aff[i][j]));
+        if (!bridge || a > bridge.a) bridge = { i, from: c, to: o, a };
+      })));
+      notes.push(`<b>Le pont :</b> ${whoChip(people[bridge.i])} — la personne la plus proche d'un autre groupe que le sien (${pct(bridge.a)} % d'affinité avec « ${esc(bridge.to.label)} »). Si les clans se parlent, c'est par elle.`);
+      let worst = null;
+      for (let a = 0; a < clans.length; a++) for (let b = a + 1; b < clans.length; b++) {
+        const l = link(clans[a].idx, clans[b].idx);
+        if (!worst || l < worst.l) worst = { a, b, l };
+      }
+      const A = clans[worst.a], B = clans[worst.b];
+      const split = shared.map(x => ({ x, g: meanOf(A.inside.map(p => p.r.axes[x.id])) - meanOf(B.inside.map(p => p.r.axes[x.id])) })).sort((p, q) => Math.abs(q.g) - Math.abs(p.g))[0];
+      notes.push(`<b>La ligne de fracture :</b> entre « ${esc(A.label)} » et « ${esc(B.label)} » (${pct(worst.l)} % d'affinité seulement)${split ? `, surtout sur ${esc(theme(split.x.id))}` : ''}.`);
+    }
+    $(pre + 'clans-notes').innerHTML = notes.map(x => `<span>${x}</span>`).join('');
+  }
+
+  /* ---------------------------------------------------------
      Comparaison : valeurs et qualités face à face
      --------------------------------------------------------- */
   function renderCompareExtras(a, b, meLabel, name) {
@@ -2412,7 +2647,10 @@
     renderMap();
     renderCircleDisc([{ name: 'Toi', r: cur.r, me: true }, ...entries], '');
     const groupPeople = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
+    renderRobot(groupPeople, '');
     renderGroupAssembly(groupPeople, '');
+    renderGovernment(groupPeople, '');
+    renderClans(groupPeople, '');
     renderGroup(groupPeople, '');
     renderStrips(groupPeople, '');
   }
@@ -2891,7 +3129,10 @@
       + (discs.length ? fact('Couleur DISC dominante', mostCommon(discs), discs.length) : '')
       + (vals.length ? fact('Valeur boussole la plus partagée', mostCommon(vals), vals.length) : '');
 
+    renderRobot(people, 'g-');
     renderGroupAssembly(people, 'g-');
+    renderGovernment(people, 'g-');
+    renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
     renderCircleDisc(people, 'g-');

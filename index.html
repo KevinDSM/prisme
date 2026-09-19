@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -263,6 +263,17 @@
         </article>
 
 
+
+        <article class="res-card group-card robot" id="robot-card" hidden>
+          <p class="card-kicker">Le portrait-robot du cercle</p>
+          <h2 class="robot-title" id="robot-title"></h2>
+          <div id="robot-chips" class="disc-chips"></div>
+          <p id="robot-text" class="robot-text"></p>
+          <div id="robot-people" class="duo-cards"></div>
+          <p class="card-kicker robot-k">Qui ressemble le plus au groupe</p>
+          <ul id="robot-rank" class="found-list robot-rank"></ul>
+        </article>
+
         <article class="res-card group-card" id="assembly-card" hidden>
           <p class="card-kicker">Le cercle à l'Assemblée</p>
           <h2>Qui siège où</h2>
@@ -279,6 +290,14 @@
           </div>
         </article>
 
+
+        <article class="res-card group-card" id="gov-card" hidden>
+          <p class="card-kicker">Le gouvernement du cercle</p>
+          <h2>Qui aurait quel ministère</h2>
+          <p id="gov-note" class="group-intro"></p>
+          <div id="gov" class="awards govs"></div>
+        </article>
+
         <article class="res-card group-card" id="awards-card" hidden>
           <p class="card-kicker">Palmarès</p>
           <h2>Qui est qui dans le cercle</h2>
@@ -293,6 +312,15 @@
           <p class="group-intro">Une ligne par dimension, une pastille par personne. À chaque bout de la ligne : qui va le plus loin de ce côté. Le petit triangle marque la moyenne du cercle. Survole une pastille pour lire le détail.</p>
           <div id="strips-legend" class="xs-legend"></div>
           <div id="strips" class="xs"></div>
+        </article>
+
+
+        <article class="res-card group-card" id="clans-card" hidden>
+          <p class="card-kicker">Alliances et clans</p>
+          <h2>Les sous-groupes naturels du cercle</h2>
+          <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
+          <div id="clans" class="clans"></div>
+          <p id="clans-notes" class="circle-disc-notes"></p>
         </article>
 
         <article class="res-card group-card" id="matrix-card" hidden>
@@ -652,7 +680,18 @@
 
     <section class="res-section">
 
-      <article class="res-card group-card first" id="g-assembly-card" hidden>
+
+      <article class="res-card group-card first robot" id="g-robot-card" hidden>
+        <p class="card-kicker">Le portrait-robot du cercle</p>
+        <h2 class="robot-title" id="g-robot-title"></h2>
+        <div id="g-robot-chips" class="disc-chips"></div>
+        <p id="g-robot-text" class="robot-text"></p>
+        <div id="g-robot-people" class="duo-cards"></div>
+        <p class="card-kicker robot-k">Qui ressemble le plus au groupe</p>
+        <ul id="g-robot-rank" class="found-list robot-rank"></ul>
+      </article>
+
+      <article class="res-card group-card" id="g-assembly-card" hidden>
         <p class="card-kicker">Le cercle à l'Assemblée</p>
         <h2>Qui siège où</h2>
         <div class="group-assembly">
@@ -666,6 +705,14 @@
             <p class="assembly-note">L'angle vient de la position gauche-droite de chacun, le rang de son engagement (les plus engagés près du perchoir). Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
           </div>
         </div>
+      </article>
+
+
+      <article class="res-card group-card" id="g-gov-card" hidden>
+        <p class="card-kicker">Le gouvernement du cercle</p>
+        <h2>Qui aurait quel ministère</h2>
+        <p id="g-gov-note" class="group-intro"></p>
+        <div id="g-gov" class="awards govs"></div>
       </article>
 
       <article class="res-card group-card" id="g-awards-card" hidden>
@@ -682,6 +729,15 @@
         <p class="group-intro">Une ligne par dimension, une pastille par personne. À chaque bout de la ligne : qui va le plus loin de ce côté. Le petit triangle marque la moyenne du cercle. Survole une pastille pour lire le détail.</p>
         <div id="g-strips-legend" class="xs-legend"></div>
         <div id="g-strips" class="xs"></div>
+      </article>
+
+
+      <article class="res-card group-card" id="g-clans-card" hidden>
+        <p class="card-kicker">Alliances et clans</p>
+        <h2>Les sous-groupes naturels du cercle</h2>
+        <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
+        <div id="g-clans" class="clans"></div>
+        <p id="g-clans-notes" class="circle-disc-notes"></p>
       </article>
 
       <article class="res-card group-card" id="g-matrix-card" hidden>
@@ -759,8 +815,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=13"></script>
-  <script src="js/profiles.js?v=13"></script>
-  <script src="js/app.js?v=13"></script>
+  <script src="js/questions.js?v=14"></script>
+  <script src="js/profiles.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>
