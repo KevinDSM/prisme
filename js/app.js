@@ -129,6 +129,7 @@
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('is-active'));
     $('screen-' + name).classList.add('is-active');
+    document.body.classList.toggle('is-group', name === 'group');
     window.scrollTo(0, 0);
   }
 
@@ -1411,19 +1412,19 @@
     }).join('');
   }
 
-  function renderCircleDisc(cur, entries) {
-    const people = [{ name: 'Toi', r: cur.r, me: true }, ...entries].filter(p => p.r.disc);
-    const card = $('circle-disc-card');
+  function renderCircleDisc(all, pre) {
+    const people = all.filter(p => p.r.disc);
+    const card = $(pre + 'circle-disc-card');
     card.hidden = people.length < 2;
     if (people.length < 2) return;
 
     // « Toi » dessiné en dernier pour rester au-dessus
-    $('circle-disc-wheel').innerHTML = renderDiscWheel({
+    $(pre + 'circle-disc-wheel').innerHTML = renderDiscWheel({
       scores: false,
       points: people.slice().reverse().map(p => ({ disc: p.r.disc, label: p.name, me: !!p.me, color: p.me ? null : p.color })),
     });
     const profiles = people.map(p => ({ ...p, dp: discProfile(p.r.disc) }));
-    $('circle-disc-list').innerHTML = profiles.map(p =>
+    $(pre + 'circle-disc-list').innerHTML = profiles.map(p =>
       `<li><span class="who">${esc(p.name)}</span>${discPills(p.dp, true)}<small>${esc(p.dp.secondary ? p.dp.pair.title : p.dp.primary.style.title)}</small></li>`).join('');
 
     const counts = {};
@@ -1432,9 +1433,9 @@
     const top = DISC.slice().sort((p, q) => counts[q.id] - counts[p.id])[0];
     const notes = [`Couleur la plus présente : <b>${esc(top.color.toLowerCase())}</b> (${counts[top.id]} sur ${profiles.length}).`];
     DISC.filter(x => !counts[x.id]).forEach(x => notes.push(esc(DISC_MISSING[x.id])));
-    const legacy = entries.length + 1 - people.length;
+    const legacy = all.length - people.length;
     if (legacy) notes.push(`${legacy} personne${legacy > 1 ? 's' : ''} sans profil DISC (ancienne version du test).`);
-    $('circle-disc-notes').innerHTML = notes.map(n => `<span>${n}</span>`).join('');
+    $(pre + 'circle-disc-notes').innerHTML = notes.map(n => `<span>${n}</span>`).join('');
   }
 
   /* ---------------------------------------------------------
@@ -1718,12 +1719,11 @@
   /* ---------------------------------------------------------
      Cercle : palmarès, matrice des affinités, sujets du groupe
      --------------------------------------------------------- */
-  function renderGroup(cur, entries) {
-    const people = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
+  function renderGroup(people, pre) {
     const enough = people.length >= 3;
-    $('awards-card').hidden = !enough;
-    $('matrix-card').hidden = !enough;
-    $('topics-card').hidden = !enough;
+    $(pre + 'awards-card').hidden = !enough;
+    $(pre + 'matrix-card').hidden = !enough;
+    $(pre + 'topics-card').hidden = !enough;
     if (!enough) return;
 
     const who = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`;
@@ -1761,7 +1761,7 @@
     byStat('Le ciment du groupe', 'le plus proche de tout le monde à la fois', (p, i) => meanAff[i], v => pct(v) + ' %', x => `${pct(x.v)} % d'affinité moyenne avec les autres : la personne par qui tout le monde peut se parler.`);
     byStat('Le cas à part', 'ne ressemble à personne ici', (p, i) => 1 - meanAff[i], v => pct(1 - v) + ' %', x => `Seulement ${pct(1 - x.v)} % d'affinité moyenne avec le reste du cercle : la voix différente, celle qui évite au groupe de tourner en rond.`);
 
-    $('awards').innerHTML = awards.map((a, k) => `
+    $(pre + 'awards').innerHTML = awards.map((a, k) => `
       <article class="award ${a.p.me ? 'is-me' : ''}" style="--d:${Math.min(k, 10) * 40}ms">
         <p class="award-title">${esc(a.title)}</p>
         <p class="award-sub">${esc(a.sub)}</p>
@@ -1772,13 +1772,13 @@
 
     // Médailles par personne
     const medals = people.map(p => ({ p, n: awards.filter(a => a.p === p).length })).sort((x, y) => y.n - x.n);
-    $('awards-medals').innerHTML = medals.map(m => `<span class="medal">${who(m.p)}<b>${m.n}</b></span>`).join('');
+    $(pre + 'awards-medals').innerHTML = medals.map(m => `<span class="medal">${who(m.p)}<b>${m.n}</b></span>`).join('');
 
     // Duos remarquables + matrice
     pairs.sort((x, y) => y.a - x.a);
     const twin = pairs[0], opp = pairs[pairs.length - 1];
     const duo = (label, pr, text) => `<article class="duo-card"><p class="k">${label}</p><h4>${who(people[pr.i])}<span class="amp">&amp;</span>${who(people[pr.j])}<span class="pct">${pct(pr.a)} %</span></h4><p>${text}</p></article>`;
-    $('matrix-duos').innerHTML =
+    $(pre + 'matrix-duos').innerHTML =
       duo('Les jumeaux', twin, 'Les deux profils les plus proches du cercle. S\'ils se disputent, ce sera sur des détails.')
       + duo('Les opposés', opp, 'Les deux profils les plus éloignés. S\'ils s\'entendent bien, c\'est que l\'amitié passe ailleurs que par les idées.');
     const initials = p => (p.me ? 'Toi' : p.name.slice(0, 3));
@@ -1791,7 +1791,7 @@
         return `<td style="--a:${(level * 100).toFixed(0)}%" title="${esc(p.name)} et ${esc(q.name)} : ${pct(a)} %">${pct(a)}</td>`;
       }).join('') + '</tr>';
     });
-    $('matrix').innerHTML = table + '</tbody></table>';
+    $(pre + 'matrix').innerHTML = table + '</tbody></table>';
 
     // Sujets qui rassemblent / qui fâchent
     const shared = AXES.filter(a => people.every(p => p.r.known.has(a.id)));
@@ -1810,12 +1810,12 @@
           <div class="strip-track">${people.map(p => `<span class="strip-dot ${p.me ? 'me' : ''}" style="left:${50 + p.r.axes[s.a.id] * 50}%;background:${p.color}" title="${esc(p.name)} : ${esc(nuancedLabel(s.a, p.r.axes[s.a.id]))}"></span>`).join('')}</div>
           <span class="r">${esc(s.a.right)}</span></div>
       </div>`;
-    $('topics-divide').innerHTML = divisive.map(strip).join('');
-    $('topics-unite').innerHTML = uniting.length ? uniting.map(strip).join('') : '<p class="map-note">Aucun sujet ne met vraiment tout le monde du même côté : c\'est un cercle varié.</p>';
+    $(pre + 'topics-divide').innerHTML = divisive.map(strip).join('');
+    $(pre + 'topics-unite').innerHTML = uniting.length ? uniting.map(strip).join('') : '<p class="map-note">Aucun sujet ne met vraiment tout le monde du même côté : c\'est un cercle varié.</p>';
 
     // Valeurs du groupe
     const withValues = people.map(p => ({ p, vp: valueProfile(p.r) })).filter(x => x.vp);
-    const vbox = $('topics-values');
+    const vbox = $(pre + 'topics-values');
     vbox.hidden = withValues.length < 2;
     if (withValues.length >= 2) {
       const counts = {};
@@ -1943,7 +1943,7 @@
   let scrollTarget = null;
   let mapState = null;     // dernier rendu de la carte, pour la redessiner sans tout recharger
 
-  function renderResults(cur, friend) {
+  function renderResults(cur, friend, silent) {
     const r = cur.r;
     const fam = rankFamilies(r);
     const temp = rankTemperaments(r);
@@ -2065,6 +2065,7 @@
 
     $('print-meta').textContent = printMeta(cur, friend);
 
+    if (silent) return;
     showScreen('results');
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.querySelectorAll('#screen-results [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
@@ -2141,14 +2142,15 @@
 
     mapState = { cur, entries, selectedCode };
     renderMap();
-    renderCircleDisc(cur, entries);
-    renderGroup(cur, entries);
+    renderCircleDisc([{ name: 'Toi', r: cur.r, me: true }, ...entries], '');
+    const groupPeople = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
+    renderGroup(groupPeople, '');
   }
 
   function renderMap() {
     if (!mapState) return;
-    const { cur, entries, selectedCode } = mapState;
-    const selX = $('map-x'), selY = $('map-y');
+    const { cur, entries, selectedCode, pre = '' } = mapState;
+    const selX = $(pre + 'map-x'), selY = $(pre + 'map-y');
     if (!selX.options.length) {
       const opts = AXES.map(a => `<option value="${a.id}">${esc(a.left)} / ${esc(a.right)}</option>`).join('');
       selX.innerHTML = opts;
@@ -2182,7 +2184,7 @@
     svg += `<text class="map-lbl" x="${C}" y="${S - P + 24}" text-anchor="middle" style="--c:${ay.colorL}">${esc(ay.left.toUpperCase())}</text>`;
 
     const onMap = entries.filter(f => f.r.known.has(ax.id) && f.r.known.has(ay.id));
-    const meX = px(cur.r.axes[ax.id]), meY = py(cur.r.axes[ay.id]);
+    const meX = cur ? px(cur.r.axes[ax.id]) : 0, meY = cur ? py(cur.r.axes[ay.id]) : 0;
     const selected = onMap.find(f => f.code === selectedCode);
     if (selected) {
       svg += `<line class="map-link" x1="${meX}" y1="${meY}" x2="${px(selected.r.axes[ax.id])}" y2="${py(selected.r.axes[ay.id])}"/>`;
@@ -2195,19 +2197,19 @@
     onMap.slice().sort((x, y) => Number(x.code === selectedCode) - Number(y.code === selectedCode)).forEach(f => {
       const x = px(f.r.axes[ax.id]), y = py(f.r.axes[ay.id]);
       const isSel = f.code === selectedCode;
-      svg += `<g class="map-pt ${isSel ? 'is-selected' : ''}" data-code="${f.code}" tabindex="0" role="button" aria-label="Me comparer à ${esc(f.name)}">`
+      svg += `<g class="map-pt ${isSel ? 'is-selected' : ''}" data-code="${f.code}" tabindex="0" role="button" aria-label="${cur ? 'Me comparer à' : 'Ouvrir le profil de'} ${esc(f.name)}">`
         + `<title>${esc(f.name)} — ${esc(nuancedLabel(ax, f.r.axes[ax.id]))}, ${esc(nuancedLabel(ay, f.r.axes[ay.id]).toLowerCase())}</title>`
         + `<circle cx="${x}" cy="${y}" r="${isSel ? 9 : 7}" fill="${f.color}"/>${label(x, y, f.name)}</g>`;
     });
-    svg += `<g class="map-pt me"><title>Toi — ${esc(nuancedLabel(ax, cur.r.axes[ax.id]))}, ${esc(nuancedLabel(ay, cur.r.axes[ay.id]).toLowerCase())}</title>`
+    if (cur) svg += `<g class="map-pt me"><title>Toi — ${esc(nuancedLabel(ax, cur.r.axes[ax.id]))}, ${esc(nuancedLabel(ay, cur.r.axes[ay.id]).toLowerCase())}</title>`
       + `<circle cx="${meX}" cy="${meY}" r="9"/>${label(meX, meY, 'Toi')}</g>`;
     svg += '</svg>';
 
-    $('circle-map').innerHTML = svg;
+    $(pre + 'circle-map').innerHTML = svg;
     const missing = entries.length - onMap.length;
-    $('map-note').textContent = missing
+    $(pre + 'map-note').textContent = missing
       ? `${missing} ami${missing > 1 ? 's' : ''} absent${missing > 1 ? 's' : ''} de la carte : ancienne version du test, sans cet axe.`
-      : 'Clique sur un point pour te comparer à cette personne.';
+      : cur ? 'Clique sur un point pour te comparer à cette personne.' : 'Clique sur un point pour déplier le profil de cette personne.';
   }
 
   /* ---------------------------------------------------------
@@ -2356,7 +2358,12 @@
   function route() {
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const g = params.get('g');
-    if (g) { importGroup(g); return; }
+    if (g) {
+      const members = parseGroup(g);
+      if (members.length) { renderGroupScreen(members); return; }
+      toast('Ce lien de cercle est invalide');
+      history.replaceState(null, '', location.pathname + location.search);
+    }
 
     if (params.get('r')) {
       const progress = parseResume(location.hash);
@@ -2568,6 +2575,174 @@
   }
 
   /* ---------------------------------------------------------
+     Page de cercle (lien de groupe) : comparatifs d'abord, puis chaque profil à déplier.
+     Personne n'est au centre : tout le monde est traité de la même façon.
+     --------------------------------------------------------- */
+  let groupMembers = [];
+
+  function mostCommon(items) {
+    const counts = new Map();
+    items.forEach(x => counts.set(x, (counts.get(x) || 0) + 1));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  }
+
+  function renderGroupScreen(members) {
+    groupMembers = members;
+    const people = members.map((m, i) => ({
+      code: m.code, name: m.name || `Personne ${i + 1}`, r: decodeResult(m.code),
+      color: FRIEND_COLORS[i % FRIEND_COLORS.length],
+    }));
+    const n = people.length;
+    const who = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`;
+
+    $('group-title').innerHTML = `Le cercle, <em>${n} profils</em>`;
+    $('group-people').innerHTML = people.map(p => `<a class="medal" href="#person-${p.code}" data-jump="${p.code}">${who(p)}</a>`).join('');
+    $('group-print-meta').textContent = `${people.map(p => p.name).join(', ')} · ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} · kevindsm.github.io/prisme`;
+
+    // Cohésion : affinité moyenne entre toutes les paires
+    let sum = 0, count = 0;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { sum += affinityBetween(people[i].r, people[j].r).total; count++; }
+    const cohesion = count ? sum / count : 0;
+    const mood = cohesion >= 0.66 ? 'Un cercle très soudé' : cohesion >= 0.57 ? 'Un cercle proche' : cohesion >= 0.48 ? 'Un cercle varié' : 'Un cercle très contrasté';
+    $('group-headline').textContent = n < 2
+      ? 'Ce lien ne contient qu\'un seul profil : il en faut au moins deux pour comparer.'
+      : `${mood} : ${pct(cohesion)} % d'affinité moyenne entre vous. D'abord ce qui vous rapproche et vous sépare, tous ensemble ; plus bas, le test complet de chacun.`;
+
+    const fams = people.map(p => rankFamilies(p.r)[0].name);
+    const temps = people.map(p => rankTemperaments(p.r)[0].name);
+    const discs = people.map(p => discProfile(p.r.disc)).filter(Boolean).map(d => d.primary.color);
+    const vals = people.map(p => valueProfile(p.r)).filter(Boolean).map(v => v.ranked[0].label);
+    const fact = (label, entry, total) => entry
+      ? `<div class="stat"><div class="stat-name">${label}</div><div class="stat-val sm">${esc(entry[0])}</div><div class="stat-desc">${entry[1]} sur ${total}${entry[1] === 1 ? ' — chacun le sien' : ''}</div></div>` : '';
+    $('group-facts').innerHTML =
+      `<div class="stat"><div class="stat-name">Affinité moyenne</div><div class="stat-val">${pct(cohesion)}<small> %</small></div><div class="stat-desc">${esc(mood.toLowerCase())}</div></div>`
+      + fact('Famille la plus présente', mostCommon(fams), n)
+      + fact('Tempérament le plus présent', mostCommon(temps), n)
+      + (discs.length ? fact('Couleur DISC dominante', mostCommon(discs), discs.length) : '')
+      + (vals.length ? fact('Valeur boussole la plus partagée', mostCommon(vals), vals.length) : '');
+
+    renderGroup(people, 'g-');
+    renderCircleDisc(people, 'g-');
+    mapState = { cur: null, entries: people, selectedCode: null, pre: 'g-' };
+    renderMap();
+
+    $('group-list').innerHTML = people.map(p => {
+      const fam = rankFamilies(p.r)[0], temp = rankTemperaments(p.r)[0], psy = rankPsyche(p.r)[0];
+      const vp = valueProfile(p.r);
+      const line = [fam.name, shortName(temp.name), psy ? shortName(psy.name) : ''].filter(Boolean).join(' · ');
+      return `
+      <details class="person" id="person-${p.code}" data-code="${p.code}">
+        <summary>
+          <span class="dot" style="background:${p.color}"></span>
+          <span class="person-name">${esc(p.name)}</span>
+          <span class="person-line">${esc(line)}</span>
+          <span class="person-tags">${discMini(p.r)}${vp ? `<span class="person-val">${esc(valueTitle(vp))}</span>` : ''}</span>
+          <span class="chev" aria-hidden="true"></span>
+        </summary>
+        <div class="person-body"></div>
+      </details>`;
+    }).join('');
+
+    const mine = myCode();
+    $('btn-group-test').hidden = !!mine;
+    showScreen('group');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelectorAll('#screen-group [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+    }));
+  }
+
+  // Rend le test complet d'une personne dans la page de résultats (cachée), puis le recopie dans son volet
+  function fillPerson(details) {
+    const body = details.querySelector('.person-body');
+    if (body.dataset.done) return;
+    const member = groupMembers.find(m => m.code === details.dataset.code);
+    const r = member && decodeResult(member.code);
+    if (!r) return;
+    const name = member.name || 'ce profil';
+    const mine = myCode();
+    renderResults({ code: member.code, name, r, isMine: false, hasMine: !!mine }, null, true);
+
+    const skip = new Set(['circle-section', 'compare-block', 'values-teaser-section']);
+    const head = document.createElement('div');
+    head.className = 'person-head';
+    head.innerHTML = `<h3 class="res-title">${$('res-title').innerHTML}</h3>`
+      + ($('disc-chips').hidden ? '' : `<div class="disc-chips">${$('disc-chips').innerHTML}</div>`)
+      + `<p class="res-headline">${esc($('res-headline').textContent)}</p>`
+      + `<p class="person-links"><a href="#p=${member.code}${nameParam(member.name)}">Ouvrir ce profil seul</a>`
+      + (mine && mine !== member.code ? ` · <a href="#p=${mine}${nameParam(myName())}&vs=${member.code}${member.name ? '&vn=' + encodeURIComponent(member.name) : ''}">Me comparer à ${esc(name)}</a>` : '')
+      + '</p>';
+    body.appendChild(head);
+
+    document.querySelectorAll('#screen-results > .res-section').forEach(sec => {
+      if (sec.hidden || skip.has(sec.id)) return;
+      const clone = sec.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      clone.querySelectorAll('[hidden]').forEach(el => el.remove());
+      clone.querySelectorAll('[data-w]').forEach(el => { el.style.transition = 'none'; el.style.width = el.dataset.w + '%'; });
+      clone.querySelectorAll('[data-off]').forEach(el => { el.style.strokeDashoffset = el.dataset.off; });
+      body.appendChild(clone);
+    });
+    body.dataset.done = '1';
+  }
+
+  function openPerson(code, scroll) {
+    const d = document.getElementById('person-' + code);
+    if (!d) return;
+    d.open = true;
+    fillPerson(d);
+    if (scroll) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function initGroup() {
+    $('btn-group-home').onclick = () => {
+      history.replaceState(null, '', location.pathname + location.search);
+      showScreen('intro');
+      initIntro();
+    };
+    $('btn-group-test').onclick = () => {
+      groupMembers.forEach(m => addToCircle(m.code, m.name));
+      history.replaceState(null, '', location.pathname + location.search);
+      setState(0, {}, 'full', null);
+      startQuiz();
+    };
+    $('btn-group-add').onclick = () => {
+      const mine = myCode();
+      let count = 0;
+      groupMembers.forEach(m => {
+        const res = m.code === mine ? null : addToCircle(m.code, m.name);
+        if (res === 'added' || res === 'updated') count++;
+      });
+      toast(count ? `${count} personne${count > 1 ? 's' : ''} ajoutée${count > 1 ? 's' : ''} à ton cercle` : 'Ton cercle était déjà à jour');
+    };
+    $('btn-group-copy').onclick = () => shareLink(location.href, 'Notre cercle sur Prisme : les comparatifs du groupe et le profil de chacun.', 'Lien du cercle copié');
+    $('btn-group-pdf').onclick = () => {
+      toast('Le PDF contient les comparatifs et les profils dépliés. Choisis « Enregistrer en PDF ».');
+      setTimeout(() => window.print(), 400);
+    };
+    $('group-list').addEventListener('toggle', e => {
+      if (e.target.matches && e.target.matches('details.person') && e.target.open) fillPerson(e.target);
+    }, true);
+    $('btn-people-open').onclick = () => document.querySelectorAll('#group-list details.person').forEach(d => { d.open = true; fillPerson(d); });
+    $('btn-people-close').onclick = () => document.querySelectorAll('#group-list details.person').forEach(d => { d.open = false; });
+    $('group-people').addEventListener('click', e => {
+      const a = e.target.closest('[data-jump]');
+      if (!a) return;
+      e.preventDefault();
+      openPerson(a.dataset.jump, true);
+    });
+    const pick = e => {
+      const g = e.target.closest('.map-pt[data-code]');
+      if (g) openPerson(g.dataset.code, true);
+    };
+    $('g-circle-map').addEventListener('click', pick);
+    $('g-circle-map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(e); } });
+    const change = () => { store(STORAGE_MAP, { x: $('g-map-x').value, y: $('g-map-y').value }); renderMap(); };
+    $('g-map-x').onchange = change;
+    $('g-map-y').onchange = change;
+  }
+
+  /* ---------------------------------------------------------
      Thème clair / sombre (clair par défaut)
      --------------------------------------------------------- */
   function applyTheme(theme) {
@@ -2598,6 +2773,7 @@
   initTheme();
   initQuiz();
   initResults();
+  initGroup();
   window.addEventListener('hashchange', route);
   route();
 })();

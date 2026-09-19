@@ -22,6 +22,7 @@ Un test politique en profondeur, qui va plus loin que les boussoles politiques h
 - **PDF** — bouton « Télécharger en PDF » (mise en page d'impression dédiée).
 - **Cercle d'amis** — les liens de résultat de tes amis restent enregistrés dans ton navigateur : classement par affinité, « le cercle en bref » et **carte** où chacun est placé sur deux axes au choix.
 - **Invitation** — un ami qui ouvre ton lien voit ton profil, fait le test et se retrouve aussitôt comparé à toi. Un **lien de groupe** partage tout le cercle d'un coup.
+- **Page de cercle** — un lien de groupe (`#g=…`) ouvre une page où personne n'est au centre : d'abord tous les comparatifs collectifs (le cercle en bref, palmarès, affinités croisées, sujets du groupe, carte, couleurs DISC), puis chaque personne à déplier pour lire son test complet. Un bouton ajoute tout le monde à son propre cercle.
 - **Comparaison détaillée** — affinité globale et par dimension (politique, méta, personnalité, morale), commentaires générés sur vos différences (camps opposés, terrain commun, caractère, boussole morale, style de débat), graphique des plus grands écarts, radars superposés et tous les axes face à face.
 
 ### Pourquoi sans base de données

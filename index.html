@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -564,6 +564,110 @@
     </footer>
   </section>
 
+  <!-- ===================== CERCLE (lien de groupe) ===================== -->
+  <section id="screen-group" class="screen group-screen">
+    <header class="res-head">
+      <div class="brand">
+        <span class="brand-prism" aria-hidden="true"></span>
+        <span class="brand-name">Prisme</span>
+      </div>
+      <div class="head-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Passer en mode sombre">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
+        </button>
+        <button id="btn-group-home" class="link-btn" type="button">Accueil</button>
+      </div>
+    </header>
+
+    <div class="res-hero">
+      <p class="res-kicker" id="group-kicker">Le cercle</p>
+      <h1 class="res-title" id="group-title"></h1>
+      <p class="print-meta" id="group-print-meta"></p>
+      <div id="group-people" class="medals group-people"></div>
+      <p class="res-headline" id="group-headline"></p>
+      <div class="res-share">
+        <button id="btn-group-add" class="btn btn-primary" type="button"><span>Ajouter tout le monde à mon cercle</span></button>
+        <button id="btn-group-copy" class="btn btn-ghost" type="button">Copier le lien du cercle</button>
+        <button id="btn-group-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
+        <button id="btn-group-test" class="btn btn-ghost" type="button">Faire le test</button>
+      </div>
+    </div>
+
+    <section class="res-section">
+      <div class="section-head">
+        <h2>Le cercle en bref</h2>
+        <p>Ce que le groupe a en commun, vu d'en haut. Ici, personne n'est au centre : tout le monde est traité de la même façon.</p>
+      </div>
+      <div id="group-facts" class="stats-grid group-facts"></div>
+    </section>
+
+    <section class="res-section">
+      <article class="res-card group-card first" id="g-awards-card" hidden>
+        <p class="card-kicker">Palmarès</p>
+        <h2>Qui est qui dans le cercle</h2>
+        <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses.</p>
+        <div id="g-awards-medals" class="medals"></div>
+        <div id="g-awards" class="awards"></div>
+      </article>
+
+      <article class="res-card group-card" id="g-matrix-card" hidden>
+        <p class="card-kicker">Affinités croisées</p>
+        <h2>Qui est proche de qui</h2>
+        <div id="g-matrix-duos" class="duo-cards"></div>
+        <div id="g-matrix" class="matrix-wrap"></div>
+      </article>
+
+      <article class="res-card group-card" id="g-topics-card" hidden>
+        <p class="card-kicker">Les sujets du groupe</p>
+        <h2>Ce qui vous rassemble, ce qui vous fâche</h2>
+        <div class="topics">
+          <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="g-topics-divide"></div></div>
+          <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="g-topics-unite"></div></div>
+        </div>
+        <p id="g-topics-values" class="circle-disc-notes" hidden></p>
+      </article>
+
+      <div class="circle-grid group-duo">
+        <article class="res-card">
+          <p class="card-kicker">Carte du cercle</p>
+          <h2>Où chacun se place</h2>
+          <div class="map-controls">
+            <label>Horizontal<select id="g-map-x"></select></label>
+            <label>Vertical<select id="g-map-y"></select></label>
+          </div>
+          <div id="g-circle-map" class="circle-map"></div>
+          <p id="g-map-note" class="map-note"></p>
+        </article>
+        <article class="res-card" id="g-circle-disc-card" hidden>
+          <p class="card-kicker">Profils DISC</p>
+          <h2>Les couleurs du cercle</h2>
+          <div id="g-circle-disc-wheel" class="disc-wheel"></div>
+          <ul id="g-circle-disc-list" class="circle-disc-list"></ul>
+          <p id="g-circle-disc-notes" class="circle-disc-notes"></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="res-section" id="group-profiles">
+      <div class="section-head">
+        <h2>Les profils, un par un</h2>
+        <p>Déplie une personne pour lire son test complet : portraits, signatures, qualités, DISC, valeurs, axes et résumé.</p>
+      </div>
+      <div class="people-tools">
+        <button id="btn-people-open" class="btn btn-ghost btn-sm" type="button">Tout déplier</button>
+        <button id="btn-people-close" class="btn btn-ghost btn-sm" type="button">Tout replier</button>
+      </div>
+      <div id="group-list" class="people"></div>
+    </section>
+
+    <footer class="res-foot">
+      <p>Prisme est un miroir, pas un verdict. Les titres du palmarès sont un jeu : ils disent qui a le score le plus haut dans ce cercle, pas qui vaut mieux que qui.</p>
+      <p><a href="guide.html">Mode d'emploi</a> · Rien n'est envoyé sur un serveur : ce cercle n'existe que dans le lien.</p>
+    </footer>
+  </section>
+
   <div id="pause-modal" class="modal" hidden>
     <div id="pause-backdrop" class="modal-backdrop"></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pause-title">
@@ -583,8 +687,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=10"></script>
-  <script src="js/profiles.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/questions.js?v=11"></script>
+  <script src="js/profiles.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
 </body>
 </html>

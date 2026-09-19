@@ -406,7 +406,7 @@
     <ul class="glist">
       <li><b>Inviter mes amis</b> copie ton lien de profil. Un ami qui l'ouvre voit ton profil, fait le test, et se retrouve automatiquement comparé à toi. Tu es ajouté à son cercle ; il te renvoie son lien pour rejoindre le tien.</li>
       <li><b>Ajouter un ami</b> : colle son lien dans « Mon cercle ». S'il refait le test sous le même prénom, son ancien résultat est remplacé.</li>
-      <li><b>Partager tout le cercle</b> crée un lien de groupe : chacun peut importer tout le monde d'un coup.</li>
+      <li><b>Partager tout le cercle</b> crée un lien de groupe. Celui qui l'ouvre arrive sur une <b>page de cercle</b> où personne n'est au centre : d'abord tous les comparatifs collectifs (le cercle en bref, palmarès, affinités croisées, sujets du groupe, carte, couleurs), puis, en bas, chaque personne à déplier pour lire son test complet. Un bouton permet d'ajouter tout le monde à son propre cercle.</li>
     </ul>`);
 
   /* ---------------------------------------------------------
