@@ -365,6 +365,18 @@
     <p class="gtext">Cinq situations — ${esc(LIFE.map(l => l.title.toLowerCase()).join(', '))} — sont décrites à partir de tes qualités. Pour chaque situation, Prisme regarde les quatre qualités qui comptent, retient la plus haute (et la plus basse si elle l'est vraiment), et écrit la phrase correspondante. La qualité et son score sont rappelés entre parenthèses.</p>`);
 
   /* ---------------------------------------------------------
+     10 ter. Quel personnage
+     --------------------------------------------------------- */
+  const LICENSES = (window.PRISME_CHARACTERS || { LICENSES: [] }).LICENSES;
+  section('personnages', 'Le sur-mesure', 'Quel personnage serais-tu ?', `
+    <p class="gtext">Dans chaque univers, Prisme te compare à une dizaine de personnages. Chaque personnage a son <b>profil psychologique</b>, écrit avec les mêmes dimensions que le test : qualités, couleurs DISC, valeurs, morale, traits et axes de caractère. Tes opinions politiques ne comptent pas : on peut être Link de gauche ou de droite.</p>
+    <p class="gtext">Pour chaque personnage, on mesure l'écart entre ton score et le sien sur chacun de ses traits ; un trait très marqué chez lui (par exemple « détermination 95 ») pèse plus lourd qu'un trait moyen. Le personnage le plus proche l'emporte. La fiche donne le pourcentage de ressemblance, <b>pourquoi toi</b> (les traits que vous avez vraiment en commun, avec tes scores), <b>là où tu t'en écartes</b>, et les deux suivants du classement.</p>
+    <p class="gtext">Dans un cercle, chacun reçoit un personnage <b>différent</b> par univers : la personne la plus ressemblante est servie en premier, puis la suivante parmi les personnages restants. Certains personnages sont des antagonistes : c'est le tempérament qui est comparé, pas les actes.</p>
+    <div class="gcards">
+      ${LICENSES.map(l => `<article class="gcard" style="--c:${l.color}"><h4><span class="dot"></span>${esc(l.name)} <small>${esc(l.kind)}</small></h4><p>${esc(l.cast.map(c => c.name).join(' · '))}</p></article>`).join('')}
+    </div>`);
+
+  /* ---------------------------------------------------------
      11. Signatures
      --------------------------------------------------------- */
   section('signatures', 'Le sur-mesure', 'Les signatures', `
@@ -414,11 +426,12 @@
       <li><b>Les clans</b> : Prisme cherche le meilleur découpage du cercle en 2 à 4 groupes d'au moins deux personnes, d'après les idées et la façon d'aborder la politique (pas le caractère), avec une préférence pour des groupes de tailles comparables. À trois, c'est « le duo et le solo ». Chaque clan reçoit un nom tiré de l'axe qui le distingue le plus des autres, avec ce qui le soude ; s'y ajoutent « le pont » (la personne la plus proche d'un autre clan que le sien) et la ligne de fracture entre les deux clans les plus éloignés.</li>
       <li>À partir de trois personnes : <b>le palmarès</b> (un titre par qualité, avec la raison), <b>où chacun se situe</b> (une ligne par axe, qualité, couleur ou valeur, avec la pastille de chaque personne et, à chaque bout, qui va le plus loin), <b>la matrice des affinités</b> (qui est proche de qui, les jumeaux, les opposés) et <b>les sujets du groupe</b> (ceux qui fâchent, ceux qui rassemblent, avec tout le monde placé sur l'axe).</li>
     </ul>
-    <h3 class="gsub">Inviter, partager</h3>
+    <h3 class="gsub">Créer et partager un cercle</h3>
     <ul class="glist">
-      <li><b>Inviter mes amis</b> copie ton lien de profil. Un ami qui l'ouvre voit ton profil, fait le test, et se retrouve automatiquement comparé à toi. Tu es ajouté à son cercle ; il te renvoie son lien pour rejoindre le tien.</li>
-      <li><b>Ajouter un ami</b> : colle son lien dans « Mon cercle ». S'il refait le test sous le même prénom, son ancien résultat est remplacé.</li>
-      <li><b>Partager tout le cercle</b> crée un lien de groupe. Celui qui l'ouvre arrive sur une <b>page de cercle</b> où personne n'est au centre : d'abord tous les comparatifs collectifs (le cercle en bref, palmarès, affinités croisées, sujets du groupe, carte, couleurs), puis, en bas, chaque personne à déplier pour lire son test complet. Un bouton permet d'ajouter tout le monde à son propre cercle.</li>
+      <li><b>Générer mon URL</b> : à la fin du test, ce bouton affiche ton URL (avec ton prénom). Cette URL <i>est</i> ton résultat : envoie-la à tes amis, garde-la pour toi.</li>
+      <li><b>Créer un cercle</b> : sur l'accueil (ou depuis ton résultat), colle les URL de tout le monde, une par ligne. La page vérifie chaque URL et ouvre le cercle.</li>
+      <li><b>L'URL du cercle</b> s'affiche en haut de la page de cercle : c'est elle qu'on renvoie à tout le monde. Rien n'est enregistré dans le navigateur — pas de compte, pas de cookie : le cercle, c'est l'URL.</li>
+      <li><b>Ajouter une personne</b> : sur la page de cercle, colle son URL. L'URL du cercle change alors : il faut la recopier pour la partager. On peut aussi retirer quelqu'un depuis son volet.</li>
     </ul>`);
 
   /* ---------------------------------------------------------

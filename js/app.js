@@ -71,8 +71,9 @@
     } catch (e) { /* stockage indisponible : on continue sans */ }
   }
 
+  let sessionCode = null; // résultat obtenu pendant cette visite (au cas où le navigateur n'enregistre rien)
   function myCode() {
-    const c = readStr(STORAGE_LAST) || readStr(STORAGE_LAST_OLD);
+    const c = sessionCode || readStr(STORAGE_LAST) || readStr(STORAGE_LAST_OLD);
     return c && decodeResult(c) ? c : null;
   }
   function myName() {
@@ -220,10 +221,9 @@
     up.onclick = () => startUpgrade(mine);
 
     const note = $('intro-circle');
-    const circle = loadCircle();
     const pending = readJSON(STORAGE_PENDING, null);
-    if (!mine && (circle.length || pending)) {
-      const names = circle.map(f => f.name);
+    if (!mine && pending && pending.name) {
+      const names = [];
       if (pending && pending.name && !names.includes(pending.name)) names.unshift(pending.name);
       const shown = names.slice(0, 3).map(n => `<strong>${esc(n)}</strong>`);
       const rest = names.length - shown.length;
@@ -396,6 +396,7 @@
     const fresh = compute(state.answers);
     const base = state.mode === 'values' ? decodeResult(state.base) : null;
     const code = encodeResult(base ? mergeUpgrade(base, fresh) : fresh);
+    sessionCode = code;
     store(STORAGE_LAST, code);
     clearProgress();
     setState(0, {}, 'full', null);
@@ -766,8 +767,9 @@
   /* ---------------------------------------------------------
      Liens : profil, invitation, groupe
      --------------------------------------------------------- */
+  // Adresse propre du site, sans les paramètres techniques (« ?v=16 » après une mise à jour automatique)
   function baseUrl() {
-    return location.href.split('#')[0];
+    return location.protocol === 'file:' ? location.href.split('#')[0].split('?')[0] : location.origin + location.pathname;
   }
   function profileUrl(code, name) {
     return baseUrl() + '#p=' + code + nameParam(name);
@@ -2477,6 +2479,7 @@
     renderAssembly(cur);
     renderQualities(r);
     renderLife(r);
+    renderCast(cur);
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
     const upgradable = canUpgrade(r);
@@ -2493,9 +2496,9 @@
         ? `${deName(cur.name).slice(0, -cur.name.length)}<strong>${esc(cur.name)}</strong>`
         : 'de <strong>ton ami</strong>';
       if (cur.hasMine) {
-        $('visitor-text').innerHTML = `Tu regardes le profil ${ofWho}. Compare-le au tien : tu retrouveras ensuite ${who} dans ton cercle d'amis.`;
+        $('visitor-text').innerHTML = `Tu regardes le profil ${ofWho}. Tu peux le comparer au tien.`;
       } else {
-        $('visitor-text').innerHTML = `Voici le profil ${ofWho}. Fais le test à ton tour : tu retrouveras ${who} dans ton cercle et tu verras aussitôt ce qui vous rapproche et ce qui vous sépare.`;
+        $('visitor-text').innerHTML = `Voici le profil ${ofWho}. Fais le test à ton tour : à la fin, tu seras comparé à ${who} et tu verras aussitôt ce qui vous rapproche et ce qui vous sépare.`;
       }
       $('btn-visitor-compare').hidden = !cur.hasMine;
       $('btn-visitor-compare').querySelector('span').textContent = `Me comparer à ${owner}`;
@@ -2564,8 +2567,8 @@
       `<h3 data-n="${ROMAN[i]}">${esc(p.h)}</h3><p>${p.p}</p>`).join('');
 
     // Cercle (uniquement sur son propre profil)
-    if (cur.isMine) renderCircle(cur, friend ? friend.code : null);
-    else $('circle-section').hidden = true;
+    $('circle-section').hidden = true; // l'ancien cercle enregistré dans le navigateur est remplacé par les cercles par URL
+    $('url-panel').hidden = true;
 
     // Comparaison détaillée
     $('compare-block').hidden = !friend;
@@ -2957,7 +2960,6 @@
         `${name ? name + ' a' : 'J\'ai'} fait le test Prisme. Fais-le à ton tour et compare-toi :`,
         'Lien copié — envoie-le à tes amis : en l\'ouvrant, ils pourront se comparer à toi');
     };
-    $('btn-copy').onclick = invite;
     $('btn-invite').onclick = invite;
 
     $('btn-share-circle').onclick = async () => {
@@ -2981,10 +2983,6 @@
     $('btn-pdf').onclick = pdf;
     $('btn-visitor-pdf').onclick = pdf;
 
-    $('btn-circle-open').onclick = () => {
-      const el = $('circle-section');
-      if (!el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
 
     // Ajout d'un ami par lien collé
     const addFromInput = () => {
@@ -3137,6 +3135,7 @@
     renderRobot(people, 'g-');
     renderGroupAssembly(people, 'g-');
     renderGovernment(people, 'g-');
+    renderGroupCast(people, 'g-');
     renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
@@ -3163,7 +3162,9 @@
 
     const mine = myCode();
     $('btn-group-test').hidden = !!mine;
+    $('group-add-panel').hidden = true;
     showScreen('group');
+    $('group-url').value = location.href;
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.querySelectorAll('#screen-group [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
     }));
@@ -3186,7 +3187,7 @@
     head.innerHTML = `<h3 class="res-title">${$('res-title').innerHTML}</h3>`
       + ($('disc-chips').hidden ? '' : `<div class="disc-chips">${$('disc-chips').innerHTML}</div>`)
       + `<p class="res-headline">${esc($('res-headline').textContent)}</p>`
-      + `<p class="person-links"><a href="#p=${member.code}${nameParam(member.name)}">Ouvrir ce profil seul</a>`
+      + `<p class="person-links"><a href="#p=${member.code}${nameParam(member.name)}">Ouvrir ce profil seul</a> · <button class="link-btn" type="button" data-remove="${member.code}">Retirer du cercle</button>`
       + (mine && mine !== member.code ? ` · <a href="#p=${mine}${nameParam(myName())}&vs=${member.code}${member.name ? '&vn=' + encodeURIComponent(member.name) : ''}">Me comparer à ${esc(name)}</a>` : '')
       + '</p>';
     body.appendChild(head);
@@ -3224,16 +3225,10 @@
       setState(0, {}, 'full', null);
       startQuiz();
     };
-    $('btn-group-add').onclick = () => {
-      const mine = myCode();
-      let count = 0;
-      groupMembers.forEach(m => {
-        const res = m.code === mine ? null : addToCircle(m.code, m.name);
-        if (res === 'added' || res === 'updated') count++;
-      });
-      toast(count ? `${count} personne${count > 1 ? 's' : ''} ajoutée${count > 1 ? 's' : ''} à ton cercle` : 'Ton cercle était déjà à jour');
+    $('btn-group-copy').onclick = async () => {
+      const ok = await copyText(location.href);
+      toast(ok ? 'URL du cercle copiée — envoie-la à tout le monde' : 'Impossible de copier : sélectionne l\'URL à la main');
     };
-    $('btn-group-copy').onclick = () => shareLink(location.href, 'Notre cercle sur Prisme : les comparatifs du groupe et le profil de chacun.', 'Lien du cercle copié');
     $('btn-group-pdf').onclick = () => {
       toast('Le PDF contient les comparatifs et les profils dépliés. Choisis « Enregistrer en PDF ».');
       setTimeout(() => window.print(), 400);
@@ -3258,6 +3253,252 @@
     const change = () => { store(STORAGE_MAP, { x: $('g-map-x').value, y: $('g-map-y').value }); renderMap(); };
     $('g-map-x').onchange = change;
     $('g-map-y').onchange = change;
+  }
+
+  /* ---------------------------------------------------------
+     « Quel personnage serais-tu ? » : on compare le profil psychologique de la personne
+     (qualités, DISC, valeurs, morale, traits, axes de caractère) à celui de chaque personnage.
+     --------------------------------------------------------- */
+  const { LICENSES } = window.PRISME_CHARACTERS;
+  const peuDe = word => (/^[aeiouyéèêàâîôûh]/i.test(word) ? 'peu d\'' : 'peu de ') + word;
+
+  // Valeur de 0 à 1 de la personne sur une dimension, avec le libellé à afficher
+  function traitInfo(r, key) {
+    const q = QUALITIES.find(x => x.id === key);
+    if (q) {
+      const s = qualityScores(r).find(x => x.id === key).score;
+      if (s === null) return null;
+      const name = q.name.toLowerCase();
+      return { v: clamp(0.5 + (s - 0.5) * 1.5, 0, 1), hi: `${name} (${pct(s)})`, lo: `${peuDe(name)} (${pct(s)})` };
+    }
+    const d = DISC.find(x => x.id === key);
+    if (d) return r.disc ? { v: r.disc[key], hi: `${d.color.toLowerCase()} ${pct(r.disc[key])} au DISC`, lo: `${peuDe(d.color.toLowerCase())} au DISC (${pct(r.disc[key])})` } : null;
+    const val = VALUES.find(x => x.id === key);
+    if (val) return r.values ? { v: r.values[key], hi: `la valeur « ${val.label.toLowerCase()} » haute (${pct(r.values[key])})`, lo: `la valeur « ${val.label.toLowerCase()} » basse (${pct(r.values[key])})` } : null;
+    const f = FOUNDATIONS.find(x => x.id === key);
+    if (f) return { v: r.found[key], hi: `${f.label.toLowerCase()} ${pct(r.found[key])}`, lo: `peu sensible ${artA(f)}${f.label.toLowerCase()} (${pct(r.found[key])})` };
+    const t = TRAITS.find(x => x.id === key);
+    if (t) return { v: r.traits[key], hi: `${t.high.toLowerCase()} (${t.label.toLowerCase()} ${pct(r.traits[key])})`, lo: `${t.low.toLowerCase()} (${t.label.toLowerCase()} ${pct(r.traits[key])})` };
+    const a = axisById(key);
+    if (a && r.known.has(key)) {
+      const lbl = `${nuancedLabel(a, r.axes[key]).toLowerCase()} (${pct(Math.abs(r.axes[key]))})`;
+      return { v: (r.axes[key] + 1) / 2, hi: lbl, lo: lbl };
+    }
+    return null;
+  }
+
+  function matchCharacter(r, ch) {
+    let num = 0, den = 0;
+    const parts = [];
+    Object.entries(ch.t).forEach(([key, tv]) => {
+      const info = traitInfo(r, key);
+      if (!info) return;
+      const w = 0.4 + Math.abs(tv - 0.5) * 2; // un trait extrême définit davantage le personnage
+      const sim = 1 - Math.abs(info.v - tv);
+      num += w * sim; den += w;
+      parts.push({ key, tv, pv: info.v, w, sim, label: info.v >= 0.5 ? info.hi : info.lo });
+    });
+    return parts.length >= 5 ? { ch, score: num / den, parts } : null;
+  }
+
+  function castFor(r, lic) {
+    return lic.cast.map(ch => matchCharacter(r, ch)).filter(Boolean).sort((a, b) => b.score - a.score);
+  }
+
+  function matchWhy(m, count) {
+    return m.parts
+      .filter(p => (p.pv - 0.5) * (p.tv - 0.5) > 0 && Math.abs(p.pv - 0.5) >= 0.1)
+      .sort((a, b) => b.w * b.sim * Math.abs(b.pv - 0.5) - a.w * a.sim * Math.abs(a.pv - 0.5))
+      .slice(0, count).map(p => p.label);
+  }
+
+  function matchGap(m) {
+    const g = m.parts.filter(p => (p.pv - 0.5) * (p.tv - 0.5) < 0 && Math.abs(p.pv - 0.5) >= 0.12 && Math.abs(p.tv - 0.5) >= 0.2)
+      .sort((a, b) => Math.abs(b.pv - b.tv) - Math.abs(a.pv - a.tv))[0];
+    return g ? g.label : '';
+  }
+
+  function renderCast(cur) {
+    const r = cur.r;
+    const blocks = LICENSES.map(lic => {
+      const ranked = castFor(r, lic);
+      if (!ranked.length) return '';
+      const best = ranked[0];
+      const why = matchWhy(best, 4), gap = matchGap(best);
+      const others = ranked.slice(1, 3).map(x => `${esc(x.ch.name)} (${pct(x.score)} %)`);
+      return `
+      <details class="lic" style="--c:${lic.color}">
+        <summary><span class="lic-kind">${esc(lic.kind)}</span><span class="lic-name">${esc(lic.name)}</span><span class="lic-cta">Découvrir mon personnage</span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="lic-body">
+          <p class="lic-k">Dans ${esc(lic.name)}, tu serais</p>
+          <h3 class="lic-char">${esc(best.ch.name)}<span class="pct">${pct(best.score)} %</span></h3>
+          <p class="lic-tag">${esc(best.ch.tag)}</p>
+          <p>${esc(best.ch.desc)}</p>
+          <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'comme ce personnage, tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+          ${others.length ? `<p class="lic-others">Tu n'étais pas loin non plus de : ${others.join(' · ')}.</p>` : ''}
+        </div>
+      </details>`;
+    }).filter(Boolean);
+    $('cast-section').hidden = !blocks.length;
+    $('cast').innerHTML = blocks.join('');
+  }
+
+  // Cercle : un personnage différent pour chacun, tant que la licence en a assez
+  function renderGroupCast(people, pre) {
+    const card = $(pre + 'cast-card');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    $(pre + 'cast').innerHTML = LICENSES.map(lic => {
+      const table = people.map(p => castFor(p.r, lic));
+      const freeP = new Set(people.map((p, i) => i).filter(i => table[i].length));
+      const taken = new Set();
+      const picks = [];
+      while (freeP.size) {
+        let best = null;
+        freeP.forEach(i => {
+          const m = table[i].find(x => !taken.has(x.ch.name)) || table[i][0];
+          if (!best || m.score > best.m.score) best = { i, m };
+        });
+        picks.push(best);
+        taken.add(best.m.ch.name);
+        freeP.delete(best.i);
+      }
+      picks.sort((a, b) => a.i - b.i);
+      if (!picks.length) return '';
+      return `
+      <details class="lic" style="--c:${lic.color}">
+        <summary><span class="lic-kind">${esc(lic.kind)}</span><span class="lic-name">${esc(lic.name)}</span><span class="lic-cta">Voir le casting</span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="lic-body">
+          <ul class="casting">${picks.map(x => {
+            const why = matchWhy(x.m, 2);
+            return `<li>${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)} %</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+          }).join('')}</ul>
+        </div>
+      </details>`;
+    }).join('');
+  }
+
+  // Impression : on déplie les licences le temps d'imprimer
+  window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('.screen.is-active details.lic:not([open])').forEach(d => { d.open = true; d.dataset.printOpened = '1'; });
+  });
+  window.addEventListener('afterprint', () => {
+    document.querySelectorAll('details.lic[data-print-opened]').forEach(d => { d.open = false; delete d.dataset.printOpened; });
+  });
+
+  /* ---------------------------------------------------------
+     Cercles par URL : rien à enregistrer, on colle des URL et on obtient l'URL du cercle
+     --------------------------------------------------------- */
+  // Accepte un texte contenant plusieurs URL (une par ligne, ou collées à la suite)
+  function parseManyLinks(text) {
+    const chunks = String(text || '').split(/\n+|(?=https?:\/\/)/).map(x => x.trim()).filter(Boolean);
+    const members = [], bad = [];
+    chunks.forEach(chunk => {
+      const found = parseLink(chunk);
+      if (!found.length) { bad.push(chunk); return; }
+      found.forEach(m => { if (!members.some(x => x.code === m.code)) members.push(m); });
+    });
+    return { members, bad };
+  }
+
+  function withNames(members) {
+    return members.map((m, i) => ({ code: m.code, name: m.name || `Personne ${i + 1}` }));
+  }
+
+  function openCircle(members) {
+    location.hash = 'g=' + encodeGroup(withNames(members));
+  }
+
+  function refreshMaker() {
+    const { members, bad } = parseManyLinks($('maker-input').value);
+    const lines = members.map((m, i) => `<li class="ok">✓ ${esc(m.name || `Personne ${i + 1} (URL sans prénom)`)}</li>`)
+      .concat(bad.map(b => `<li class="ko">✗ URL non reconnue : ${esc(b.slice(0, 48))}${b.length > 48 ? '…' : ''}</li>`));
+    $('maker-preview').innerHTML = lines.join('');
+    $('btn-maker-go').disabled = members.length < 2;
+    $('btn-maker-go').querySelector('small').textContent = members.length < 2 ? 'il faut au moins 2 URL' : `${members.length} personnes reconnues`;
+  }
+
+  function openMaker(prefill) {
+    history.replaceState(null, '', location.pathname + location.search);
+    showScreen('intro');
+    initIntro();
+    $('circle-maker').hidden = false;
+    if (prefill) $('maker-input').value = prefill + '\n';
+    refreshMaker();
+    $('circle-maker').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('maker-input').focus();
+  }
+
+  function initCircleByUrl() {
+    $('btn-circle-make').onclick = () => openMaker('');
+    $('btn-maker-close').onclick = () => { $('circle-maker').hidden = true; };
+    $('maker-input').addEventListener('input', refreshMaker);
+    $('btn-maker-go').onclick = () => {
+      const { members } = parseManyLinks($('maker-input').value);
+      if (members.length < 2) { toast('Colle au moins deux URL de résultat'); return; }
+      $('circle-maker').hidden = true;
+      $('maker-input').value = '';
+      openCircle(members);
+    };
+
+    // Page de résultats : « Générer mon URL »
+    const refreshUrl = () => {
+      const name = $('url-name').value.trim().slice(0, 24);
+      if (name) store(STORAGE_NAME, name);
+      if (current) current.name = name;
+      $('url-out').value = profileUrl(current.code, name);
+    };
+    $('btn-copy').onclick = () => {
+      $('url-panel').hidden = false;
+      $('url-name').value = (current && current.name) || myName();
+      refreshUrl();
+      $('url-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!$('url-name').value) $('url-name').focus();
+    };
+    $('url-name').addEventListener('input', refreshUrl);
+    $('url-out').onfocus = e => e.target.select();
+    $('btn-url-copy').onclick = async () => {
+      refreshUrl();
+      const ok = await copyText($('url-out').value);
+      toast(ok ? 'URL copiée — envoie-la à tes amis' : 'Impossible de copier : sélectionne l\'URL à la main');
+    };
+    $('btn-make-circle').onclick = () => {
+      const name = ($('url-name').value || (current && current.name) || myName() || '').trim();
+      openMaker(profileUrl(current.code, name));
+    };
+
+    // Page de cercle : URL visible, « Ajouter une personne », retirer quelqu'un
+    $('group-url').onfocus = e => e.target.select();
+    $('btn-group-addone').onclick = () => {
+      const panel = $('group-add-panel');
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) $('group-add-url').focus();
+    };
+    const addOne = () => {
+      const { members } = parseManyLinks($('group-add-url').value);
+      if (!members.length) { toast('URL non reconnue : colle l\'URL de résultat de la personne'); return; }
+      const typed = $('group-add-name').value.trim().slice(0, 24);
+      if (members.length === 1 && typed) members[0].name = typed;
+      const fresh = members.filter(m => !groupMembers.some(g => g.code === m.code));
+      if (!fresh.length) { toast('Cette personne est déjà dans le cercle'); return; }
+      const next = groupMembers.concat(fresh.map((m, i) => ({ code: m.code, name: m.name || `Personne ${groupMembers.length + i + 1}` })));
+      $('group-add-url').value = '';
+      $('group-add-name').value = '';
+      $('group-add-panel').hidden = true;
+      openCircle(next);
+      toast(`${fresh.length > 1 ? fresh.length + ' personnes ajoutées' : fresh[0].name ? fresh[0].name + ' a été ajouté' : 'Personne ajoutée'}. L'URL du cercle a changé : copie-la de nouveau pour la partager.`);
+    };
+    $('btn-group-add-ok').onclick = addOne;
+    $('group-add-url').onkeydown = e => { if (e.key === 'Enter') addOne(); };
+    $('group-add-name').onkeydown = e => { if (e.key === 'Enter') addOne(); };
+    $('group-list').addEventListener('click', e => {
+      const btn = e.target.closest('[data-remove]');
+      if (!btn) return;
+      const m = groupMembers.find(x => x.code === btn.dataset.remove);
+      if (groupMembers.length <= 2) { toast('Un cercle compte au moins deux personnes'); return; }
+      if (!confirm(`Retirer ${m && m.name ? m.name : 'cette personne'} de ce cercle ? L'URL du cercle changera.`)) return;
+      openCircle(groupMembers.filter(x => x.code !== btn.dataset.remove));
+    });
   }
 
   /* ---------------------------------------------------------
@@ -3289,7 +3530,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 15;
+  const BUILD = 16;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -3314,6 +3555,7 @@
   initQuiz();
   initResults();
   initGroup();
+  initCircleByUrl();
   window.addEventListener('hashchange', route);
   route();
   checkForUpdate();

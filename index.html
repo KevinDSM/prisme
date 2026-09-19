@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=15">
+  <link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -86,10 +86,25 @@
         <span>Nouveau : compléter mon profil</span>
         <small>nouveaux curseurs · sans refaire le test</small>
       </button>
+      <button id="btn-circle-make" class="btn btn-ghost" type="button">
+        <span>Créer un cercle</span>
+        <small>en collant les URL de tes amis</small>
+      </button>
       <a class="btn btn-ghost" href="guide.html">
         <span>Mode d'emploi</span>
         <small>comment lire les résultats</small>
       </a>
+    </div>
+
+    <div id="circle-maker" class="maker" hidden>
+      <h3>Créer un cercle</h3>
+      <p>Chaque personne fait le test, clique sur <b>« Générer mon URL »</b> à la fin et t'envoie son URL. Colle-les toutes ici, <b>une par ligne</b> (la tienne aussi) : tu obtiens la page du cercle et une URL unique à renvoyer à tout le monde. Rien n'est enregistré : le cercle, c'est l'URL.</p>
+      <textarea id="maker-input" rows="5" spellcheck="false" placeholder="https://kevindsm.github.io/prisme/#p=…&n=Prénom&#10;https://kevindsm.github.io/prisme/#p=…&n=Prénom"></textarea>
+      <ul id="maker-preview" class="maker-preview"></ul>
+      <div class="maker-actions">
+        <button id="btn-maker-go" class="btn btn-primary" type="button" disabled><span>Créer le cercle</span><small>il faut au moins 2 URL</small></button>
+        <button id="btn-maker-close" class="btn btn-ghost" type="button">Fermer</button>
+      </div>
     </div>
 
     <details class="intro-import">
@@ -182,10 +197,22 @@
       <div id="disc-chips" class="disc-chips" hidden></div>
       <p class="res-headline" id="res-headline"></p>
       <div class="res-share" id="res-share">
-        <button id="btn-copy" class="btn btn-primary" type="button"><span>Inviter mes amis</span></button>
-        <button id="btn-circle-open" class="btn btn-ghost" type="button">Me comparer à mes amis</button>
+        <button id="btn-copy" class="btn btn-primary" type="button"><span>Générer mon URL</span></button>
+        <button id="btn-make-circle" class="btn btn-ghost" type="button">Créer un cercle</button>
         <button id="btn-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
         <button id="btn-retake" class="btn btn-ghost" type="button">Refaire le test</button>
+      </div>
+
+      <div id="url-panel" class="maker" hidden>
+        <h3>Ton URL</h3>
+        <p>Cette URL <b>est</b> ton résultat : garde-la, et envoie-la à tes amis. Pour vous comparer à plusieurs, l'un de vous clique sur <b>« Créer un cercle »</b> et y colle les URL de tout le monde.</p>
+        <label class="maker-label" for="url-name">Ton prénom (il s'affichera dans le cercle)</label>
+        <input id="url-name" type="text" maxlength="24" autocomplete="off" placeholder="Prénom">
+        <label class="maker-label" for="url-out">Ton URL</label>
+        <textarea id="url-out" rows="3" readonly spellcheck="false"></textarea>
+        <div class="maker-actions">
+          <button id="btn-url-copy" class="btn btn-primary" type="button"><span>Copier l'URL</span></button>
+        </div>
       </div>
 
       <div id="visitor-banner" class="visitor" hidden>
@@ -573,6 +600,15 @@
       <div id="life-cards" class="life-cards"></div>
     </section>
 
+    <!-- Quel personnage -->
+    <section class="res-section" id="cast-section" hidden>
+      <div class="section-head">
+        <h2>Quel personnage serais-tu ?</h2>
+        <p>D'après ton profil psychologique — tes qualités, tes couleurs DISC, tes valeurs, ton caractère — et pas tes opinions. Clique sur un univers pour découvrir ton personnage, et pourquoi c'est lui.</p>
+      </div>
+      <div id="cast" class="cast"></div>
+    </section>
+
     <!-- Axes politiques -->
     <section class="res-section">
       <div class="section-head">
@@ -664,10 +700,25 @@
       <div id="group-people" class="medals group-people"></div>
       <p class="res-headline" id="group-headline"></p>
       <div class="res-share">
-        <button id="btn-group-add" class="btn btn-primary" type="button"><span>Ajouter tout le monde à mon cercle</span></button>
-        <button id="btn-group-copy" class="btn btn-ghost" type="button">Copier le lien du cercle</button>
+        <button id="btn-group-addone" class="btn btn-primary" type="button"><span>Ajouter une personne</span></button>
         <button id="btn-group-pdf" class="btn btn-ghost" type="button">Télécharger en PDF</button>
         <button id="btn-group-test" class="btn btn-ghost" type="button">Faire le test</button>
+      </div>
+      <div id="group-add-panel" class="maker" hidden>
+        <h3>Ajouter une personne</h3>
+        <p>Colle l'URL de résultat de la personne (celle qu'elle obtient avec « Générer mon URL »). Elle rejoint le cercle, et <b>l'URL du cercle change</b> : pense à la recopier pour la partager.</p>
+        <input id="group-add-url" type="text" autocomplete="off" spellcheck="false" placeholder="https://kevindsm.github.io/prisme/#p=…">
+        <input id="group-add-name" type="text" maxlength="24" autocomplete="off" placeholder="Son prénom (si l'URL n'en contient pas)">
+        <div class="maker-actions">
+          <button id="btn-group-add-ok" class="btn btn-primary" type="button"><span>Ajouter au cercle</span></button>
+        </div>
+      </div>
+      <div class="group-url">
+        <label class="maker-label" for="group-url">L'URL de ce cercle — c'est elle qu'il faut envoyer à tout le monde</label>
+        <div class="group-url-row">
+          <input id="group-url" type="text" readonly spellcheck="false">
+          <button id="btn-group-copy" class="btn btn-ghost btn-sm" type="button">Copier</button>
+        </div>
       </div>
     </div>
 
@@ -714,6 +765,13 @@
         <h2>Qui aurait quel ministère</h2>
         <p id="g-gov-note" class="group-intro"></p>
         <div id="g-gov" class="awards govs"></div>
+      </article>
+
+      <article class="res-card group-card" id="g-cast-card" hidden>
+        <p class="card-kicker">Le casting du cercle</p>
+        <h2>Qui serait quel personnage</h2>
+        <p class="group-intro">D'après le profil psychologique de chacun : qualités, DISC, valeurs, caractère. Dans chaque univers, chacun reçoit un personnage différent — le plus ressemblant est servi en premier. Clique sur une licence pour voir le casting.</p>
+        <div id="g-cast" class="cast"></div>
       </article>
 
       <article class="res-card group-card" id="g-awards-card" hidden>
@@ -816,8 +874,9 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=15"></script>
-  <script src="js/profiles.js?v=15"></script>
-  <script src="js/app.js?v=15"></script>
+  <script src="js/questions.js?v=16"></script>
+  <script src="js/profiles.js?v=16"></script>
+  <script src="js/characters.js?v=16"></script>
+  <script src="js/app.js?v=16"></script>
 </body>
 </html>
