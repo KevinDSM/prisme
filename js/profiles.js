@@ -280,6 +280,43 @@ const SIGNATURES = [
   { id: 'vert-conflictuel', test: (a, f, t, s, d) => d.ste >= 0.65 && a.cfl > 0.45, str: (a, f, t, s, d) => d.ste * a.cfl,
     title: 'Doux dans la vie, dur dans les idées',
     text: 'Vert dans tes relations, conflictuel dans ta vision de la politique : tu évites les disputes autour de toi, mais tu sais que les grands combats ne se gagnent pas en étant aimable. Ton entourage serait surpris de t\'entendre en débat.' },
+  // Signatures valeurs × politique × comportement (6e argument v : v.hi(id) = valeur haute, v.lo(id) = valeur basse, v.r[id] = score 0 → 1)
+  { id: 'egalite-et-ambition', test: (a, f, t, s, d, v) => a.egl < -0.4 && v.hi('vac'), str: (a, f, t, s, d, v) => -a.egl * v.r.vac,
+    title: 'Tu votes pour l\'égalité, tu cours après la réussite',
+    text: 'Égalitariste dans les urnes, ambitieux dans la vie. Ce n\'est pas de l\'hypocrisie : tu veux gagner, mais dans un jeu où les autres ont aussi leur chance.' },
+  { id: 'conservateur-par-securite', test: (a, f, t, s, d, v) => a.soc > 0.35 && v.hi('vse') && !v.hi('vtr'), str: (a, f, t, s, d, v) => a.soc * v.r.vse,
+    title: 'Conservateur par sécurité, pas par tradition',
+    text: 'Tu veux préserver, mais ce n\'est pas le passé que tu chéris : c\'est la stabilité. Si le changement était sans risque, tu l\'accepterais volontiers.' },
+  { id: 'conservateur-par-fidelite', test: (a, f, t, s, d, v) => a.soc > 0.35 && v.hi('vtr') && !v.hi('vse'), str: (a, f, t, s, d, v) => a.soc * v.r.vtr,
+    title: 'Conservateur par fidélité, pas par peur',
+    text: 'Tu ne défends pas l\'héritage parce que le monde t\'inquiète, mais parce qu\'il t\'oblige. Tu es serein, et pourtant tu ne lâcheras rien de ce qu\'on t\'a transmis.' },
+  { id: 'identitaire-grand-coeur', test: (a, f, t, s, d, v) => a.idn > 0.4 && v.hi('vun'), str: (a, f, t, s, d, v) => a.idn * v.r.vun,
+    title: 'Les frontières, et le cœur large',
+    text: 'Attaché à l\'identité de ton pays, et sincèrement soucieux de justice pour tous. Tu distingues ce que tu dois à chaque être humain de ce que tu dois aux tiens — et tu tiens aux deux.' },
+  { id: 'liberal-pas-egoiste', test: (a, f, t, s, d, v) => a.eco > 0.4 && v.hi('vbe'), str: (a, f, t, s, d, v) => a.eco * v.r.vbe,
+    title: 'Libéral, mais pas chacun pour soi',
+    text: 'Tu fais confiance au marché, et tu te donnes sans compter pour tes proches. Pour toi, la solidarité est une affaire de personnes, pas de guichets.' },
+  { id: 'libertaire-discipline', test: (a, f, t, s, d, v) => a.aut < -0.4 && v.hi('vco'), str: (a, f, t, s, d, v) => -a.aut * v.r.vco,
+    title: 'Libertaire discipliné',
+    text: 'Tu refuses qu\'on surveille et qu\'on contraigne, et pourtant tu respectes les règles mieux que quiconque. Tu veux une société où l\'on se tient bien sans y être forcé.' },
+  { id: 'ecolo-bon-vivant', test: (a, f, t, s, d, v) => a.env > 0.45 && v.hi('vhe'), str: (a, f, t, s, d, v) => a.env * v.r.vhe,
+    title: 'Écologiste bon vivant',
+    text: 'Tu veux sauver la planète sans renoncer à la table, aux voyages ou à la fête. Ton écologie est une écologie du désir, pas de la pénitence — et c\'est peut-être la seule qui convaincra.' },
+  { id: 'rupture-pour-securite', test: (a, f, t, s, d, v) => a.chg > 0.4 && v.hi('vse'), str: (a, f, t, s, d, v) => a.chg * v.r.vse,
+    title: 'Tout changer pour être enfin en sécurité',
+    text: 'Tu veux renverser le système, et ce que tu cherches au fond, c\'est de la stabilité. Tu ne te bats pas par goût du chaos : le système actuel est, pour toi, la vraie source d\'insécurité.' },
+  { id: 'pouvoir-au-peuple-et-a-toi', test: (a, f, t, s, d, v) => a.dem < -0.4 && v.hi('vpo'), str: (a, f, t, s, d, v) => -a.dem * v.r.vpo,
+    title: 'Le pouvoir au peuple — et un peu à toi',
+    text: 'Tu veux rendre la décision aux citoyens, et tu aimes toi-même diriger et peser. Les tribuns sont faits de ce bois : à toi de veiller à rester le porte-voix, pas le propriétaire.' },
+  { id: 'calme-dehors-aventurier-dedans', test: (a, f, t, s, d, v) => d.ste >= 0.62 && v.hi('vst'), str: (a, f, t, s, d, v) => d.ste * v.r.vst,
+    title: 'Calme dehors, aventurier dedans',
+    text: 'Ton comportement est posé, patient, stable — et pourtant tu rêves d\'intensité. Les gens te croient casanier ; ils ne savent pas ce que tu prépares.' },
+  { id: 'gauche-sans-universalisme', test: (a, f, t, s, d, v) => a.eco < -0.4 && a.egl < -0.3 && v.lo('vun'), str: (a, f, t, s, d, v) => -a.eco * (1 - v.r.vun),
+    title: 'La gauche du proche',
+    text: 'Tu veux la redistribution et l\'égalité, mais les grandes causes lointaines te parlent peu. Ta justice sociale est concrète : tes voisins, tes collègues, ta ville.' },
+  { id: 'autonomie-et-etat', test: (a, f, t, s, d, v) => a.eco < -0.45 && v.hi('vsd') && v.r.vsd >= 0.7, str: (a, f, t, s, d, v) => -a.eco * v.r.vsd,
+    title: 'Un État fort pour des individus libres',
+    text: 'Tu tiens farouchement à ton indépendance, et tu veux un État qui intervient. Pour toi, c\'est logique : on n\'est pas libre quand on a peur du lendemain.' },
 ];
 
 // Phrases de résumé par pôle : [léger, marqué, radical]
@@ -638,4 +675,209 @@ const DISC_MISSING = {
   con: 'Personne de bleu : qui vérifie les détails avant de se lancer ?',
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING };
+// ---------- Valeurs : textes ----------
+const VALUE_TEXTS = {
+  vsd: {
+    desc: 'La liberté de penser et d\'agir à ta façon. Tu veux choisir, explorer, créer, et tu supportes mal qu\'on décide à ta place.',
+    high: 'Quand elle domine : tu te fies d\'abord à ton propre jugement. On te suit difficilement en troupeau, et tu préfères te tromper seul qu\'avoir raison par obéissance.',
+    low: 'Quand elle est basse : décider seul n\'est pas un besoin. Tu t\'appuies volontiers sur un cadre, un groupe ou quelqu\'un de confiance.',
+    politics: 'En politique, elle nourrit l\'attachement aux libertés individuelles et la méfiance envers tout ce qui dicte une conduite.',
+  },
+  vst: {
+    desc: 'Le besoin de nouveauté, de défis et d\'intensité. La routine t\'éteint, l\'inconnu te réveille.',
+    high: 'Quand elle domine : tu cherches ce qui bouge. Tu t\'ennuies vite, tu changes volontiers, et tu préfères une vie risquée à une vie plate.',
+    low: 'Quand elle est basse : tu n\'as pas besoin d\'émotions fortes pour te sentir vivant. Le calme te convient, et tu le protèges.',
+    politics: 'En politique, elle rend le changement attirant en soi — et l\'immobilisme insupportable.',
+  },
+  vhe: {
+    desc: 'Le plaisir et la jouissance de la vie. Bien manger, rire, profiter : pour toi, ce n\'est pas un luxe mais une raison de vivre.',
+    high: 'Quand il domine : tu refuses de sacrifier le présent à un futur hypothétique. Tu sais profiter, et tu le fais sans t\'excuser.',
+    low: 'Quand il est bas : le plaisir passe après le devoir, le projet ou les autres. Tu peux t\'oublier longtemps.',
+    politics: 'En politique, il rend méfiant envers les morales du sacrifice, qu\'elles soient religieuses, productivistes ou militantes.',
+  },
+  vac: {
+    desc: 'L\'envie d\'accomplir et d\'être reconnu pour ce que tu fais. Tu veux progresser, réussir, et que ça se voie un peu.',
+    high: 'Quand elle domine : tu te fixes des objectifs élevés et tu te mesures. L\'échec te pique, la reconnaissance te porte.',
+    low: 'Quand elle est basse : tu n\'as rien à prouver. La compétition sociale te laisse froid, quitte à passer pour peu ambitieux.',
+    politics: 'En politique, elle rend sensible au mérite, à l\'effort récompensé, et agacé par ce qui ressemble à du nivellement.',
+  },
+  vpo: {
+    desc: 'Le goût de l\'influence, du statut et des moyens. Diriger, peser, avoir les ressources pour décider.',
+    high: 'Quand il domine : tu veux la main. Tu assumes de vouloir de l\'argent, de l\'autorité ou de l\'influence, et tu sais t\'en servir.',
+    low: 'Quand il est bas : dominer ne t\'intéresse pas, et ceux qui courent après le pouvoir t\'inspirent plutôt de la méfiance.',
+    politics: 'En politique, il fait voir la société comme une hiérarchie où il vaut mieux être en haut. C\'est la valeur la moins avouée — et l\'une des plus agissantes.',
+  },
+  vse: {
+    desc: 'Le besoin de stabilité et de protection, pour soi, ses proches et son pays. Tu veux un sol ferme sous les pieds.',
+    high: 'Quand elle domine : tu anticipes les dangers et tu évites ce qui pourrait tout faire basculer. La tranquillité d\'esprit vaut plus que l\'aventure.',
+    low: 'Quand elle est basse : l\'incertitude ne t\'empêche pas de dormir. Tu acceptes l\'instabilité comme le prix de la liberté ou du mouvement.',
+    politics: 'En politique, c\'est le moteur le plus puissant des demandes d\'ordre, de frontières et de protection sociale.',
+  },
+  vco: {
+    desc: 'Le respect des règles et le souci de ne pas heurter. Tu te retiens, tu fais ce qui se fait, par égard pour les autres.',
+    high: 'Quand elle domine : tu es poli, fiable, discret. Tu respectes la règle même sans témoin, et les gens sans gêne t\'exaspèrent.',
+    low: 'Quand elle est basse : les conventions ne te retiennent pas. Tu dis et fais ce que tu penses juste, quitte à déranger.',
+    politics: 'En politique, elle fait aimer la discipline, le civisme et les institutions qui tiennent.',
+  },
+  vtr: {
+    desc: 'La fidélité à ce qui t\'a été transmis : coutumes, croyances, façons de faire. S\'y ajoute une forme de modestie, savoir se contenter.',
+    high: 'Quand elle domine : tu te sens le maillon d\'une chaîne. Ce que tu as reçu t\'oblige, et tu veux le transmettre à ton tour.',
+    low: 'Quand elle est basse : le passé n\'a pas d\'autorité sur toi. Une coutume ne vaut que si elle a encore un sens aujourd\'hui.',
+    politics: 'En politique, elle nourrit le conservatisme culturel — à ne pas confondre avec la sécurité, qui est une peur, quand la tradition est une fidélité.',
+  },
+  vbe: {
+    desc: 'Le soin des proches : être là, être fiable, pardonner. Ton cercle passe avant tes ambitions.',
+    high: 'Quand elle domine : on peut compter sur toi. Tu te définis par tes liens, et trahir un ami te serait insupportable.',
+    low: 'Quand elle est basse : tu tiens à tes proches sans te sacrifier pour eux. Ton chemin passe d\'abord.',
+    politics: 'En politique, elle pèse moins qu\'on ne croit : c\'est une valeur du proche. On peut être très bienveillant et voter pour n\'importe quel camp.',
+  },
+  vun: {
+    desc: 'La justice et la tolérance pour tous, et le souci de la nature. Ton cercle moral s\'étend bien au-delà de ceux que tu connais.',
+    high: 'Quand il domine : l\'injustice faite à un inconnu te concerne. Tu cherches à comprendre ceux qui te ressemblent le moins.',
+    low: 'Quand il est bas : tu penses d\'abord aux tiens. Les grandes causes lointaines te semblent abstraites, parfois suspectes.',
+    politics: 'En politique, c\'est le meilleur prédicteur d\'un vote à gauche, écologiste ou pro-ouverture — et son absence, du contraire.',
+  },
+};
+
+// Les quatre grands pôles du cercle
+const VALUE_POLES = {
+  ouv: { label: 'Ouverture au changement', short: 'Ouverture', title: 'L\'Esprit libre', color: '#00b4d8',
+    desc: 'Tu es porté par l\'indépendance, la nouveauté et le plaisir. Ce que tu redoutes le plus : l\'enfermement, la routine, qu\'on décide pour toi.' },
+  aff: { label: 'Affirmation de soi', short: 'Affirmation', title: 'L\'Ambitieux', color: '#e63946',
+    desc: 'Tu es porté par la réussite et l\'influence. Tu veux compter, progresser, peser. Ce que tu redoutes le plus : l\'insignifiance.' },
+  cnt: { label: 'Continuité', short: 'Continuité', title: 'L\'Ancre', color: '#e9a100',
+    desc: 'Tu es porté par la sécurité, le respect des règles et la fidélité à ce qui t\'a été transmis. Ce que tu redoutes le plus : le chaos et la perte des repères.' },
+  dep: { label: 'Dépassement de soi', short: 'Dépassement', title: 'L\'Altruiste', color: '#1f9d6b',
+    desc: 'Tu es porté par le soin des autres, proches ou lointains. Ce que tu redoutes le plus : l\'injustice et l\'indifférence.' },
+};
+
+// Boussole à deux pôles (clé = les deux pôles dans l'ordre ouv, aff, cnt, dep)
+const VALUE_COMBOS = {
+  'ouv+aff': { title: 'L\'Aventurier ambitieux', text: 'Liberté et réussite : tu veux tracer ta route et qu\'elle mène loin. Tu entreprends, tu oses, tu te mesures. Attention à ceux que ton élan laisse sur le bord du chemin.' },
+  'ouv+dep': { title: 'L\'Humaniste libre', text: 'Indépendance et souci des autres : tu veux un monde plus juste, mais sans renoncer à ta liberté ni à celle de personne. Tu te méfies autant des chefs que des égoïstes.' },
+  'aff+cnt': { title: 'Le Bâtisseur établi', text: 'Réussite et stabilité : tu veux construire du solide, être respecté, et transmettre. L\'ordre social te convient quand il récompense ceux qui travaillent.' },
+  'cnt+dep': { title: 'Le Pilier bienveillant', text: 'Fidélité et soin des autres : tu tiens les murs et tu veilles sur ceux qui sont dedans. Ta générosité passe par la constance plus que par les grands élans.' },
+  'ouv+cnt': { title: 'L\'Équilibriste', text: 'Tu tiens à la fois à ta liberté et à tes repères — deux pôles qui se font face sur le cercle. Chez toi, ce n\'est pas de l\'indécision : tu explores avec une corde de rappel.' },
+  'aff+dep': { title: 'Le Meneur au grand cœur', text: 'Tu veux réussir et tu veux être utile — deux pôles opposés sur le cercle. Chez toi, l\'ambition cherche une cause : le pouvoir t\'intéresse pour ce qu\'il permet de réparer.' },
+};
+
+// Tensions entre valeurs opposées, quand les deux sont hautes (clé = les deux valeurs dans l'ordre du cercle)
+const VALUE_TENSIONS = {
+  'vsd+vse': 'Tu veux être libre et tu veux être en sécurité. Tu cherches donc des libertés qui ne coûtent pas la stabilité — et tu souffres quand il faut choisir.',
+  'vsd+vco': 'Tu tiens à ton indépendance et tu respectes les règles. Tu es l\'esprit libre qui paie ses impôts à l\'heure : rebelle dans la tête, civique dans les actes.',
+  'vsd+vtr': 'Tu penses par toi-même et tu honores ce que tu as reçu. Tu as choisi ta tradition plutôt que de la subir — c\'est la plus solide des fidélités.',
+  'vst+vse': 'Tu as soif d\'intensité et besoin de stabilité. Tu alternes sans doute phases d\'aventure et phases de repli : l\'une finance l\'autre.',
+  'vst+vco': 'Tu aimes le frisson et tu détestes déranger. Tes audaces sont donc discrètes : tu prends des risques pour toi, jamais aux dépens des autres.',
+  'vhe+vtr': 'Tu aimes profiter et tu crois qu\'il faut savoir se contenter. Un épicurien sobre : le plaisir, oui, l\'excès, non.',
+  'vhe+vco': 'Tu aimes le plaisir et tu tiens aux convenances. Tu sais t\'amuser sans jamais perdre la face.',
+  'vac+vbe': 'Tu veux réussir et tu veux être là pour tes proches. Ton agenda est ton champ de bataille : chaque promotion se paie en soirées manquées, et tu le sais.',
+  'vac+vun': 'Tu es ambitieux et tu veux un monde juste. Tu cherches donc à réussir proprement — et les réussites des cyniques te mettent en colère.',
+  'vpo+vun': 'Tu veux de l\'influence et tu veux la justice pour tous. La combinaison des réformateurs : le pouvoir comme moyen, à surveiller pour qu\'il ne devienne pas une fin.',
+  'vpo+vbe': 'Tu aimes diriger et tu prends soin des tiens. Un chef de clan : exigeant dehors, protecteur dedans.',
+};
+
+// ---------- Qualités : indices composites (0 → 100) ----------
+// comps : [source, identifiant, sens, poids] — source : axis (−1 → 1), found / trait / disc (0 → 1)
+const QUALITIES = [
+  { id: 'fia', name: 'Fiabilité', award: 'Le pilier de confiance', sub: 'inspire le plus confiance',
+    comps: [['axis', 'ord', 1, 1], ['found', 'fair', 1, 0.9], ['found', 'loy', 1, 0.8], ['disc', 'ste', 1, 0.8], ['disc', 'con', 1, 0.6], ['axis', 'col', 1, 0.6]],
+    high: 'On peut te confier une clé, un secret ou un projet. Tu tiens parole, tu joues franc jeu, et tu es encore là quand les autres sont partis.',
+    low: 'Tu promets peu, pour ne pas décevoir. Ta liberté de mouvement passe avant la constance, et ceux qui te connaissent le savent.' },
+  { id: 'det', name: 'Détermination', award: 'Le rouleau compresseur', sub: 'ne lâche jamais',
+    comps: [['disc', 'dom', 1, 1], ['axis', 'loc', -1, 1], ['trait', 'eng', 1, 0.7], ['axis', 'cmp', 1, 0.6], ['axis', 'rsk', 1, 0.5]],
+    high: 'Quand tu as décidé, tu avances. Tu crois que les choses dépendent de toi, et tu te comportes en conséquence : les obstacles sont des étapes.',
+    low: 'Tu ne forces pas le destin. Tu prends ce qui vient, tu t\'adaptes, et tu laisses à d\'autres le goût de la conquête.' },
+  { id: 'emp', name: 'Empathie', award: 'Le cœur du groupe', sub: 'ressent le plus ce que vivent les autres',
+    comps: [['found', 'care', 1, 1], ['axis', 'aff', -1, 0.9], ['disc', 'ste', 1, 0.7], ['axis', 'cmp', -1, 0.6], ['axis', 'col', 1, 0.5]],
+    high: 'Tu captes ce que les autres ressentent, souvent avant eux. La souffrance d\'un inconnu te touche, et tu es la personne à qui l\'on se confie.',
+    low: 'Tu gardes la tête froide face aux émotions des autres. Tu aides par des solutions plutôt que par de la compassion.' },
+  { id: 'ouv', name: 'Ouverture d\'esprit', award: 'L\'esprit le plus ouvert', sub: 'change d\'avis quand les faits changent',
+    comps: [['trait', 'dog', -1, 1], ['trait', 'inc', 1, 0.9], ['axis', 'opn', -1, 0.8], ['axis', 'cfl', -1, 0.5]],
+    high: 'Tu écoutes vraiment. Une bonne objection te fait plaisir, le flou ne t\'angoisse pas, et tu peux tenir deux idées contraires sans paniquer.',
+    low: 'Tu sais ce que tu penses et tu n\'en changes pas pour une belle phrase. Ta constance rassure ; elle peut aussi te fermer des portes.' },
+  { id: 'ind', name: 'Indépendance', award: 'L\'électron libre', sub: 'n\'a besoin de la permission de personne',
+    comps: [['found', 'lib', 1, 1], ['axis', 'col', -1, 0.9], ['axis', 'loc', -1, 0.7], ['found', 'auth', -1, 0.7], ['axis', 'aut', -1, 0.5]],
+    high: 'Tu n\'aimes ni qu\'on te dise quoi faire, ni devoir quelque chose à quelqu\'un. Tu avances seul sans que ça te pèse.',
+    low: 'Tu te sens mieux relié qu\'isolé. Le cadre, le groupe, la hiérarchie ne sont pas des cages pour toi : ce sont des appuis.' },
+  { id: 'lea', name: 'Leadership', award: 'Le capitaine', sub: 'prend naturellement la barre',
+    comps: [['disc', 'dom', 1, 1], ['disc', 'inf', 1, 0.9], ['axis', 'loc', -1, 0.6], ['axis', 'rsk', 1, 0.5], ['trait', 'eng', 1, 0.5]],
+    high: 'Dans un groupe, tu finis par prendre la main — parce que tu décides vite et que tu sais embarquer. On te suit, parfois sans que tu l\'aies demandé.',
+    low: 'Tu n\'as pas besoin de mener. Tu préfères contribuer, conseiller ou faire ta part sans porter le groupe sur tes épaules.' },
+  { id: 'san', name: 'Sang-froid', award: 'Le sang-froid', sub: 'garde la tête froide quand tout s\'agite',
+    comps: [['axis', 'aff', 1, 1], ['axis', 'thr', -1, 0.9], ['trait', 'inc', 1, 0.8], ['disc', 'ste', 1, 0.5]],
+    high: 'Quand la pièce s\'échauffe, ta température baisse. Tu raisonnes, tu relativises, et l\'urgence des autres ne devient pas la tienne.',
+    low: 'Tu vis les choses à fond. Les mauvaises nouvelles t\'atteignent, l\'incertitude te travaille — tu n\'es pas de ceux qui font semblant.' },
+  { id: 'dip', name: 'Diplomatie', award: 'Le négociateur', sub: 'trouve le terrain d\'entente',
+    comps: [['axis', 'cfl', -1, 1], ['disc', 'ste', 1, 0.8], ['axis', 'epi', -1, 0.7], ['trait', 'dog', -1, 0.7]],
+    high: 'Tu cherches l\'accord plutôt que la victoire. Tu sais dire les choses sans blesser, et tu peux dîner avec des gens qui pensent l\'inverse de toi.',
+    low: 'Tu dis ce que tu penses, et tant pis si ça frotte. Tu préfères un désaccord net à une paix de façade.' },
+  { id: 'aud', name: 'Audace', award: 'Le casse-cou', sub: 'ose ce que les autres évitent',
+    comps: [['axis', 'rsk', 1, 1], ['axis', 'opn', -1, 0.8], ['axis', 'chg', 1, 0.6], ['disc', 'dom', 1, 0.5], ['axis', 'thr', -1, 0.4]],
+    high: 'Tu préfères regretter d\'avoir essayé. Le nouveau t\'attire, le risque te stimule, et « on a toujours fait comme ça » te donne envie de faire autrement.',
+    low: 'Tu assures tes arrières. Tu vérifies, tu attends, tu gardes ce qui marche : tes succès sont rarement spectaculaires, tes échecs aussi.' },
+  { id: 'rig', name: 'Rigueur', award: 'L\'œil de lynx', sub: 'ne laisse rien passer',
+    comps: [['disc', 'con', 1, 1], ['axis', 'ord', 1, 0.9], ['axis', 'aff', 1, 0.7], ['found', 'fair', 1, 0.5]],
+    high: 'Tu veux que ce soit exact. Tu vérifies, tu structures, tu repères l\'erreur que personne n\'a vue — et l\'à-peu-près des autres te fatigue.',
+    low: 'Tu vas à l\'essentiel et tu laisses les détails aux autres. Tu avances vite, quitte à corriger en route.' },
+  { id: 'opt', name: 'Optimisme', award: 'Le rayon de soleil', sub: 'voit le verre à moitié plein',
+    comps: [['axis', 'vis', -1, 1], ['axis', 'nat', -1, 0.9], ['axis', 'thr', -1, 0.8]],
+    high: 'Tu crois que les choses s\'arrangent, que les gens valent mieux que leur réputation et que demain peut être mieux qu\'hier. Ça se voit, et ça fait du bien autour de toi.',
+    low: 'Tu t\'attends au pire pour n\'être surpris qu\'en bien. On te dit pessimiste ; tu réponds que tu es informé.' },
+  { id: 'vig', name: 'Vigilance', award: 'La vigie', sub: 'voit venir les ennuis avant tout le monde',
+    comps: [['axis', 'thr', 1, 1], ['axis', 'nat', 1, 0.9], ['axis', 'rsk', -1, 0.7], ['disc', 'con', 1, 0.4]],
+    high: 'Tu repères le risque, l\'arnaque, l\'angle mort. Tu fais confiance lentement, tu vérifies deux fois — et c\'est souvent toi qui avais raison de te méfier.',
+    low: 'Tu fais confiance d\'emblée et tu ne vois pas le mal. La plupart du temps, tu as raison ; le reste du temps, tu apprends.' },
+  { id: 'soc', name: 'Convivialité', award: 'Le boute-en-train', sub: 'met l\'ambiance et crée du lien',
+    comps: [['disc', 'inf', 1, 1], ['axis', 'col', 1, 0.7], ['axis', 'cmp', -1, 0.5], ['axis', 'thr', -1, 0.5], ['axis', 'tmp', -1, 0.4]],
+    high: 'Tu parles à tout le monde, tu rassembles, tu détends. Une soirée sans toi est un peu plus calme — et un peu moins réussie.',
+    low: 'Tu préfères les petits comités et les vraies conversations. Les grandes tablées te vident plus qu\'elles ne te remplissent.' },
+  { id: 'com', name: 'Combativité', award: 'Le bagarreur d\'idées', sub: 'ne refuse jamais un débat',
+    comps: [['axis', 'cfl', 1, 1], ['disc', 'dom', 1, 0.8], ['trait', 'eng', 1, 0.8], ['axis', 'cmp', 1, 0.6], ['trait', 'dog', 1, 0.5]],
+    high: 'Un désaccord te réveille. Tu argumentes, tu tiens ta position, tu relances — pour toi, une idée qui ne mérite pas qu\'on se batte pour elle ne mérite pas grand-chose.',
+    low: 'Tu choisis tes batailles, et il y en a peu. Tu laisses dire, tu n\'en penses pas moins, et tu gardes ton énergie pour autre chose.' },
+  { id: 'ide', name: 'Idéalisme', award: 'L\'idéaliste', sub: 'croit qu\'un autre monde est possible',
+    comps: [['axis', 'epi', 1, 1], ['axis', 'nat', -1, 0.8], ['axis', 'chg', 1, 0.7], ['found', 'care', 1, 0.5], ['axis', 'tmp', 1, 0.4]],
+    high: 'Tu juges le monde à ce qu\'il devrait être. Les principes passent avant les arrangements, et tu refuses de t\'habituer à ce qui est injuste.',
+    low: 'Tu prends le monde comme il est. Ce qui marche t\'intéresse plus que ce qui devrait être, et les grands discours te laissent sceptique.' },
+  { id: 'att', name: 'Attachement', award: 'Le fidèle', sub: 'reste attaché aux siens et à ses racines',
+    comps: [['found', 'loy', 1, 1], ['axis', 'opn', 1, 0.9], ['axis', 'col', 1, 0.7], ['axis', 'idn', 1, 0.5], ['found', 'sanc', 1, 0.4]],
+    high: 'Tes racines, ton groupe, tes habitudes comptent. Tu es fidèle aux lieux comme aux gens, et tu te méfies de ceux qui changent de camp comme de chemise.',
+    low: 'Tu t\'attaches aux personnes, pas aux appartenances. Tu peux partir, changer, recommencer ailleurs sans avoir l\'impression de trahir.' },
+];
+
+// ---------- « Dans la vie » : catégories et phrases ----------
+// Pour chaque catégorie : les qualités qui comptent, avec la phrase quand elle est haute (h) ou basse (l)
+const LIFE = [
+  { id: 'ami', title: 'En amitié', items: {
+    fia: { h: 'Tu es l\'ami qu\'on appelle à trois heures du matin : tu viens, et tu ne le rappelles jamais ensuite.', l: 'Tu es un ami intermittent : présent quand tu es là, injoignable quand tu es ailleurs — et sincère dans les deux cas.' },
+    emp: { h: 'Tu devines quand ça ne va pas avant qu\'on te le dise, et tu sais écouter sans donner de leçon.', l: 'Quand un ami va mal, tu cherches une solution plutôt que des mots doux : c\'est ta façon d\'aimer.' },
+    soc: { h: 'Tu es celui qui organise, qui relance, qui présente les gens les uns aux autres.', l: 'Tu as peu d\'amis, choisis lentement, et gardés longtemps.' },
+    ind: { h: 'Tu as besoin d\'air : tes amis savent qu\'un silence de trois semaines ne veut rien dire.', l: 'Tu aimes faire les choses ensemble, et la solitude prolongée te pèse.' },
+  } },
+  { id: 'job', title: 'Au travail', items: {
+    rig: { h: 'Tu rends un travail propre, vérifié, et tu souffres quand on te presse de bâcler.', l: 'Tu livres vite et tu ajustes après : le mieux est pour toi l\'ennemi du bien.' },
+    lea: { h: 'On te donne des responsabilités sans que tu les demandes — tu prends la décision que tout le monde attendait.', l: 'Tu es meilleur en expert ou en coéquipier qu\'en chef : diriger t\'ennuie ou te coûte.' },
+    det: { h: 'Un objectif fixé est un objectif atteint : tu ne lâches pas, et les obstacles t\'agacent plus qu\'ils ne t\'arrêtent.', l: 'Tu travailles pour vivre, pas l\'inverse : tu fais ta part sans te consumer.' },
+    dip: { h: 'Tu désamorces les tensions d\'équipe, et c\'est souvent par toi que passent les messages délicats.', l: 'Tu dis en réunion ce que les autres disent à la machine à café.' },
+  } },
+  { id: 'deb', title: 'En débat', items: {
+    com: { h: 'Tu ne laisses rien passer : une approximation, une mauvaise foi, et tu repars au combat.', l: 'Tu évites les sujets qui fâchent à table — tu sais qu\'on ne convainc personne entre le fromage et le dessert.' },
+    ouv: { h: 'Tu es capable de dire « tu as raison, je n\'y avais pas pensé » — et c\'est ce qui rend tes convictions crédibles.', l: 'Tu écoutes poliment et tu ne bouges pas : tes idées ont été payées cher, tu ne les brades pas.' },
+    san: { h: 'Plus le ton monte, plus tu ralentis. Tu reviens aux faits pendant que les autres s\'énervent.', l: 'Tu t\'enflammes vite : les sujets qui te tiennent à cœur te sortent de tes gonds, et ça se voit.' },
+    ide: { h: 'Tu ramènes toujours la discussion aux principes : « oui, mais est-ce que c\'est juste ? »', l: 'Tu ramènes toujours la discussion au concret : « oui, mais est-ce que ça marche ? »' },
+  } },
+  { id: 'imp', title: 'Face à l\'imprévu', items: {
+    aud: { h: 'Un plan qui s\'effondre est pour toi une occasion : tu improvises, et tu y prends presque goût.', l: 'L\'imprévu te coûte : tu as besoin de temps pour te réorganiser, et tu détestes qu\'on change les règles en route.' },
+    san: { h: 'En cas de crise, tu deviens étonnamment calme et efficace.', l: 'Une mauvaise surprise te bouscule vraiment : il te faut un moment pour encaisser avant d\'agir.' },
+    vig: { h: 'Tu avais prévu un plan B — tu en as toujours un.', l: 'Tu n\'avais rien vu venir, et ça ne t\'inquiète pas outre mesure : tu fais confiance à la suite.' },
+    opt: { h: 'Tu pars du principe que ça va s\'arranger, et cette conviction suffit souvent à ce que ce soit le cas.', l: 'Tu imagines d\'abord le pire scénario — puis tu es soulagé par tous les autres.' },
+  } },
+  { id: 'grp', title: 'Dans un groupe', items: {
+    lea: { h: 'Tu finis par organiser, même quand tu t\'étais promis de ne pas le faire.', l: 'Tu observes, tu suis ou tu proposes, mais tu laisses le volant à d\'autres.' },
+    soc: { h: 'Tu fais circuler la parole et l\'humeur : c\'est toi qui fais qu\'un groupe devient une bande.', l: 'Tu es discret dans les grands groupes, et bien plus bavard en tête-à-tête.' },
+    att: { h: 'Tu es la mémoire du groupe : les traditions, les anniversaires, les « tu te souviens ».', l: 'Tu passes d\'un groupe à l\'autre sans en appartenir vraiment à aucun.' },
+    ind: { h: 'Tu te réserves toujours le droit de ne pas venir — et de ne pas être d\'accord.', l: 'Tu te ranges volontiers à l\'avis général pour préserver l\'ambiance.' },
+  } },
+];
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE };

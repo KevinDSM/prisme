@@ -141,6 +141,66 @@ const DISC = [
   { id: 'con', letter: 'C', label: 'Conformité', color: 'Bleu',  css: '--disc-c' },
 ];
 
+// ---------- Valeurs (modèle de Schwartz, unipolaires 0 → 100) ----------
+// L'ordre du tableau est l'ordre du cercle : deux valeurs voisines sont compatibles, deux valeurs opposées se contrarient.
+// pole : ouv = ouverture au changement, aff = affirmation de soi, cnt = continuité, dep = dépassement de soi
+const VALUES = [
+  { id: 'vsd', label: 'Autonomie',    pole: 'ouv', color: '#2ec4b6', short: 'penser et décider par soi-même' },
+  { id: 'vst', label: 'Stimulation',  pole: 'ouv', color: '#00b4d8', short: 'nouveauté, défis, vie intense' },
+  { id: 'vhe', label: 'Plaisir',      pole: 'ouv', color: '#9d4edd', short: 'profiter de la vie' },
+  { id: 'vac', label: 'Réussite',     pole: 'aff', color: '#e0399a', short: 'accomplir, être reconnu' },
+  { id: 'vpo', label: 'Pouvoir',      pole: 'aff', color: '#e63946', short: 'influence, statut, moyens' },
+  { id: 'vse', label: 'Sécurité',     pole: 'cnt', color: '#f77f00', short: 'stabilité, protection' },
+  { id: 'vco', label: 'Conformité',   pole: 'cnt', color: '#e9a100', short: 'respect des règles et des autres' },
+  { id: 'vtr', label: 'Tradition',    pole: 'cnt', color: '#b08900', short: 'fidélité à ce qui a été transmis' },
+  { id: 'vbe', label: 'Bienveillance', pole: 'dep', color: '#57a639', short: 'prendre soin de ses proches' },
+  { id: 'vun', label: 'Universalisme', pole: 'dep', color: '#1f9d6b', short: 'justice, tolérance, nature' },
+];
+
+// Les affirmations de valeurs ne chargent QUE les valeurs : on peut les ajouter à un ancien résultat
+// sans rien changer aux autres scores (c'est ce qui permet de « compléter son profil » sans tout refaire).
+const VALUES_BANK = [
+  { t: 'J\'ai besoin de décider par moi-même de ce que je fais de ma vie.', w: { vsd: 1 } },
+  { t: 'Me forger mes propres opinions compte plus pour moi que d\'être d\'accord avec mon entourage.', w: { vsd: 1 } },
+  { t: 'Créer, inventer, faire les choses à ma façon est essentiel pour moi.', w: { vsd: 1 } },
+
+  { t: 'J\'ai besoin de surprises et de nouveauté pour me sentir vivant.', w: { vst: 1 } },
+  { t: 'Je recherche les expériences fortes, même quand elles comportent une part de risque.', w: { vst: 1 } },
+  { t: 'Une vie trop tranquille me ferait peur.', w: { vst: 1 } },
+
+  { t: 'Profiter des plaisirs de la vie fait partie de mes priorités.', w: { vhe: 1 } },
+  { t: 'Je m\'accorde du bon temps sans culpabiliser.', w: { vhe: 1 } },
+  { t: 'À quoi bon réussir si on ne prend aucun plaisir en chemin ?', w: { vhe: 1 } },
+
+  { t: 'Il est important pour moi d\'être reconnu pour ce que j\'accomplis.', w: { vac: 1 } },
+  { t: 'J\'ai de l\'ambition : je veux aller loin.', w: { vac: 1 } },
+  { t: 'Je me fixe des objectifs élevés et je mesure mes progrès.', w: { vac: 1 } },
+
+  { t: 'J\'aime être la personne qui dirige et dont on suit les décisions.', w: { vpo: 1 } },
+  { t: 'Avoir de l\'argent, et ce qu\'il permet, compte beaucoup pour moi.', w: { vpo: 1 } },
+  { t: 'Avoir de l\'influence sur les autres est important pour moi.', w: { vpo: 1 } },
+
+  { t: 'Vivre dans un environnement sûr passe avant presque tout le reste.', w: { vse: 1 } },
+  { t: 'J\'évite ce qui pourrait mettre en danger ma stabilité ou celle de mes proches.', w: { vse: 1 } },
+  { t: 'J\'ai besoin de savoir que mon pays est solide et protégé contre les menaces.', w: { vse: 1 } },
+
+  { t: 'Je m\'efforce de ne jamais déranger ni choquer les autres.', w: { vco: 1 } },
+  { t: 'Il faut respecter les règles, même quand personne ne regarde.', w: { vco: 1 } },
+  { t: 'La politesse et le respect des aînés restent essentiels à mes yeux.', w: { vco: 1 } },
+
+  { t: 'Je tiens aux coutumes que j\'ai reçues de ma famille ou de ma culture.', w: { vtr: 1 } },
+  { t: 'Savoir se contenter de ce qu\'on a est une sagesse.', w: { vtr: 1 } },
+  { t: 'Ce que les générations précédentes m\'ont transmis guide encore ma vie.', w: { vtr: 1 } },
+
+  { t: 'Être là pour mes proches est ce qui compte le plus pour moi.', w: { vbe: 1 } },
+  { t: 'Je veux qu\'on puisse compter sur moi, quoi qu\'il arrive.', w: { vbe: 1 } },
+  { t: 'Je pardonne facilement à ceux que j\'aime.', w: { vbe: 1 } },
+
+  { t: 'Je veux que chaque être humain soit traité avec justice, même ceux que je ne connaîtrai jamais.', w: { vun: 1 } },
+  { t: 'Protéger la nature est pour moi un devoir personnel.', w: { vun: 1 } },
+  { t: 'Je fais l\'effort de comprendre ceux qui sont très différents de moi.', w: { vun: 1 } },
+];
+
 // ---------- Banque de questions ----------
 // t = texte, w = poids par dimension
 const QUESTION_BANK = [
@@ -428,6 +488,10 @@ function seededOrder(n, seed) {
   return idx;
 }
 
-const QUESTIONS = seededOrder(QUESTION_BANK.length, 0x9e3779b9).map(i => ({ id: i, ...QUESTION_BANK[i] }));
+// Le test se déroule en deux parties : le cœur du test (ordre inchangé depuis la version à 201 affirmations),
+// puis les valeurs. Les identifiants sont stables : 0 → N−1 pour le cœur, puis les valeurs à la suite.
+const CORE_QUESTIONS = seededOrder(QUESTION_BANK.length, 0x9e3779b9).map(i => ({ id: i, module: 'core', ...QUESTION_BANK[i] }));
+const VALUE_QUESTIONS = seededOrder(VALUES_BANK.length, 0x85ebca6b).map(i => ({ id: QUESTION_BANK.length + i, module: 'values', ...VALUES_BANK[i] }));
+const QUESTIONS = CORE_QUESTIONS.concat(VALUE_QUESTIONS);
 
-window.PRISME_DATA = { AXES, FOUNDATIONS, TRAITS, DISC, QUESTIONS };
+window.PRISME_DATA = { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, VALUE_QUESTIONS };

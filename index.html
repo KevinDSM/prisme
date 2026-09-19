@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Prisme — cartographie de ce que tu penses vraiment</title>
-  <meta name="description" content="Un test politique en profondeur : 201 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, ton profil DISC en couleurs. Compare-toi à tes amis.">
+  <meta name="description" content="Un test politique en profondeur : 231 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, ton profil DISC en couleurs. Compare-toi à tes amis.">
   <meta name="theme-color" content="#f5efe4">
   <script>try { if (localStorage.getItem('prisme.theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
   <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=8">
+  <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -61,25 +61,29 @@
         <p>Soin, équité, loyauté, autorité, sacré, liberté : les intuitions profondes qui précèdent tes opinions.</p>
       </article>
       <article class="intro-card">
-        <span class="intro-card-num">4</span>
+        <span class="intro-card-num">5</span>
         <h3>portraits</h3>
-        <p>Une famille politique, un tempérament (Bâtisseur, Tribun…), un archétype de personnalité et ton <strong>profil DISC</strong> en couleurs : rouge, jaune, vert, bleu.</p>
+        <p>Famille politique, tempérament, archétype de personnalité, <strong>profil DISC</strong> en couleurs et <strong>boussole de valeurs</strong> — plus tes 16 qualités, expliquées.</p>
       </article>
       <article class="intro-card">
         <span class="intro-card-num">∞</span>
         <h3>amis</h3>
-        <p>Ton cercle d'amis sur une carte, vos affinités, vos lignes de fracture en graphiques et des commentaires sur ce qui vous sépare.</p>
+        <p>Ton cercle d'amis sur une carte, le <strong>palmarès</strong> du groupe (le pilier de confiance, le capitaine…), vos affinités et ce qui vous sépare.</p>
       </article>
     </div>
 
     <div class="intro-actions">
       <button id="btn-start" class="btn btn-primary">
         <span>Commencer</span>
-        <small>201 curseurs · ~20 min</small>
+        <small>231 curseurs · ~23 min</small>
       </button>
       <button id="btn-resume" class="btn btn-ghost" hidden>
         <span>Reprendre</span>
         <small id="resume-info"></small>
+      </button>
+      <button id="btn-upgrade" class="btn btn-primary btn-upgrade" hidden>
+        <span>Nouveau : compléter mon profil</span>
+        <small>tes valeurs · 30 curseurs · sans refaire le test</small>
       </button>
       <a class="btn btn-ghost" href="guide.html">
         <span>Mode d'emploi</span>
@@ -111,7 +115,7 @@
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
         </button>
-        <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">201</span></div>
+        <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">231</span></div>
       </div>
     </div>
     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -253,6 +257,31 @@
             </div>
           </div>
         </article>
+
+        <article class="res-card group-card" id="awards-card" hidden>
+          <p class="card-kicker">Palmarès</p>
+          <h2>Qui est qui dans le cercle</h2>
+          <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses. Toi compris.</p>
+          <div id="awards-medals" class="medals"></div>
+          <div id="awards" class="awards"></div>
+        </article>
+
+        <article class="res-card group-card" id="matrix-card" hidden>
+          <p class="card-kicker">Affinités croisées</p>
+          <h2>Qui est proche de qui</h2>
+          <div id="matrix-duos" class="duo-cards"></div>
+          <div id="matrix" class="matrix-wrap"></div>
+        </article>
+
+        <article class="res-card group-card" id="topics-card" hidden>
+          <p class="card-kicker">Les sujets du groupe</p>
+          <h2>Ce qui vous rassemble, ce qui vous fâche</h2>
+          <div class="topics">
+            <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="topics-divide"></div></div>
+            <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="topics-unite"></div></div>
+          </div>
+          <p id="topics-values" class="circle-disc-notes" hidden></p>
+        </article>
       </div>
     </section>
 
@@ -313,6 +342,28 @@
         </div>
       </article>
 
+      <article class="res-card cmp-disc" id="cmp-values" hidden>
+        <p class="card-kicker">Valeurs</p>
+        <h2>Ce qui vous fait avancer</h2>
+        <div class="cmp-disc-grid">
+          <div id="cmp-values-wheel" class="values-wheel"></div>
+          <div>
+            <p id="cmp-values-text" class="cmp-disc-text"></p>
+            <ul id="cmp-values-bars" class="found-cmp"></ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="res-card cmp-disc" id="cmp-qualities" hidden>
+        <p class="card-kicker">Qualités</p>
+        <h2>Ce que chacun apporte à l'autre</h2>
+        <div class="cmp-cols qual-cols">
+          <div class="cmp-col"><h4 id="cmp-qual-me-title">Ce que tu apportes</h4><ul id="cmp-qual-me"></ul></div>
+          <div class="cmp-col"><h4 id="cmp-qual-them-title">Ce qu'il apporte</h4><ul id="cmp-qual-them"></ul></div>
+        </div>
+        <ul id="cmp-qual-bars" class="found-cmp qual-cmp"></ul>
+      </article>
+
       <article class="res-card dumbbell-card">
         <p class="card-kicker">Face à face</p>
         <h2>Tous les axes, côte à côte</h2>
@@ -365,6 +416,27 @@
       <div id="signatures" class="signatures"></div>
     </section>
 
+    <!-- Qualités -->
+    <section class="res-section" id="qualities-section" hidden>
+      <div class="section-head">
+        <h2>Tes qualités</h2>
+        <p>Seize qualités calculées en croisant tes axes, ta morale et ton comportement. Pour chacune, on te dit d'où elle vient.</p>
+      </div>
+      <h3 class="sub-head first">Tes cinq forces</h3>
+      <div id="qualities-top" class="quals"></div>
+      <div class="qual-split">
+        <div>
+          <h3 class="sub-head">Ce qui t'est moins naturel</h3>
+          <div id="qualities-low" class="quals two"></div>
+        </div>
+        <article class="res-card">
+          <p class="card-kicker">Vue d'ensemble</p>
+          <h2>Ton profil de qualités</h2>
+          <ul id="qualities-all" class="found-list qual-list"></ul>
+        </article>
+      </div>
+    </section>
+
     <!-- Profil DISC -->
     <section class="res-section disc" id="disc-section" hidden>
       <div class="section-head">
@@ -383,6 +455,45 @@
       </div>
       <div id="disc-cards" class="disc-cards"></div>
       <div id="disc-legend" class="disc-legend"></div>
+    </section>
+
+    <!-- Valeurs -->
+    <section class="res-section values" id="values-section" hidden>
+      <div class="section-head">
+        <h2>Tes valeurs</h2>
+        <p>Ce qui te fait avancer, d'après le modèle des valeurs universelles de Schwartz. Sur la roue, deux valeurs voisines vont bien ensemble ; deux valeurs face à face se contrarient.</p>
+      </div>
+      <div class="disc-hero values-hero">
+        <div id="values-wheel" class="values-wheel"></div>
+        <div class="disc-main">
+          <p class="card-kicker" id="values-kicker">Ta boussole</p>
+          <h3 class="disc-title" id="values-title"></h3>
+          <p class="disc-sub" id="values-sub"></p>
+          <p class="disc-desc" id="values-desc"></p>
+          <div id="values-poles" class="val-poles"></div>
+        </div>
+      </div>
+      <div class="values-grid">
+        <article class="res-card">
+          <p class="card-kicker">Classement</p>
+          <h2>Tes dix valeurs</h2>
+          <div id="values-bars" class="val-bars"></div>
+        </article>
+        <div id="values-cards" class="val-cards"></div>
+      </div>
+    </section>
+
+    <section class="res-section" id="values-teaser-section" hidden>
+      <div id="values-teaser" class="visitor teaser"></div>
+    </section>
+
+    <!-- Dans la vie -->
+    <section class="res-section" id="life-section" hidden>
+      <div class="section-head">
+        <h2>Dans la vie</h2>
+        <p>Ce que ton profil laisse deviner de toi, loin de la politique. Entre parenthèses : la qualité qui le fait dire.</p>
+      </div>
+      <div id="life-cards" class="life-cards"></div>
     </section>
 
     <!-- Axes politiques -->
@@ -471,8 +582,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=8"></script>
-  <script src="js/profiles.js?v=8"></script>
-  <script src="js/app.js?v=8"></script>
+  <script src="js/questions.js?v=9"></script>
+  <script src="js/profiles.js?v=9"></script>
+  <script src="js/app.js?v=9"></script>
 </body>
 </html>

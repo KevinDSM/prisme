@@ -4,15 +4,18 @@
 
 Un test politique en profondeur, qui va plus loin que les boussoles politiques habituelles :
 
-- **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu. 201 curseurs, ~20 minutes.
+- **Des curseurs, pas des cases** — chaque affirmation se règle de « absolument pas d'accord » à « absolument d'accord », en continu. 231 curseurs, ~23 minutes (pause possible à tout moment).
 - **Profil DISC en couleurs** — 30 questions dédiées : Rouge (Dominance), Jaune (Influence), Vert (Stabilité), Bleu (Conformité). Une couleur dominante ou un duo (le Conquérant, le Commandant, le Rassembleur…), une roue DISC, les forces, points de vigilance, motivations, façon de communiquer, réaction sous pression et comportement en débat.
+- **Valeurs (modèle de Schwartz)** — 30 affirmations en fin de test : roue des dix valeurs, boussole (quatre pôles, six boussoles à deux pôles), tensions entre valeurs opposées, croisements avec la politique. Ces affirmations ne nourrissent que les valeurs : un ancien profil peut être **complété sans refaire le test** (bouton « Compléter mon profil »), et le résultat est identique à celui d'un test complet.
+- **Seize qualités** — fiabilité, détermination, empathie, sang-froid… calculées en croisant axes, morale, traits et DISC, avec « d'où ça vient » ; et cinq situations « dans la vie » (en amitié, au travail, en débat, face à l'imprévu, dans un groupe).
+- **Palmarès du cercle** — à partir de trois personnes : un titre par qualité avec la raison, matrice des affinités (les jumeaux, les opposés), sujets qui fâchent et qui rassemblent. Pensé pour une dizaine d'amis.
 - **Mode clair et mode sombre** — clair par défaut, bouton de bascule mémorisé ; le PDF est toujours en clair.
 - **24 axes** — 9 axes politiques (économie, égalité, société, identité, autorité, écologie, géopolitique, justice, technologie), 6 axes **méta-politiques** (pragmatique / idéologue, réformiste / rupturiste, populaire / technocrate, consensuel / conflictuel, optimiste / décliniste, confiant / méfiant) et 9 axes de **personnalité** (cœur / tête, acteur / porté, prudent / audacieux, improvisateur / structuré, serein / vigilant, individualiste / collectiviste, présent / long terme, coopératif / compétitif, explorateur / enraciné).
 - **6 fondements moraux** (Haidt) — soin, équité, loyauté, autorité, sacré, liberté.
 - **3 traits** — tolérance à l'incertitude, dogmatisme, engagement.
 - **Statistiques de style** — intensité, nuance, radicalité, cohérence interne.
 - **Trois portraits** — famille politique (13), tempérament politique (10), archétype de personnalité (12).
-- **Signatures** — 60 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
+- **Signatures** — 72 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
 - **Sujets de cœur** — un cœur par question pour marquer ce qui compte vraiment (et le pondérer).
 - **Résumé** en cinq temps, généré à partir des réponses, avec les curseurs les plus poussés cités mot pour mot.
 - **Pause et code de reprise** — le bouton Pause génère un code (ou un lien `#r=…`) qui contient toutes les réponses déjà données : on reprend au même endroit sur n'importe quel appareil.
@@ -36,7 +39,7 @@ https://kevindsm.github.io/prisme/
 - `index.html` — les trois écrans (accueil, quiz, résultats)
 - `guide.html` + `js/guide.js` — le mode d'emploi, généré à partir des données du test (méthode, chaque axe et ses deux pôles, fondements, traits, portraits, DISC, signatures, comparaison)
 - `css/style.css` — le style
-- `js/questions.js` — axes, fondements, traits, styles DISC, banque de 201 affirmations et leurs pondérations
+- `js/questions.js` — axes, fondements, traits, styles DISC, banque de 231 affirmations (201 + 30 de valeurs) et leurs pondérations
 - `js/profiles.js` — familles politiques, tempéraments, archétypes de personnalité, signatures, phrases de résumé, textes de comparaison, textes DISC (styles, duos, dynamiques entre deux personnes)
 - `js/app.js` — logique du quiz, calcul, encodage du résultat, rendu, comparaison
 

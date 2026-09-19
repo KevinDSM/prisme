@@ -7,10 +7,11 @@
 (function () {
   'use strict';
 
-  const { AXES, FOUNDATIONS, TRAITS, DISC, QUESTIONS } = window.PRISME_DATA;
+  const { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS } = window.PRISME_DATA;
   const {
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED,
+    VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE,
   } = window.PRISME_PROFILES;
 
   const $ = id => document.getElementById(id);
@@ -55,7 +56,7 @@
       </article>
       <article class="gcard">
         <h4>2 · Des poids</h4>
-        <p>Chaque affirmation nourrit un ou plusieurs axes, avec un poids entre 0,2 et 1. Une affirmation peut pousser vers la gauche d'un axe et, en même temps, un peu vers un fondement moral. Le total : <b>${QUESTIONS.length} affirmations</b> pour ${AXES.length} axes, ${FOUNDATIONS.length} fondements, ${TRAITS.length} traits et ${DISC.length} couleurs DISC.</p>
+        <p>Chaque affirmation nourrit un ou plusieurs axes, avec un poids entre 0,2 et 1. Une affirmation peut pousser vers la gauche d'un axe et, en même temps, un peu vers un fondement moral. Le total : <b>${QUESTIONS.length} affirmations</b> pour ${AXES.length} axes, ${FOUNDATIONS.length} fondements, ${TRAITS.length} traits, ${DISC.length} couleurs DISC et ${VALUES.length} valeurs.</p>
       </article>
       <article class="gcard">
         <h4>3 · Une moyenne pondérée</h4>
@@ -295,6 +296,66 @@
     </ul>`);
 
   /* ---------------------------------------------------------
+     10 bis. Valeurs, qualités, « dans la vie »
+     --------------------------------------------------------- */
+  const poleOf = id => VALUE_POLES[id];
+  section('valeurs', 'Les valeurs', 'Les dix valeurs et la boussole', `
+    <p class="gtext">Cette partie s'appuie sur le <b>modèle des valeurs universelles de Shalom Schwartz</b>, l'un des plus utilisés en psychologie sociale (c'est celui des grandes enquêtes européennes). Il ne mesure ni tes opinions ni ton comportement, mais <b>ce qui te fait avancer</b> : ce que tu cherches dans la vie. Les ${QUESTIONS.filter(q => q.module === 'values').length} affirmations arrivent à la fin du test, et la consigne change : on ne te demande plus si tu es d'accord, mais <b>si la phrase te ressemble</b>.</p>
+    <p class="gtext">Les dix valeurs sont disposées <b>en cercle</b>. Deux valeurs voisines vont bien ensemble (sécurité et conformité) ; deux valeurs face à face se contrarient (autonomie et conformité, pouvoir et universalisme). Le cercle se regroupe en quatre grands pôles : c'est le pôle où tu es le plus haut qui donne ta <b>boussole</b>. Si un deuxième pôle est presque aussi haut, tu obtiens une boussole à deux pôles.</p>
+    <p class="gtext">Pour classer tes valeurs, Prisme regarde chacune <b>par rapport à ta propre moyenne</b> : ce qui compte n'est pas d'avoir dit oui à tout, mais ce que tu places au-dessus du reste. Quand deux valeurs opposées sont toutes les deux hautes, c'est signalé comme <b>une tension qui te définit</b>.</p>
+    <h3 class="gsub">Les quatre pôles</h3>
+    <div class="gcards">
+      ${Object.entries(VALUE_POLES).map(([id, p]) => `
+        <article class="gcard" style="--c:${p.color}"><h4><span class="dot"></span>${esc(p.label)} <small>${esc(p.title)}</small></h4>
+        <p>${esc(p.desc)}</p><p class="ex">${esc(VALUES.filter(v => v.pole === id).map(v => v.label).join(' · '))}</p></article>`).join('')}
+    </div>
+    <h3 class="gsub">Les dix valeurs</h3>
+    <div class="gaxes">
+      ${VALUES.map(v => `
+        <article class="gax">
+          <div class="gax-head"><span style="color:${label(v.color)}">${esc(v.label)}</span><span class="arrow">·</span><span style="color:${label(poleOf(v.pole).color)}">${esc(poleOf(v.pole).label)}</span></div>
+          <p class="gax-desc">${esc(VALUE_TEXTS[v.id].desc)}</p>
+          <div class="gax-poles">
+            <div class="gax-pole" style="--c:${v.color}"><h4>Score élevé</h4><p>${esc(VALUE_TEXTS[v.id].high.replace(/^Quand (elle|il) domine : /, '').replace(/^./, c => c.toUpperCase()))}</p></div>
+            <div class="gax-pole" style="--c:var(--ink-3)"><h4>Score bas</h4><p>${esc(VALUE_TEXTS[v.id].low.replace(/^Quand (elle|il) est basse? : /, '').replace(/^./, c => c.toUpperCase()))}</p></div>
+          </div>
+          <p class="gax-meta">${esc(VALUE_TEXTS[v.id].politics)} Exemple d'affirmation : <q>${esc(example(v.id, 1))}</q></p>
+        </article>`).join('')}
+    </div>
+    <h3 class="gsub">Les boussoles à deux pôles</h3>
+    <div class="gcards">
+      ${Object.values(VALUE_COMBOS).map(c => `<article class="gcard"><h4>${esc(c.title)}</h4><p>${esc(c.text)}</p></article>`).join('')}
+    </div>
+    <h3 class="gsub">Les tensions entre valeurs opposées</h3>
+    <ul class="glist">
+      ${Object.entries(VALUE_TENSIONS).map(([k, t]) => `<li><b>${esc(k.split('+').map(id => VALUES.find(v => v.id === id).label).join(' et '))}.</b> ${esc(t)}</li>`).join('')}
+    </ul>`);
+
+  const SRC = { axis: AXES, found: FOUNDATIONS, trait: TRAITS, disc: DISC };
+  function compName([src, id, dir]) {
+    const x = SRC[src].find(y => y.id === id);
+    if (src === 'axis') return (dir > 0 ? x.rightFull : x.leftFull).toLowerCase();
+    if (src === 'found') return (dir > 0 ? '' : 'peu de ') + x.label.toLowerCase();
+    if (src === 'trait') return (dir > 0 ? x.high : x.low).toLowerCase();
+    return `${x.color.toLowerCase()} (DISC)`;
+  }
+  section('qualites', 'Le sur-mesure', 'Les seize qualités, « dans la vie » et le palmarès', `
+    <p class="gtext">Une <b>qualité</b> est un indice de 0 à 100 qui croise plusieurs de tes scores : des axes, des fondements moraux, des traits et des couleurs DISC. La fiabilité, par exemple, monte avec le goût de la structure, le sens de l'équité, la loyauté et les couleurs verte et bleue. Chaque composant a un poids ; le résultat est leur moyenne pondérée.</p>
+    <p class="gtext">Ton rapport affiche tes <b>cinq forces</b>, les <b>deux qualités qui te sont le moins naturelles</b>, et pour chacune <b>« d'où ça vient »</b> : les composants qui tirent le plus le score, avec leur valeur. Rien n'est affirmé sans que tu puisses voir pourquoi.</p>
+    <p class="gtext">Dans un cercle d'au moins trois personnes, chaque qualité devient un <b>titre du palmarès</b>, décerné à la personne qui a le score le plus haut, avec la raison et le nom du dauphin. S'y ajoutent cinq titres de style : le plus tranché, le plus nuancé, le plus cohérent, le ciment du groupe (la meilleure affinité moyenne avec tous) et le cas à part (la plus faible).</p>
+    <div class="gportraits">
+      ${QUALITIES.map(q => `
+        <article class="gportrait">
+          <h4>${esc(q.name)}<small>${esc(q.award)} — ${esc(q.sub)}</small></h4>
+          <p><b>Haute :</b> ${esc(q.high)}</p>
+          <p><b>Basse :</b> ${esc(q.low)}</p>
+          <div class="leans">${q.comps.map(c => `<span class="lean" style="--c:var(--ink-2)">${esc(compName(c))}</span>`).join('')}</div>
+        </article>`).join('')}
+    </div>
+    <h3 class="gsub">« Dans la vie »</h3>
+    <p class="gtext">Cinq situations — ${esc(LIFE.map(l => l.title.toLowerCase()).join(', '))} — sont décrites à partir de tes qualités. Pour chaque situation, Prisme regarde les quatre qualités qui comptent, retient la plus haute (et la plus basse si elle l'est vraiment), et écrit la phrase correspondante. La qualité et son score sont rappelés entre parenthèses.</p>`);
+
+  /* ---------------------------------------------------------
      11. Signatures
      --------------------------------------------------------- */
   section('signatures', 'Le sur-mesure', 'Les signatures', `
@@ -339,6 +400,7 @@
       <li><b>Le cercle en bref</b> désigne la personne la plus proche, la plus éloignée, l'allié sur le fond, le caractère le plus proche, qui tranche le plus et l'esprit le plus ouvert.</li>
       <li><b>La carte</b> place tout le monde sur deux axes que tu choisis (par défaut économie × identité). Chaque point est cliquable pour lancer la comparaison.</li>
       <li><b>Les couleurs du cercle</b> placent chacun sur la roue DISC, et signalent la couleur la plus présente — ou celle qui manque au groupe.</li>
+      <li>À partir de trois personnes : <b>le palmarès</b> (un titre par qualité, avec la raison), <b>la matrice des affinités</b> (qui est proche de qui, les jumeaux, les opposés) et <b>les sujets du groupe</b> (ceux qui fâchent, ceux qui rassemblent, avec tout le monde placé sur l'axe).</li>
     </ul>
     <h3 class="gsub">Inviter, partager</h3>
     <ul class="glist">
@@ -355,6 +417,7 @@
       <article class="gcard"><h4>Ce que contient un lien</h4><p>Tes ${AXES.length} scores d'axes, ${FOUNDATIONS.length} fondements, ${TRAITS.length} traits, ${DISC.length} couleurs DISC, 4 statistiques de style, tes sujets de cœur, le nombre d'affirmations traitées et tes quatre réponses les plus poussées — le tout compressé en une soixantaine de caractères. Ton prénom n'y figure que si tu l'as donné, en clair après <code>&amp;n=</code>.</p></article>
       <article class="gcard"><h4>Ce qui n'y est pas</h4><p>Tes réponses détaillées ne quittent jamais ton navigateur. Aucun serveur ne reçoit quoi que ce soit : le site est un simple ensemble de fichiers. Si tu perds le lien, le résultat est perdu — il est donc gardé aussi dans ton navigateur, avec ton cercle.</p></article>
       <article class="gcard"><h4>La pause et le code de reprise</h4><p>Pendant le test, le bouton <b>Pause</b> donne un code (et un lien) de reprise. Ta progression est de toute façon gardée sur l'appareil ; le code sert à reprendre <b>ailleurs</b> ou à ne rien perdre. Il contient chacune de tes réponses, les cœurs et la question où tu t'es arrêté : colle-le sur l'accueil, dans « J'ai un code de reprise », et tu repars exactement du même endroit.</p></article>
+      <article class="gcard"><h4>Compléter un ancien profil</h4><p>Les affirmations de valeurs ne nourrissent que les valeurs. On peut donc les ajouter à un résultat existant sans rien changer au reste : en ouvrant son ancien lien, on se voit proposer « Compléter mon profil » (30 curseurs), et le profil obtenu est <b>exactement</b> celui d\'un test complet.</p></article>
       <article class="gcard"><h4>Les anciennes versions</h4><p>Le test a grandi : les liens créés avec une version précédente restent lisibles. Les axes ou le DISC qu'ils ne contiennent pas sont simplement ignorés, et les comparaisons ne portent que sur ce que les deux liens ont en commun. Pour avoir un profil complet, il suffit de refaire le test : le cercle est conservé.</p></article>
       <article class="gcard"><h4>Les limites</h4><p>Prisme n'est pas un outil scientifique validé : les profils types, seuils et textes ont été écrits pour aider à se comprendre et à discuter, pas pour trancher qui a raison. Un score dit ce que tu as répondu un jour donné ; il ne dit pas qui tu es pour toujours.</p></article>
     </div>`);

@@ -6,10 +6,11 @@
 (function () {
   'use strict';
 
-  const { AXES, FOUNDATIONS, TRAITS, DISC, QUESTIONS } = window.PRISME_DATA;
+  const { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, VALUE_QUESTIONS } = window.PRISME_DATA;
   const {
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
+    VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -26,7 +27,7 @@
   const PSYCHE = AXES.filter(a => a.group === 'psyche');
   const EXTREMES_KEPT = 4;
   const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
-  const FRIEND_COLORS = ['#4dc9ff', '#ff7096', '#57cc99', '#c77dff', '#f4a261', '#00f5d4', '#e76f51', '#90be6d', '#b388eb', '#ffb703'];
+  const FRIEND_COLORS = ['#2f9bff', '#ff5d8f', '#2fb67c', '#9b5de5', '#f4a261', '#00bfc4', '#d1495b', '#8ab17d', '#5b6cff', '#e9a100', '#c2185b', '#6d8f00'];
   const THEM_COLOR = '#ffd60a';
 
   // Ordre des axes encodés dans chaque version de lien (ne jamais modifier une version existante)
@@ -39,8 +40,10 @@
     4: ['eco', 'egl', 'soc', 'idn', 'aut', 'env', 'geo', 'jus', 'tec', 'epi', 'chg', 'dem', 'cfl', 'vis', 'nat',
         'aff', 'loc', 'rsk', 'ord', 'thr', 'col', 'tmp', 'cmp', 'opn'],
   };
-  const CURRENT_VERSION = 4;
+  AXES_BY_VERSION[5] = AXES_BY_VERSION[4];
+  const CURRENT_VERSION = 5;
   const DISC_SINCE_VERSION = 4;
+  const VALUES_SINCE_VERSION = 5;
 
   const $ = id => document.getElementById(id);
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -82,14 +85,29 @@
   /* ---------------------------------------------------------
      État du quiz
      --------------------------------------------------------- */
-  const state = { index: 0, answers: {} };
+  // mode : 'full' = test complet ; 'values' = on complète un ancien résultat (state.base) avec les seules questions de valeurs
+  const state = { index: 0, answers: {}, mode: 'full', base: null };
+
+  function listFor(mode) {
+    return mode === 'values' ? VALUE_QUESTIONS : QUESTIONS;
+  }
+  function quizList() {
+    return listFor(state.mode);
+  }
+  function setState(index, answers, mode, base) {
+    state.index = index;
+    state.answers = answers;
+    state.mode = mode === 'values' ? 'values' : 'full';
+    state.base = state.mode === 'values' ? base : null;
+  }
 
   function saveProgress() {
-    store(STORAGE_PROGRESS, { index: state.index, answers: state.answers, t: Date.now() });
+    store(STORAGE_PROGRESS, { index: state.index, answers: state.answers, mode: state.mode, base: state.base, t: Date.now() });
   }
   function loadProgress() {
     const p = readJSON(STORAGE_PROGRESS, null);
     if (!p || typeof p.index !== 'number' || !p.answers) return null;
+    if (p.mode === 'values' && !decodeResult(p.base)) return null;
     return p;
   }
   function clearProgress() {
@@ -170,11 +188,12 @@
     const btn = $('btn-resume');
     const info = $('resume-info');
 
-    if (progress && progress.index < QUESTIONS.length) {
+    const progressOpen = !!progress && progress.index < listFor(progress.mode).length;
+    if (progressOpen) {
       btn.hidden = false;
-      btn.querySelector('span').textContent = 'Reprendre';
-      info.textContent = `${progress.index}/${QUESTIONS.length} curseurs déjà réglés`;
-      btn.onclick = () => { state.index = progress.index; state.answers = progress.answers; startQuiz(); };
+      btn.querySelector('span').textContent = progress.mode === 'values' ? 'Reprendre mes valeurs' : 'Reprendre';
+      info.textContent = `${progress.index}/${listFor(progress.mode).length} curseurs déjà réglés`;
+      btn.onclick = () => { setState(progress.index, progress.answers, progress.mode, progress.base); startQuiz(); };
     } else if (mine) {
       btn.hidden = false;
       btn.querySelector('span').textContent = 'Voir mon dernier résultat';
@@ -183,6 +202,11 @@
     } else {
       btn.hidden = true;
     }
+
+    const mineResult = mine ? decodeResult(mine) : null;
+    const up = $('btn-upgrade');
+    up.hidden = !(mineResult && canUpgrade(mineResult)) || progressOpen;
+    up.onclick = () => startUpgrade(mine);
 
     const note = $('intro-circle');
     const circle = loadCircle();
@@ -199,8 +223,8 @@
     }
 
     $('btn-start').onclick = () => {
-      if (progress && progress.index < QUESTIONS.length && !confirm('Recommencer depuis le début ? Ta progression en cours sera effacée.')) return;
-      state.index = 0; state.answers = {};
+      if (progressOpen && !confirm('Recommencer depuis le début ? Ta progression en cours sera effacée.')) return;
+      setState(0, {}, 'full', null);
       clearProgress();
       startQuiz();
     };
@@ -224,7 +248,7 @@
   const heart = $('heart');
 
   function startQuiz() {
-    $('q-total').textContent = QUESTIONS.length;
+    $('q-total').textContent = quizList().length;
     showScreen('quiz');
     renderQuestion('in');
   }
@@ -252,7 +276,8 @@
   }
 
   function renderQuestion(dir) {
-    const q = QUESTIONS[state.index];
+    const list = quizList();
+    const q = list[state.index];
     const card = $('q-card');
     card.classList.remove('is-leaving', 'is-back');
     void card.offsetWidth; // relance l'animation
@@ -260,7 +285,13 @@
 
     $('q-index').textContent = state.index + 1;
     $('q-text').textContent = q.t;
-    const p = Math.round((state.index / QUESTIONS.length) * 100);
+    const p = Math.round((state.index / list.length) * 100);
+    const kicker = document.querySelector('.q-kicker');
+    kicker.textContent = q.module === 'values' ? 'Tes valeurs · à quel point cette phrase te ressemble ?' : 'Dans quelle mesure es-tu d\'accord ?';
+    kicker.classList.toggle('is-values', q.module === 'values');
+    if (q.module === 'values' && state.mode === 'full' && state.index > 0 && list[state.index - 1].module !== 'values' && dir !== 'back') {
+      toast(`Dernière partie : tes valeurs (${VALUE_QUESTIONS.length} curseurs). Ici, pas d'opinion : dis simplement si la phrase te ressemble.`);
+    }
     $('progress-fill').style.width = p + '%';
     document.querySelector('.progress').setAttribute('aria-valuenow', p);
 
@@ -271,12 +302,12 @@
     paintSlider();
 
     $('btn-prev').disabled = state.index === 0;
-    $('btn-next').querySelector('span').textContent = state.index === QUESTIONS.length - 1 ? 'Voir mon profil' : 'Suivant';
+    $('btn-next').querySelector('span').textContent = state.index === list.length - 1 ? 'Voir mon profil' : 'Suivant';
     slider.focus({ preventScroll: true });
   }
 
   function commitCurrent(skip) {
-    const q = QUESTIONS[state.index];
+    const q = quizList()[state.index];
     if (skip) {
       state.answers[q.id] = null;
     } else {
@@ -296,7 +327,7 @@
     setTimeout(() => {
       transitioning = false;
       state.index += 1;
-      if (state.index >= QUESTIONS.length) {
+      if (state.index >= quizList().length) {
         finishQuiz();
       } else {
         saveProgress();
@@ -313,11 +344,40 @@
     renderQuestion('back');
   }
 
+  // Ajoute les valeurs à un résultat existant. Les affirmations de valeurs ne chargent que les valeurs :
+  // le profil obtenu est exactement celui d'un test complet.
+  function mergeValues(base, part) {
+    const nb = base.answered || 0, np = part.answered || 0, n = nb + np || 1;
+    const mix = k => (base.stats[k] * nb + part.stats[k] * np) / n;
+    return {
+      ...base,
+      values: part.values,
+      stats: { intensity: mix('intensity'), nuance: mix('nuance'), radical: mix('radical'), coherence: base.stats.coherence },
+      answered: nb + np,
+      extremes: base.extremes,
+    };
+  }
+
+  function canUpgrade(r) {
+    return !!r && !r.values && r.version >= DISC_SINCE_VERSION;
+  }
+
+  function startUpgrade(code) {
+    if (!canUpgrade(decodeResult(code))) return;
+    store(STORAGE_LAST, code);
+    history.replaceState(null, '', location.pathname + location.search);
+    setState(0, {}, 'values', code);
+    saveProgress();
+    startQuiz();
+  }
+
   function finishQuiz() {
-    const code = encodeResult(compute(state.answers));
+    const fresh = compute(state.answers);
+    const base = state.mode === 'values' ? decodeResult(state.base) : null;
+    const code = encodeResult(base ? mergeValues(base, fresh) : fresh);
     store(STORAGE_LAST, code);
     clearProgress();
-    state.index = 0;
+    setState(0, {}, 'full', null);
     const pending = readJSON(STORAGE_PENDING, null);
     store(STORAGE_PENDING, null);
     let hash = 'p=' + code + nameParam(myName());
@@ -378,12 +438,18 @@
      Pause : code de reprise (les réponses voyagent dans le code)
      --------------------------------------------------------- */
   const RESUME_MARK = 200; // premier octet d'un code de reprise (les résultats commencent par 1, 2, 3…)
+  const RESUME_MARK_VALUES = 201; // reprise d'un profil en cours de complétion : le code embarque l'ancien résultat
 
   // [200, nb questions (2 octets), question en cours (2 octets), une valeur par question, masque des cœurs]
   // Les réponses sont rangées par identifiant de question : un code reste valable si la banque grandit.
   function encodeProgress(answers, currentId) {
     const n = QUESTIONS.length;
-    const bytes = [RESUME_MARK, n & 255, n >> 8, currentId & 255, currentId >> 8];
+    const upgrade = state.mode === 'values' && state.base;
+    const bytes = [upgrade ? RESUME_MARK_VALUES : RESUME_MARK, n & 255, n >> 8, currentId & 255, currentId >> 8];
+    if (upgrade) {
+      bytes.push(state.base.length);
+      for (const ch of state.base) bytes.push(ch.charCodeAt(0));
+    }
     const hearts = new Array(Math.ceil(n / 8)).fill(0);
     for (let id = 0; id < n; id++) {
       const a = answers[id];
@@ -395,10 +461,18 @@
 
   function decodeProgress(code) {
     const bytes = b64ToBytes(code);
-    if (!bytes || bytes.length < 6 || bytes[0] !== RESUME_MARK) return null;
+    if (!bytes || bytes.length < 6 || (bytes[0] !== RESUME_MARK && bytes[0] !== RESUME_MARK_VALUES)) return null;
     const n = bytes[1] | (bytes[2] << 8);
-    if (!n || n > QUESTIONS.length || bytes.length < 5 + n + Math.ceil(n / 8)) return null;
     const currentId = bytes[3] | (bytes[4] << 8);
+    let mode = 'full', base = null;
+    if (bytes[0] === RESUME_MARK_VALUES) {
+      const len = bytes[5];
+      base = String.fromCharCode(...bytes.slice(6, 6 + len));
+      if (!canUpgrade(decodeResult(base))) return null;
+      bytes.splice(5, 1 + len);
+      mode = 'values';
+    }
+    if (!n || n > QUESTIONS.length || bytes.length < 5 + n + Math.ceil(n / 8)) return null;
     const answers = {};
     let count = 0;
     for (let id = 0; id < n; id++) {
@@ -409,10 +483,11 @@
       if (b > 200) return null;
       answers[id] = { v: b - 100, h: !!(bytes[5 + n + (id >> 3)] & (1 << (id & 7))) };
     }
-    const pos = QUESTIONS.findIndex(q => q.id === currentId);
-    const firstOpen = QUESTIONS.findIndex(q => answers[q.id] === undefined);
-    const index = pos >= 0 ? pos : firstOpen >= 0 ? firstOpen : QUESTIONS.length;
-    return { answers, index, count };
+    const list = listFor(mode);
+    const pos = list.findIndex(q => q.id === currentId);
+    const firstOpen = list.findIndex(q => answers[q.id] === undefined);
+    const index = pos >= 0 ? pos : firstOpen >= 0 ? firstOpen : list.length;
+    return { answers, index, count, mode, base };
   }
 
   // Accepte un code brut ou un lien « #r=CODE » (avec, éventuellement, l'ami qui a lancé l'invitation)
@@ -448,10 +523,10 @@
       return;
     }
     if (progress.vs && decodeResult(progress.vs)) store(STORAGE_PENDING, { code: progress.vs, name: progress.vn || '' });
-    state.answers = progress.answers;
-    state.index = progress.index;
+    setState(progress.index, progress.answers, progress.mode, progress.base);
+    if (progress.mode === 'values') store(STORAGE_LAST, progress.base);
     history.replaceState(null, '', location.pathname + location.search);
-    if (state.index >= QUESTIONS.length) { finishQuiz(); return; }
+    if (state.index >= quizList().length) { finishQuiz(); return; }
     saveProgress();
     startQuiz();
     toast(`Reprise : ${progress.count} réponses retrouvées`);
@@ -461,8 +536,8 @@
     if (touched) commitCurrent(false);
     saveProgress();
     const done = Object.keys(state.answers).length;
-    $('pause-count').textContent = `${done} réponse${done > 1 ? 's' : ''} sur ${QUESTIONS.length}`;
-    $('pause-code').value = encodeProgress(state.answers, QUESTIONS[state.index].id);
+    $('pause-count').textContent = `${done} réponse${done > 1 ? 's' : ''} sur ${quizList().length}`;
+    $('pause-code').value = encodeProgress(state.answers, quizList()[state.index].id);
     $('pause-modal').hidden = false;
     $('btn-pause-code').focus();
   }
@@ -481,6 +556,7 @@
     FOUNDATIONS.forEach(f => dims[f.id] = { num: 0, den: 0, contribs: [] });
     TRAITS.forEach(t => dims[t.id] = { num: 0, den: 0, contribs: [] });
     DISC.forEach(x => dims[x.id] = { num: 0, den: 0, contribs: [] });
+    VALUES.forEach(x => dims[x.id] = { num: 0, den: 0, contribs: [] });
 
     const hearts = {};
     AXES.forEach(a => hearts[a.id] = 0);
@@ -537,6 +613,14 @@
       const d = dims[x.id];
       disc[x.id] = d.den ? clamp((d.num / d.den + 1) / 2, 0, 1) : 0.5;
     });
+    let values = null;
+    if (VALUES.some(x => dims[x.id].den > 0)) {
+      values = {};
+      VALUES.forEach(x => {
+        const d = dims[x.id];
+        values[x.id] = d.den ? clamp((d.num / d.den + 1) / 2, 0, 1) : 0.5;
+      });
+    }
 
     const stats = {
       intensity: answered ? sumAbs / answered : 0,
@@ -551,7 +635,7 @@
     strongest.sort((x, y) => (Number(y.h) - Number(x.h)) || (Math.abs(y.v) - Math.abs(x.v)));
     const extremes = strongest.slice(0, EXTREMES_KEPT).map(e => ({ id: e.id, v: e.v }));
 
-    return { axes, found, traits, disc, stats, heartAxes, answered, extremes };
+    return { axes, found, traits, disc, values, stats, heartAxes, answered, extremes };
   }
 
   /* ---------------------------------------------------------
@@ -590,6 +674,7 @@
     FOUNDATIONS.forEach(f => bytes.push(Math.round(r.found[f.id] * 100)));
     TRAITS.forEach(t => bytes.push(Math.round(r.traits[t.id] * 100)));
     DISC.forEach(x => bytes.push(Math.round(r.disc[x.id] * 100)));
+    VALUES.forEach(x => bytes.push(r.values ? Math.round(r.values[x.id] * 100) : 255)); // 255 = valeurs non mesurées
     bytes.push(Math.round(r.stats.intensity * 100), Math.round(r.stats.nuance * 100), Math.round(r.stats.radical * 100), Math.round(r.stats.coherence * 100));
     let mask = 0;
     ids.forEach((id, i) => { if (r.heartAxes.includes(id)) mask |= (1 << i); });
@@ -620,7 +705,8 @@
     const maskBytes = version === 1 ? 2 : 3;
     const extremeBytes = version === 1 ? 0 : EXTREMES_KEPT * 2;
     const discBytes = version >= DISC_SINCE_VERSION ? DISC.length : 0;
-    const need = 1 + ids.length + FOUNDATIONS.length + TRAITS.length + discBytes + 4 + maskBytes + 1 + extremeBytes;
+    const valueBytes = version >= VALUES_SINCE_VERSION ? VALUES.length : 0;
+    const need = 1 + ids.length + FOUNDATIONS.length + TRAITS.length + discBytes + valueBytes + 4 + maskBytes + 1 + extremeBytes;
     if (bytes.length < need) return null;
 
     let i = 1;
@@ -634,6 +720,14 @@
       disc = {};
       DISC.forEach(x => disc[x.id] = clamp(bytes[i++] / 100, 0, 1));
     }
+    let values = null;
+    if (valueBytes) {
+      if (bytes[i] !== 255) {
+        values = {};
+        VALUES.forEach((x, k) => values[x.id] = clamp(bytes[i + k] / 100, 0, 1));
+      }
+      i += valueBytes;
+    }
     const stats = { intensity: bytes[i++] / 100, nuance: bytes[i++] / 100, radical: bytes[i++] / 100, coherence: bytes[i++] / 100 };
     let mask = 0;
     for (let k = 0; k < maskBytes; k++) mask |= bytes[i++] << (8 * k);
@@ -645,7 +739,7 @@
       if (id >= 0 && id < QUESTIONS.length) extremes.push({ id, v });
     }
     const known = new Set(ids);
-    return { version, axes, found, traits, disc, stats, heartAxes, answered, extremes, known, partial: !known.has('aff') };
+    return { version, axes, found, traits, disc, values, stats, heartAxes, answered, extremes, known, partial: !known.has('aff') };
   }
 
   /* ---------------------------------------------------------
@@ -760,9 +854,10 @@
 
   function matchSignatures(r) {
     if (r.partial) return [];
+    const vs = valueScores(r);
     return SIGNATURES
-      .filter(s => { try { return s.test(r.axes, r.found, r.traits, r.stats, r.disc); } catch (e) { return false; } })
-      .map(s => ({ ...s, strength: s.str(r.axes, r.found, r.traits, r.stats, r.disc) }))
+      .filter(s => { try { return s.test(r.axes, r.found, r.traits, r.stats, r.disc, vs); } catch (e) { return false; } })
+      .map(s => ({ ...s, strength: s.str(r.axes, r.found, r.traits, r.stats, r.disc, vs) }))
       .sort((a, b) => b.strength - a.strength)
       .slice(0, 5);
   }
@@ -919,6 +1014,16 @@
     p4 += eng >= 0.6 ? 'Et tu ne te contentes pas de penser : tu en parles, tu t\'engages, tu agis.'
       : eng <= 0.4 ? 'Tu observes plus que tu ne milites : la politique t\'intéresse, mais de loin.'
       : 'Tu en parles volontiers, sans forcément descendre dans la rue.';
+    const vpS = valueProfile(r);
+    if (vpS) {
+      const [v1, v2] = vpS.ranked;
+      const last = vpS.ranked[vpS.ranked.length - 1];
+      p4 += ` Côté valeurs, ta boussole est <strong>${esc(v1.label.toLowerCase())}</strong> (${pct(v1.v)}), suivie de ${esc(v2.label.toLowerCase())} (${pct(v2.v)}) ; ce qui te motive le moins : ${esc(last.label.toLowerCase())} (${pct(last.v)}). ${vpS.flat ? 'Tes valeurs sont remarquablement équilibrées.' : `Ton profil de valeurs : « ${esc(valueTitle(vpS))} », tourné vers ${esc(vpS.primary.label.toLowerCase())}.`}`;
+      if (vpS.tensions.length) {
+        const [ta, tb] = vpS.tensions[0].ids.map(id => VALUES.find(v => v.id === id).label.toLowerCase());
+        p4 += ` Et tu portes une tension féconde entre ${esc(ta)} et ${esc(tb)}.`;
+      }
+    }
     parts.push({ h: 'Ce qui te fait vibrer', p: p4 });
 
     // V. Ce qui te distingue
@@ -1313,6 +1418,432 @@
   }
 
   /* ---------------------------------------------------------
+     Valeurs (Schwartz)
+     --------------------------------------------------------- */
+  const POLE_ORDER = ['ouv', 'aff', 'cnt', 'dep'];
+
+  // Scores bruts (0 → 1) et centrés sur la moyenne de la personne : ce qui compte, c'est la hiérarchie des valeurs
+  function valueScores(r) {
+    if (!r || !r.values) return null;
+    const raw = r.values;
+    const mean = VALUES.reduce((s, v) => s + raw[v.id], 0) / VALUES.length;
+    const c = {};
+    VALUES.forEach(v => { c[v.id] = raw[v.id] - mean; });
+    return {
+      r: raw, c, mean,
+      hi: id => raw[id] >= 0.6 && c[id] >= 0.05,
+      lo: id => raw[id] <= 0.45 && c[id] <= -0.05,
+    };
+  }
+
+  function valueProfile(r) {
+    const vs = valueScores(r);
+    if (!vs) return null;
+    const ranked = VALUES.map(v => ({ ...v, v: vs.r[v.id], c: vs.c[v.id], text: VALUE_TEXTS[v.id] })).sort((p, q) => q.c - p.c);
+    const poles = POLE_ORDER.map(id => {
+      const list = VALUES.filter(v => v.pole === id);
+      return { id, ...VALUE_POLES[id], score: list.reduce((s, v) => s + vs.c[v.id], 0) / list.length, raw: list.reduce((s, v) => s + vs.r[v.id], 0) / list.length };
+    }).sort((p, q) => q.score - p.score);
+    const [p1, p2] = poles;
+    const flat = p1.score - poles[poles.length - 1].score < 0.06;
+    const second = !flat && p2.score > 0.015 && p1.score - p2.score <= 0.07 ? p2 : null;
+    const comboKey = second ? [p1.id, second.id].sort((x, y) => POLE_ORDER.indexOf(x) - POLE_ORDER.indexOf(y)).join('+') : null;
+    const combo = comboKey ? VALUE_COMBOS[comboKey] : null;
+    const tensions = Object.entries(VALUE_TENSIONS)
+      .filter(([k]) => k.split('+').every(id => vs.hi(id)))
+      .map(([k, text]) => ({ ids: k.split('+'), text, strength: k.split('+').reduce((s, id) => s + vs.c[id], 0) }))
+      .sort((p, q) => q.strength - p.strength)
+      .slice(0, 2);
+    return { vs, ranked, poles, primary: p1, second, combo, flat, tensions };
+  }
+
+  function valueTitle(vp) {
+    if (vp.flat) return 'La Boussole équilibrée';
+    return vp.combo ? vp.combo.title : vp.primary.title;
+  }
+
+  function renderValuesWheel({ fill, outline, labels }) {
+    const W = 520, H = 480, CX = 260, CY = 240, R = 138;
+    const n = VALUES.length, step = 360 / n;
+    const pt = (deg, r) => [CX + Math.cos((deg * Math.PI) / 180) * r, CY + Math.sin((deg * Math.PI) / 180) * r];
+    const sector = (a0, a1, r) => {
+      const [x0, y0] = pt(a0, r), [x1, y1] = pt(a1, r);
+      return `M${CX} ${CY}L${x0.toFixed(1)} ${y0.toFixed(1)}A${r.toFixed(1)} ${r.toFixed(1)} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}Z`;
+    };
+    const arc = (a0, a1, r) => {
+      const [x0, y0] = pt(a0, r), [x1, y1] = pt(a1, r);
+      return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+    };
+    const radius = v => R * (0.18 + 0.82 * v);
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Roue des valeurs">`;
+    VALUES.forEach((v, i) => {
+      const a0 = -90 + i * step, a1 = a0 + step;
+      svg += `<path class="val-bg" d="${sector(a0, a1, R)}" style="fill:${v.color}"/>`;
+      if (fill) svg += `<path class="val-fill" d="${sector(a0, a1, radius(fill[v.id]))}" style="fill:${v.color}"/>`;
+    });
+    [1 / 3, 2 / 3, 1].forEach(k => { svg += `<circle class="disc-ring" cx="${CX}" cy="${CY}" r="${(R * k).toFixed(1)}"/>`; });
+    if (outline) {
+      VALUES.forEach((v, i) => {
+        const a0 = -90 + i * step;
+        svg += `<path class="disc-outline" d="${sector(a0, a0 + step, radius(outline[v.id]))}"/>`;
+      });
+    }
+    // anneau extérieur : les quatre grands pôles
+    POLE_ORDER.forEach(id => {
+      const idx = VALUES.map((v, i) => (v.pole === id ? i : -1)).filter(i => i >= 0);
+      const a0 = -90 + idx[0] * step + 2, a1 = -90 + (idx[idx.length - 1] + 1) * step - 2;
+      svg += `<path class="val-pole" d="${arc(a0, a1, R + 9)}" style="stroke:${VALUE_POLES[id].color}"/>`;
+    });
+    VALUES.forEach((v, i) => {
+      const mid = -90 + i * step + step / 2;
+      const [lx, ly] = pt(mid, R + 24);
+      const cos = Math.cos((mid * Math.PI) / 180);
+      const anchor = Math.abs(cos) < 0.25 ? 'middle' : cos > 0 ? 'start' : 'end';
+      svg += `<text class="val-lbl" x="${lx.toFixed(1)}" y="${(ly + 5).toFixed(1)}" text-anchor="${anchor}" style="--c:${v.color}">${esc(v.label)}</text>`;
+      if (fill && labels !== false) {
+        const [sx, sy] = pt(mid, Math.max(radius(fill[v.id]) - 18, R * 0.3));
+        svg += `<text class="val-score" x="${sx.toFixed(1)}" y="${(sy + 5).toFixed(1)}" text-anchor="middle">${pct(fill[v.id])}</text>`;
+      }
+    });
+    const corners = { ouv: [W - 8, 22, 'end'], aff: [W - 8, H - 10, 'end'], cnt: [8, H - 10, 'start'], dep: [8, 22, 'start'] };
+    POLE_ORDER.forEach(id => {
+      const [x, y, anchor] = corners[id];
+      svg += `<text class="val-pole-lbl" x="${x}" y="${y}" text-anchor="${anchor}" style="--c:${VALUE_POLES[id].color}">${esc(VALUE_POLES[id].label.toUpperCase())}</text>`;
+    });
+    return svg + '</svg>';
+  }
+
+  function renderValuesSection(r, vp) {
+    $('values-wheel').innerHTML = renderValuesWheel({ fill: r.values });
+    $('values-kicker').textContent = vp.flat ? 'Des valeurs équilibrées' : vp.second ? 'Ta boussole, entre deux pôles' : 'Ta boussole';
+    $('values-title').textContent = valueTitle(vp);
+    $('values-sub').textContent = vp.flat
+      ? 'Aucun pôle ne domine nettement'
+      : `Pôle dominant : ${vp.primary.label}${vp.second ? ' · puis ' + vp.second.label : ''}`;
+    $('values-desc').textContent = vp.flat
+      ? 'Tes dix valeurs se tiennent dans un mouchoir : tu ne sacrifies aucune à une autre. C\'est rare, et ça fait de toi quelqu\'un de difficile à prévoir — tu arbitres au cas par cas plutôt que par principe.'
+      : vp.combo ? vp.combo.text : vp.primary.desc;
+
+    $('values-bars').innerHTML = vp.ranked.map((v, i) => `
+      <div class="val-bar ${i < 3 ? 'is-top' : ''}" style="--c:${v.color}">
+        <span class="rank">${i + 1}</span>
+        <div><div class="name">${esc(v.label)}<small>${esc(v.short)}</small></div><div class="track"><i data-w="${pct(v.v)}"></i></div></div>
+        <span class="num">${pct(v.v)}</span>
+      </div>`).join('');
+
+    const top = vp.ranked.slice(0, 3), low = vp.ranked.slice(-2).reverse();
+    const cards = top.map((v, i) => `
+      <article class="val-card" style="--c:${v.color}">
+        <p class="k">${['Ta valeur boussole', 'Ta deuxième valeur', 'Ta troisième valeur'][i]} · ${pct(v.v)}</p>
+        <h4>${esc(v.label)}</h4>
+        <p>${esc(v.text.desc)}</p>
+        <p>${esc(v.text.high)}</p>
+        <p class="pol">${esc(v.text.politics)}</p>
+      </article>`);
+    cards.push(`
+      <article class="val-card low">
+        <p class="k">Ce qui compte le moins pour toi</p>
+        ${low.map(v => `<h4 style="--c:${v.color}">${esc(v.label)} <small>${pct(v.v)}</small></h4><p>${esc(v.text.low)}</p>`).join('')}
+      </article>`);
+    vp.tensions.forEach(t => {
+      const [a, b] = t.ids.map(id => VALUES.find(v => v.id === id));
+      cards.push(`
+        <article class="val-card tension">
+          <p class="k">Une tension qui te définit</p>
+          <h4>${esc(a.label)} <span class="amp">et</span> ${esc(b.label)}</h4>
+          <p>Ces deux valeurs se font face sur le cercle, et pourtant tu tiens fort aux deux. ${esc(t.text)}</p>
+        </article>`);
+    });
+    $('values-cards').innerHTML = cards.join('');
+
+    $('values-poles').innerHTML = POLE_ORDER.map(id => {
+      const p = vp.poles.find(x => x.id === id);
+      const mine = p.id === vp.primary.id || (vp.second && p.id === vp.second.id);
+      return `<article class="val-pole-card ${mine && !vp.flat ? 'is-mine' : ''}" style="--c:${p.color}">
+          <div class="head"><span class="name">${esc(p.label)}</span><span class="pct">${pct(p.raw)}</span></div>
+          <p>${esc(VALUES.filter(v => v.pole === id).map(v => v.label).join(' · '))}</p>
+        </article>`;
+    }).join('');
+  }
+
+  function renderValuesTeaser(cur) {
+    const box = $('values-teaser');
+    const can = cur.r.version >= 4;
+    let html;
+    if (!can) {
+      html = `<p><b>Nouveau : tes valeurs.</b> Ce profil vient d'une ancienne version du test. Refais le test pour obtenir tes valeurs, ton profil DISC et toutes les nouvelles analyses — ton cercle d'amis est conservé.</p>`;
+    } else if (cur.isMine) {
+      html = `<p><b>Nouveau : tes valeurs.</b> Trente curseurs de plus (5 minutes) pour découvrir ce qui te fait avancer : ta boussole parmi dix valeurs, tes tensions intérieures, et ce qu'elles disent de tes choix politiques. <b>Tu ne refais pas le test</b> : tes réponses précédentes sont gardées, tu ne réponds qu'aux nouvelles questions.</p>
+        <button class="btn btn-primary" type="button" data-upgrade="mine"><span>Compléter mon profil</span><small>30 curseurs · ~5 min</small></button>`;
+    } else {
+      html = `<p><b>Ce profil n'a pas encore ses valeurs.</b> Si c'est le tien, tu peux le compléter sans refaire le test : trente curseurs de plus (5 minutes), et tes réponses précédentes sont gardées.</p>
+        <button class="btn btn-primary" type="button" data-upgrade="claim"><span>C'est mon profil : le compléter</span><small>30 curseurs · ~5 min</small></button>`;
+    }
+    box.innerHTML = html;
+  }
+
+  /* ---------------------------------------------------------
+     Qualités (indices composites) et « dans la vie »
+     --------------------------------------------------------- */
+  function componentValue(r, [src, id, dir]) {
+    let v = null;
+    if (src === 'axis') { if (r.known.has(id)) v = (r.axes[id] + 1) / 2; }
+    else if (src === 'found') v = r.found[id];
+    else if (src === 'trait') v = r.traits[id];
+    else if (src === 'disc') { if (r.disc) v = r.disc[id]; }
+    if (v === null || v === undefined) return null;
+    return dir > 0 ? v : 1 - v;
+  }
+
+  function componentLabel(r, [src, id, dir]) {
+    if (src === 'axis') {
+      const a = axisById(id), s = r.axes[id];
+      return `${nuancedLabel(a, s).toLowerCase()} (${pct(Math.abs(s))})`;
+    }
+    if (src === 'found') {
+      const f = FOUNDATIONS.find(x => x.id === id);
+      return dir > 0 ? `${f.label.toLowerCase()} ${pct(r.found[id])}` : `peu sensible ${artA(f)}${f.label.toLowerCase()} (${pct(r.found[id])})`;
+    }
+    if (src === 'trait') {
+      const t = TRAITS.find(x => x.id === id);
+      return `${(dir > 0 ? t.high : t.low).toLowerCase()} (${t.label.toLowerCase()} ${pct(r.traits[id])})`;
+    }
+    const x = DISC.find(d => d.id === id);
+    return `${x.color.toLowerCase()} ${pct(r.disc[id])} au DISC`;
+  }
+
+  const qualityCache = new WeakMap();
+  function qualityScores(r) {
+    if (qualityCache.has(r)) return qualityCache.get(r);
+    const out = QUALITIES.map(q => {
+      let num = 0, den = 0;
+      const parts = [];
+      q.comps.forEach(c => {
+        const v = componentValue(r, c);
+        if (v === null) return;
+        num += v * c[3]; den += c[3];
+        parts.push({ c, v, w: c[3] });
+      });
+      return { ...q, score: parts.length >= 2 ? num / den : null, parts };
+    });
+    qualityCache.set(r, out);
+    return out;
+  }
+
+  function qualityWhy(r, q) {
+    const strong = q.parts.filter(p => p.v >= 0.6).sort((x, y) => y.v * y.w - x.v * x.w).slice(0, 3);
+    if (!strong.length) return 'une somme de petites tendances qui vont toutes dans le même sens';
+    return joinFr(strong.map(p => componentLabel(r, p.c)));
+  }
+
+  function qualityWhyLow(r, q) {
+    const weak = q.parts.filter(p => p.v <= 0.4).sort((x, y) => x.v * y.w - y.v * x.w).slice(0, 3);
+    if (!weak.length) return '';
+    return joinFr(weak.map(p => componentLabel(r, p.c)));
+  }
+
+  function renderQualities(r) {
+    const all = qualityScores(r).filter(q => q.score !== null);
+    const sec = $('qualities-section');
+    sec.hidden = all.length < 6;
+    if (all.length < 6) return;
+    const ranked = all.slice().sort((x, y) => y.score - x.score);
+    const top = ranked.slice(0, 5), low = ranked.slice(-2).reverse();
+    $('qualities-top').innerHTML = top.map((q, i) => `
+      <article class="qual" style="--d:${i * 70}ms">
+        <div class="qual-head"><span class="qual-rank">${ROMAN[i]}</span><h4>${esc(q.name)}</h4><span class="qual-score">${pct(q.score)}</span></div>
+        <div class="qual-track"><i data-w="${pct(q.score)}"></i></div>
+        <p>${esc(q.high)}</p>
+        <p class="why"><b>D'où ça vient :</b> ${esc(qualityWhy(r, q))}.</p>
+      </article>`).join('');
+    $('qualities-low').innerHTML = low.map(q => {
+      const why = qualityWhyLow(r, q);
+      return `
+      <article class="qual low">
+        <div class="qual-head"><h4>${esc(q.name)}</h4><span class="qual-score">${pct(q.score)}</span></div>
+        <div class="qual-track"><i data-w="${pct(q.score)}"></i></div>
+        <p>${esc(q.low)}</p>
+        ${why ? `<p class="why"><b>D'où ça vient :</b> ${esc(why)}.</p>` : ''}
+      </article>`;
+    }).join('');
+    $('qualities-all').innerHTML = ranked.map(q =>
+      `<li><b>${esc(q.name)}</b><span class="bar"><i data-w="${pct(q.score)}"></i></span><span class="num">${pct(q.score)}</span></li>`).join('');
+  }
+
+  function renderLife(r) {
+    const scores = {};
+    qualityScores(r).forEach(q => { if (q.score !== null) scores[q.id] = q.score; });
+    const cards = LIFE.map(cat => {
+      const list = Object.keys(cat.items).filter(id => scores[id] !== undefined).sort((x, y) => scores[y] - scores[x]);
+      if (list.length < 2) return '';
+      const hiId = list[0], loId = list[list.length - 1];
+      const lines = [];
+      if (scores[hiId] >= 0.5) lines.push({ id: hiId, text: cat.items[hiId].h });
+      if (scores[loId] <= 0.46) lines.push({ id: loId, text: cat.items[loId].l });
+      if (!lines.length) lines.push({ id: hiId, text: cat.items[hiId].h });
+      if (lines.length === 1 && list.length > 2 && scores[list[1]] >= 0.58) lines.push({ id: list[1], text: cat.items[list[1]].h });
+      return `<article class="life-card"><h4>${esc(cat.title)}</h4>${lines.map(l => {
+        const q = QUALITIES.find(x => x.id === l.id);
+        return `<p>${esc(l.text)} <span class="src">${esc(q.name.toLowerCase())} ${pct(scores[l.id])}</span></p>`;
+      }).join('')}</article>`;
+    }).filter(Boolean);
+    $('life-section').hidden = !cards.length;
+    $('life-cards').innerHTML = cards.join('');
+  }
+
+  /* ---------------------------------------------------------
+     Cercle : palmarès, matrice des affinités, sujets du groupe
+     --------------------------------------------------------- */
+  function renderGroup(cur, entries) {
+    const people = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
+    const enough = people.length >= 3;
+    $('awards-card').hidden = !enough;
+    $('matrix-card').hidden = !enough;
+    $('topics-card').hidden = !enough;
+    if (!enough) return;
+
+    const who = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`;
+
+    // Affinités deux à deux
+    const n = people.length;
+    const aff = people.map(() => new Array(n).fill(null));
+    const pairs = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const a = affinityBetween(people[i].r, people[j].r).total;
+      aff[i][j] = aff[j][i] = a;
+      pairs.push({ i, j, a });
+    }
+    const meanAff = people.map((p, i) => aff[i].reduce((s, v) => s + (v || 0), 0) / (n - 1));
+
+    // Palmarès des qualités
+    const awards = [];
+    QUALITIES.forEach(q => {
+      const ranked = people.map(p => ({ p, q: qualityScores(p.r).find(x => x.id === q.id) })).filter(x => x.q.score !== null).sort((x, y) => y.q.score - x.q.score);
+      if (ranked.length < 2) return;
+      const [w, second] = ranked;
+      awards.push({
+        title: q.award, sub: q.sub, p: w.p, score: pct(w.q.score),
+        text: `Parce que : ${qualityWhy(w.p.r, w.q)}.`,
+        next: `devant ${second.p.name} (${pct(second.q.score)})`,
+      });
+    });
+    const byStat = (title, sub, fn, fmt, text) => {
+      const ranked = people.map((p, i) => ({ p, v: fn(p, i) })).sort((x, y) => y.v - x.v);
+      awards.push({ title, sub, p: ranked[0].p, score: fmt(ranked[0].v), text: text(ranked[0]), next: `devant ${ranked[1].p.name} (${fmt(ranked[1].v)})` });
+    };
+    byStat('Le plus tranché', 'pousse ses curseurs à fond', p => p.r.stats.radical, v => pct(v) + ' %', x => `${pct(x.v)} % de ses curseurs sont aux extrêmes : avec ${x.p.me ? 'toi' : x.p.name}, on sait à quoi s'en tenir.`);
+    byStat('Le plus nuancé', 'pèse le pour et le contre', p => p.r.stats.nuance, v => pct(v) + ' %', x => `${pct(x.v)} % de ses curseurs restent près du centre : « ça dépend » est une vraie réponse.`);
+    byStat('Le plus cohérent', 'ne se contredit presque jamais', p => p.r.stats.coherence, v => pct(v) + ' %', x => `Ses réponses vont dans le même sens sur chaque axe (${pct(x.v)} % de cohérence) : une pensée construite.`);
+    byStat('Le ciment du groupe', 'le plus proche de tout le monde à la fois', (p, i) => meanAff[i], v => pct(v) + ' %', x => `${pct(x.v)} % d'affinité moyenne avec les autres : la personne par qui tout le monde peut se parler.`);
+    byStat('Le cas à part', 'ne ressemble à personne ici', (p, i) => 1 - meanAff[i], v => pct(1 - v) + ' %', x => `Seulement ${pct(1 - x.v)} % d'affinité moyenne avec le reste du cercle : la voix différente, celle qui évite au groupe de tourner en rond.`);
+
+    $('awards').innerHTML = awards.map((a, k) => `
+      <article class="award ${a.p.me ? 'is-me' : ''}" style="--d:${Math.min(k, 10) * 40}ms">
+        <p class="award-title">${esc(a.title)}</p>
+        <p class="award-sub">${esc(a.sub)}</p>
+        <div class="award-who">${who(a.p)}<span class="award-score">${esc(String(a.score))}</span></div>
+        <p class="award-text">${esc(a.text)}</p>
+        <p class="award-next">${esc(a.next)}</p>
+      </article>`).join('');
+
+    // Médailles par personne
+    const medals = people.map(p => ({ p, n: awards.filter(a => a.p === p).length })).sort((x, y) => y.n - x.n);
+    $('awards-medals').innerHTML = medals.map(m => `<span class="medal">${who(m.p)}<b>${m.n}</b></span>`).join('');
+
+    // Duos remarquables + matrice
+    pairs.sort((x, y) => y.a - x.a);
+    const twin = pairs[0], opp = pairs[pairs.length - 1];
+    const duo = (label, pr, text) => `<article class="duo-card"><p class="k">${label}</p><h4>${who(people[pr.i])}<span class="amp">&amp;</span>${who(people[pr.j])}<span class="pct">${pct(pr.a)} %</span></h4><p>${text}</p></article>`;
+    $('matrix-duos').innerHTML =
+      duo('Les jumeaux', twin, 'Les deux profils les plus proches du cercle. S\'ils se disputent, ce sera sur des détails.')
+      + duo('Les opposés', opp, 'Les deux profils les plus éloignés. S\'ils s\'entendent bien, c\'est que l\'amitié passe ailleurs que par les idées.');
+    const initials = p => (p.me ? 'Toi' : p.name.slice(0, 3));
+    let table = '<table class="matrix"><thead><tr><th></th>' + people.map(p => `<th title="${esc(p.name)}">${esc(initials(p))}</th>`).join('') + '</tr></thead><tbody>';
+    people.forEach((p, i) => {
+      table += `<tr><th>${who(p)}</th>` + people.map((q, j) => {
+        if (i === j) return '<td class="self">·</td>';
+        const a = aff[i][j];
+        const level = clamp((a - 0.38) / 0.4, 0, 1);
+        return `<td style="--a:${(level * 100).toFixed(0)}%" title="${esc(p.name)} et ${esc(q.name)} : ${pct(a)} %">${pct(a)}</td>`;
+      }).join('') + '</tr>';
+    });
+    $('matrix').innerHTML = table + '</tbody></table>';
+
+    // Sujets qui rassemblent / qui fâchent
+    const shared = AXES.filter(a => people.every(p => p.r.known.has(a.id)));
+    const stats = shared.map(a => {
+      const vals = people.map(p => p.r.axes[a.id]);
+      const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+      const sd = Math.sqrt(vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length);
+      return { a, mean, sd };
+    });
+    const divisive = stats.slice().sort((x, y) => y.sd - x.sd).slice(0, 3);
+    const uniting = stats.filter(s => Math.abs(s.mean) >= 0.2).sort((x, y) => x.sd - y.sd).slice(0, 3);
+    const strip = s => `
+      <div class="strip">
+        <div class="strip-head"><b>${esc(cap(theme(s.a.id)))}</b><span>${s.sd >= 0.45 ? 'très partagé' : s.sd >= 0.3 ? 'partagé' : 'plutôt d\'accord'} · moyenne du groupe : ${esc(nuancedLabel(s.a, s.mean).toLowerCase())}</span></div>
+        <div class="strip-row"><span class="l">${esc(s.a.left)}</span>
+          <div class="strip-track">${people.map(p => `<span class="strip-dot ${p.me ? 'me' : ''}" style="left:${50 + p.r.axes[s.a.id] * 50}%;background:${p.color}" title="${esc(p.name)} : ${esc(nuancedLabel(s.a, p.r.axes[s.a.id]))}"></span>`).join('')}</div>
+          <span class="r">${esc(s.a.right)}</span></div>
+      </div>`;
+    $('topics-divide').innerHTML = divisive.map(strip).join('');
+    $('topics-unite').innerHTML = uniting.length ? uniting.map(strip).join('') : '<p class="map-note">Aucun sujet ne met vraiment tout le monde du même côté : c\'est un cercle varié.</p>';
+
+    // Valeurs du groupe
+    const withValues = people.map(p => ({ p, vp: valueProfile(p.r) })).filter(x => x.vp);
+    const vbox = $('topics-values');
+    vbox.hidden = withValues.length < 2;
+    if (withValues.length >= 2) {
+      const counts = {};
+      withValues.forEach(x => { const id = x.vp.ranked[0].id; counts[id] = (counts[id] || []).concat(x.p.name); });
+      const best = Object.entries(counts).sort((x, y) => y[1].length - x[1].length)[0];
+      const v = VALUES.find(x => x.id === best[0]);
+      vbox.innerHTML = `<b>Les boussoles du cercle :</b> ${withValues.map(x => `${esc(x.p.name)} → ${esc(x.vp.ranked[0].label.toLowerCase())}`).join(' · ')}.`
+        + (best[1].length > 1 ? ` La valeur la plus partagée en tête : <b>${esc(v.label.toLowerCase())}</b> (${esc(joinFr(best[1]))}).` : ' Chacun a sa propre valeur en tête : aucune ne domine le groupe.');
+    }
+  }
+
+  /* ---------------------------------------------------------
+     Comparaison : valeurs et qualités face à face
+     --------------------------------------------------------- */
+  function renderCompareExtras(a, b, meLabel, name) {
+    const va = valueProfile(a), vb = valueProfile(b);
+    $('cmp-values').hidden = !(va && vb);
+    if (va && vb) {
+      $('cmp-values-wheel').innerHTML = renderValuesWheel({ fill: a.values, outline: b.values, labels: false });
+      const topA = va.ranked.slice(0, 3).map(v => v.id), topB = vb.ranked.slice(0, 3).map(v => v.id);
+      const common = topA.filter(id => topB.includes(id)).map(id => VALUES.find(v => v.id === id).label.toLowerCase());
+      const gaps = VALUES.map(v => ({ v, d: va.vs.c[v.id] - vb.vs.c[v.id] })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d));
+      const g = gaps[0];
+      let text = va.primary.id === vb.primary.id && !va.flat && !vb.flat
+        ? `Même boussole : vous êtes tous les deux tournés vers « ${va.primary.label.toLowerCase()} ». Vos désaccords d'idées reposent sur un socle commun.`
+        : `Deux boussoles : ${meLabel.toLowerCase() === 'toi' ? 'tu es tourné' : meLabel + ' est tourné'} vers « ${va.primary.label.toLowerCase()} », ${name} vers « ${vb.primary.label.toLowerCase()} ». Vous ne cherchez pas la même chose dans la vie — ce qui explique bien des malentendus.`;
+      text += common.length ? ` Dans vos trois premières valeurs, vous partagez : ${joinFr(common)}.` : ' Vous n\'avez aucune valeur en commun dans vos trois premières.';
+      text += ` Le plus grand écart : ${g.v.label.toLowerCase()}, qui compte bien plus pour ${g.d > 0 ? (meLabel.toLowerCase() === 'toi' ? 'toi' : meLabel) : name} (${pct(g.d > 0 ? a.values[g.v.id] : b.values[g.v.id])} contre ${pct(g.d > 0 ? b.values[g.v.id] : a.values[g.v.id])}).`;
+      $('cmp-values-text').textContent = text;
+      $('cmp-values-bars').innerHTML = VALUES.map(v =>
+        `<li><b style="color:color-mix(in srgb, ${v.color} var(--label-mix), var(--label-toward))">${esc(v.label)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(a.values[v.id])}"></i></span><span class="bar them"><i data-w="${pct(b.values[v.id])}"></i></span></span><span class="num">${pct(a.values[v.id])}<em>${pct(b.values[v.id])}</em></span></li>`).join('');
+    }
+
+    const qa = qualityScores(a), qb = qualityScores(b);
+    const rows = qa.map((q, i) => ({ q, m: q.score, t: qb[i].score })).filter(x => x.m !== null && x.t !== null).map(x => ({ ...x, d: x.m - x.t }));
+    $('cmp-qualities').hidden = rows.length < 6;
+    if (rows.length >= 6) {
+      const mine = rows.slice().sort((x, y) => y.d - x.d).slice(0, 3).filter(x => x.d > 0.04);
+      const theirs = rows.slice().sort((x, y) => x.d - y.d).slice(0, 3).filter(x => x.d < -0.04);
+      const item = x => `<li><b>${esc(x.q.name)}</b><span>${pct(Math.max(x.m, x.t))} contre ${pct(Math.min(x.m, x.t))}</span></li>`;
+      const meWord = meLabel.toLowerCase() === 'toi' ? 'tu apportes' : meLabel + ' apporte';
+      $('cmp-qual-me-title').textContent = `Ce que ${meWord}`;
+      $('cmp-qual-them-title').textContent = `Ce que ${name} apporte`;
+      $('cmp-qual-me').innerHTML = mine.length ? mine.map(item).join('') : '<li><span>Rien de net : vos qualités se recouvrent.</span></li>';
+      $('cmp-qual-them').innerHTML = theirs.length ? theirs.map(item).join('') : '<li><span>Rien de net : vos qualités se recouvrent.</span></li>';
+      $('cmp-qual-bars').innerHTML = rows.slice().sort((x, y) => Math.abs(y.d) - Math.abs(x.d)).map(x =>
+        `<li><b>${esc(x.q.name)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(x.m)}"></i></span><span class="bar them"><i data-w="${pct(x.t)}"></i></span></span><span class="num">${pct(x.m)}<em>${pct(x.t)}</em></span></li>`).join('');
+    }
+  }
+
+  /* ---------------------------------------------------------
      Rendu : briques graphiques
      --------------------------------------------------------- */
   function renderAxisRow(axis, mine, theirs) {
@@ -1404,12 +1935,21 @@
     $('res-headline').textContent = [fam[0].desc, temp[0].desc, psy.length ? psy[0].desc : ''].filter(Boolean).join(' ');
 
     const dp = discProfile(r.disc);
-    $('disc-chips').hidden = !dp;
-    $('disc-chips').innerHTML = dp
+    const vp = valueProfile(r);
+    $('disc-chips').hidden = !dp && !vp;
+    $('disc-chips').innerHTML = (dp
       ? discPills(dp, false) + (dp.balanced ? '<span class="disc-pill" style="--c:var(--ink-3)"><b>≈</b>Profil équilibré</span>' : '')
-      : '';
+      : '')
+      + (vp ? `<span class="disc-pill" style="--c:${vp.flat ? 'var(--ink-3)' : vp.primary.color}"><b>★</b>${esc(valueTitle(vp))}<small>valeurs</small></span>` : '');
     $('disc-section').hidden = !dp;
     if (dp) renderDiscSection(r, dp);
+
+    renderQualities(r);
+    renderLife(r);
+    $('values-section').hidden = !vp;
+    if (vp) renderValuesSection(r, vp);
+    $('values-teaser-section').hidden = !!vp;
+    if (!vp) renderValuesTeaser(cur);
 
     // Barre d'actions : propriétaire ou visiteur
     $('res-share').hidden = !cur.isMine;
@@ -1578,6 +2118,7 @@
     mapState = { cur, entries, selectedCode };
     renderMap();
     renderCircleDisc(cur, entries);
+    renderGroup(cur, entries);
   }
 
   function renderMap() {
@@ -1724,6 +2265,8 @@
         `<li><b style="color:color-mix(in srgb, var(${x.css}) var(--label-mix), var(--label-toward))">${esc(x.color)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(a.disc[x.id])}"></i></span><span class="bar them"><i data-w="${pct(b.disc[x.id])}"></i></span></span><span class="num">${pct(a.disc[x.id])}<em>${pct(b.disc[x.id])}</em></span></li>`).join('');
     }
 
+    renderCompareExtras(a, b, meLabel, name);
+
     // Listes d'accords et de désaccords
     const agree = rows.filter(r => r.d < 0.3 && Math.sign(r.m) === Math.sign(r.t) && Math.abs(r.m) >= 0.2)
       .sort((x, y) => (Math.abs(y.m) + Math.abs(y.t)) - (Math.abs(x.m) + Math.abs(x.t))).slice(0, 5);
@@ -1844,9 +2387,20 @@
       initIntro();
     };
 
+    $('values-teaser').addEventListener('click', e => {
+      const btn = e.target.closest('[data-upgrade]');
+      if (!btn || !current) return;
+      if (btn.dataset.upgrade === 'claim') {
+        if (!confirm('Ce résultat est bien le tien ? Il sera enregistré comme ton profil sur cet appareil, puis complété.')) return;
+        if (current.name && !myName()) store(STORAGE_NAME, current.name);
+        removeFromCircle(current.code);
+      }
+      startUpgrade(current.code);
+    });
+
     $('btn-retake').onclick = () => {
       if (!confirm('Refaire le test depuis le début ? Ton cercle d\'amis sera conservé.')) return;
-      state.index = 0; state.answers = {};
+      setState(0, {}, 'full', null);
       clearProgress();
       history.replaceState(null, '', location.pathname + location.search);
       startQuiz();
@@ -1972,10 +2526,10 @@
       if (current.name) addToCircle(current.code, current.name);
       history.replaceState(null, '', location.pathname + location.search);
       const progress = loadProgress();
-      if (progress && progress.index < QUESTIONS.length) {
-        state.index = progress.index; state.answers = progress.answers;
+      if (progress && progress.mode !== 'values' && progress.index < QUESTIONS.length) {
+        setState(progress.index, progress.answers, 'full', null);
       } else {
-        state.index = 0; state.answers = {};
+        setState(0, {}, 'full', null);
       }
       startQuiz();
     };
