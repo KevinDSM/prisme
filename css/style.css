@@ -1155,6 +1155,8 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .q-kicker.is-values { color: color-mix(in srgb, #1f9d6b var(--label-mix), var(--label-toward)); }
 .btn-upgrade { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.35); }
 .teaser p { font-size: 17px; }
+.teaser-top { margin-top: 26px; }
+.teaser-top .visitor { margin-top: 0; border-width: 2px; }
 .teaser p b { color: var(--ink); }
 .sub-head.first { margin-top: 0; }
 

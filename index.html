@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -83,7 +83,7 @@
       </button>
       <button id="btn-upgrade" class="btn btn-primary btn-upgrade" hidden>
         <span>Nouveau : compléter mon profil</span>
-        <small>tes valeurs · 30 curseurs · sans refaire le test</small>
+        <small>nouveaux curseurs · sans refaire le test</small>
       </button>
       <a class="btn btn-ghost" href="guide.html">
         <span>Mode d'emploi</span>
@@ -92,7 +92,7 @@
     </div>
 
     <details class="intro-import">
-      <summary>J'ai un code de reprise ou un lien de résultat</summary>
+      <summary>J'ai un lien de résultat (le revoir ou le compléter) ou un code de reprise</summary>
       <div class="import-row">
         <input id="import-input" type="text" placeholder="Colle le lien ou le code ici" autocomplete="off" spellcheck="false">
         <button id="btn-import" class="btn btn-ghost btn-sm">Valider</button>
@@ -197,6 +197,10 @@
         </div>
       </div>
     </div>
+
+    <section class="res-section teaser-top" id="values-teaser-section" hidden>
+      <div id="values-teaser" class="visitor teaser"></div>
+    </section>
 
     <!-- Cercle d'amis -->
     <section id="circle-section" class="res-section circle" hidden>
@@ -483,9 +487,6 @@
       </div>
     </section>
 
-    <section class="res-section" id="values-teaser-section" hidden>
-      <div id="values-teaser" class="visitor teaser"></div>
-    </section>
 
     <!-- Dans la vie -->
     <section class="res-section" id="life-section" hidden>
@@ -582,8 +583,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=9"></script>
-  <script src="js/profiles.js?v=9"></script>
-  <script src="js/app.js?v=9"></script>
+  <script src="js/questions.js?v=10"></script>
+  <script src="js/profiles.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>

@@ -88,11 +88,20 @@
   // mode : 'full' = test complet ; 'values' = on complète un ancien résultat (state.base) avec les seules questions de valeurs
   const state = { index: 0, answers: {}, mode: 'full', base: null };
 
-  function listFor(mode) {
-    return mode === 'values' ? VALUE_QUESTIONS : QUESTIONS;
+  // Nombre d'affirmations que contenait le test à chaque version de lien. Les identifiants de questions sont
+  // chronologiques : tout ce qui a un identifiant supérieur ou égal est nouveau pour cette personne.
+  const QUESTIONS_BY_VERSION = { 1: 96, 2: 141, 3: 171, 4: 201 };
+
+  function missingQuestions(base) {
+    const r = decodeResult(base);
+    const seen = r ? QUESTIONS_BY_VERSION[r.version] : undefined;
+    return seen === undefined ? VALUE_QUESTIONS : QUESTIONS.filter(q => q.id >= seen);
+  }
+  function listFor(mode, base) {
+    return mode === 'values' ? missingQuestions(base) : QUESTIONS;
   }
   function quizList() {
-    return listFor(state.mode);
+    return listFor(state.mode, state.base);
   }
   function setState(index, answers, mode, base) {
     state.index = index;
@@ -188,11 +197,11 @@
     const btn = $('btn-resume');
     const info = $('resume-info');
 
-    const progressOpen = !!progress && progress.index < listFor(progress.mode).length;
+    const progressOpen = !!progress && progress.index < listFor(progress.mode, progress.base).length;
     if (progressOpen) {
       btn.hidden = false;
-      btn.querySelector('span').textContent = progress.mode === 'values' ? 'Reprendre mes valeurs' : 'Reprendre';
-      info.textContent = `${progress.index}/${listFor(progress.mode).length} curseurs déjà réglés`;
+      btn.querySelector('span').textContent = progress.mode === 'values' ? 'Reprendre la mise à jour' : 'Reprendre';
+      info.textContent = `${progress.index}/${listFor(progress.mode, progress.base).length} curseurs déjà réglés`;
       btn.onclick = () => { setState(progress.index, progress.answers, progress.mode, progress.base); startQuiz(); };
     } else if (mine) {
       btn.hidden = false;
@@ -206,6 +215,7 @@
     const mineResult = mine ? decodeResult(mine) : null;
     const up = $('btn-upgrade');
     up.hidden = !(mineResult && canUpgrade(mineResult)) || progressOpen;
+    if (!up.hidden) up.querySelector('small').textContent = `${missingQuestions(mine).length} nouveaux curseurs · sans refaire le test`;
     up.onclick = () => startUpgrade(mine);
 
     const note = $('intro-circle');
@@ -235,6 +245,10 @@
       const members = parseLink($('import-input').value);
       if (!members.length) { toast('Lien ou code non reconnu'); return; }
       const [a, b] = members;
+      if (!b && canUpgrade(decodeResult(a.code))) {
+        scrollTarget = 'values-teaser-section';
+        toast('Profil retrouvé : il peut être complété sans refaire le test');
+      }
       location.hash = 'p=' + a.code + nameParam(a.name) + (b ? '&vs=' + b.code + (b.name ? '&vn=' + encodeURIComponent(b.name) : '') : '');
     };
     $('import-input').onkeydown = e => { if (e.key === 'Enter') $('btn-import').click(); };
@@ -289,7 +303,7 @@
     const kicker = document.querySelector('.q-kicker');
     kicker.textContent = q.module === 'values' ? 'Tes valeurs · à quel point cette phrase te ressemble ?' : 'Dans quelle mesure es-tu d\'accord ?';
     kicker.classList.toggle('is-values', q.module === 'values');
-    if (q.module === 'values' && state.mode === 'full' && state.index > 0 && list[state.index - 1].module !== 'values' && dir !== 'back') {
+    if (q.module === 'values' && state.index > 0 && list[state.index - 1].module !== 'values' && dir !== 'back') {
       toast(`Dernière partie : tes valeurs (${VALUE_QUESTIONS.length} curseurs). Ici, pas d'opinion : dis simplement si la phrase te ressemble.`);
     }
     $('progress-fill').style.width = p + '%';
@@ -344,22 +358,28 @@
     renderQuestion('back');
   }
 
-  // Ajoute les valeurs à un résultat existant. Les affirmations de valeurs ne chargent que les valeurs :
-  // le profil obtenu est exactement celui d'un test complet.
-  function mergeValues(base, part) {
-    const nb = base.answered || 0, np = part.answered || 0, n = nb + np || 1;
+  // Complète un ancien résultat : on garde tout ce que son lien contient déjà, et on ajoute ce qui lui manque
+  // (axes apparus depuis, DISC, valeurs), calculé à partir des seules nouvelles affirmations.
+  function mergeUpgrade(base, part) {
+    const nb = base.answered || QUESTIONS_BY_VERSION[base.version] || 0, np = part.answered || 0, n = nb + np || 1;
     const mix = k => (base.stats[k] * nb + part.stats[k] * np) / n;
+    const axes = {};
+    AXES.forEach(x => { axes[x.id] = base.known.has(x.id) ? base.axes[x.id] : part.axes[x.id]; });
+    const newHearts = part.heartAxes.filter(id => !base.known.has(id));
     return {
       ...base,
+      axes,
+      disc: base.disc || part.disc,
       values: part.values,
+      heartAxes: base.heartAxes.concat(newHearts),
       stats: { intensity: mix('intensity'), nuance: mix('nuance'), radical: mix('radical'), coherence: base.stats.coherence },
       answered: nb + np,
-      extremes: base.extremes,
+      extremes: base.extremes.length ? base.extremes : part.extremes,
     };
   }
 
   function canUpgrade(r) {
-    return !!r && !r.values && r.version >= DISC_SINCE_VERSION;
+    return !!r && !r.values && QUESTIONS_BY_VERSION[r.version] !== undefined;
   }
 
   function startUpgrade(code) {
@@ -374,7 +394,7 @@
   function finishQuiz() {
     const fresh = compute(state.answers);
     const base = state.mode === 'values' ? decodeResult(state.base) : null;
-    const code = encodeResult(base ? mergeValues(base, fresh) : fresh);
+    const code = encodeResult(base ? mergeUpgrade(base, fresh) : fresh);
     store(STORAGE_LAST, code);
     clearProgress();
     setState(0, {}, 'full', null);
@@ -483,7 +503,7 @@
       if (b > 200) return null;
       answers[id] = { v: b - 100, h: !!(bytes[5 + n + (id >> 3)] & (1 << (id & 7))) };
     }
-    const list = listFor(mode);
+    const list = listFor(mode, base);
     const pos = list.findIndex(q => q.id === currentId);
     const firstOpen = list.findIndex(q => answers[q.id] === undefined);
     const index = pos >= 0 ? pos : firstOpen >= 0 ? firstOpen : list.length;
@@ -1569,18 +1589,21 @@
 
   function renderValuesTeaser(cur) {
     const box = $('values-teaser');
-    const can = cur.r.version >= 4;
-    let html;
-    if (!can) {
-      html = `<p><b>Nouveau : tes valeurs.</b> Ce profil vient d'une ancienne version du test. Refais le test pour obtenir tes valeurs, ton profil DISC et toutes les nouvelles analyses — ton cercle d'amis est conservé.</p>`;
-    } else if (cur.isMine) {
-      html = `<p><b>Nouveau : tes valeurs.</b> Trente curseurs de plus (5 minutes) pour découvrir ce qui te fait avancer : ta boussole parmi dix valeurs, tes tensions intérieures, et ce qu'elles disent de tes choix politiques. <b>Tu ne refais pas le test</b> : tes réponses précédentes sont gardées, tu ne réponds qu'aux nouvelles questions.</p>
-        <button class="btn btn-primary" type="button" data-upgrade="mine"><span>Compléter mon profil</span><small>30 curseurs · ~5 min</small></button>`;
-    } else {
-      html = `<p><b>Ce profil n'a pas encore ses valeurs.</b> Si c'est le tien, tu peux le compléter sans refaire le test : trente curseurs de plus (5 minutes), et tes réponses précédentes sont gardées.</p>
-        <button class="btn btn-primary" type="button" data-upgrade="claim"><span>C'est mon profil : le compléter</span><small>30 curseurs · ~5 min</small></button>`;
-    }
-    box.innerHTML = html;
+    const r = cur.r;
+    const n = missingQuestions(cur.code).length;
+    const minutes = Math.max(3, Math.round(n / 9));
+    const gains = [];
+    if (r.partial) gains.push('tes 9 axes de personnalité et ton archétype');
+    if (!r.known.has('egl')) gains.push('l\'axe égalité');
+    if (!r.disc) gains.push('ton profil DISC en couleurs');
+    gains.push('ta boussole de valeurs');
+    const what = joinFr(gains);
+    const small = `<small>${n} curseurs · ~${minutes} min</small>`;
+    box.innerHTML = cur.isMine
+      ? `<p><b>Ton profil peut être complété.</b> Le test s'est enrichi depuis ton passage : il te manque ${esc(what)}, ainsi que tes 16 qualités. <b>Tu ne refais pas le test</b> : tes réponses précédentes sont gardées, tu ne réponds qu'aux ${n} nouvelles affirmations.</p>
+        <button class="btn btn-primary" type="button" data-upgrade="mine"><span>Compléter mon profil</span>${small}</button>`
+      : `<p><b>Ce profil peut être complété.</b> Il lui manque ${esc(what)}. Si c'est le tien, inutile de refaire le test : tes réponses précédentes sont gardées, tu ne réponds qu'aux ${n} nouvelles affirmations.</p>
+        <button class="btn btn-primary" type="button" data-upgrade="claim"><span>C'est mon profil : le compléter</span>${small}</button>`;
   }
 
   /* ---------------------------------------------------------
@@ -1948,8 +1971,9 @@
     renderLife(r);
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
-    $('values-teaser-section').hidden = !!vp;
-    if (!vp) renderValuesTeaser(cur);
+    const upgradable = canUpgrade(r);
+    $('values-teaser-section').hidden = !upgradable;
+    if (upgradable) renderValuesTeaser(cur);
 
     // Barre d'actions : propriétaire ou visiteur
     $('res-share').hidden = !cur.isMine;
@@ -2049,7 +2073,7 @@
     if (scrollTarget) {
       const target = scrollTarget;
       scrollTarget = null;
-      setTimeout(() => { const el = $(target); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+      setTimeout(() => { const el = $(target); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: target === 'values-teaser-section' ? 'center' : 'start' }); }, 120);
     }
   }
 
