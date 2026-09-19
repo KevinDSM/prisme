@@ -377,7 +377,7 @@
     return acc;
   }, {});
   section('personnages', 'Le sur-mesure', 'Quel personnage serais-tu ?', `
-    <p class="gtext">Prisme connaît <b>${LICENSES.length} univers</b> et <b>${CAST_TOTAL} personnages</b>, rangés par famille (jeux vidéo, cinéma, séries, animation et manga, et le monde réel). La famille « le monde réel » contient des personnes réelles : seul leur tempérament public est comparé, jamais leurs idées, leur vie privée ou leur bilan — on peut être « Simone Veil » et penser tout autre chose qu'elle. Dans chaque univers, tu es comparé à une douzaine de personnages. Chaque personnage a son <b>profil psychologique</b>, écrit avec les mêmes dimensions que le test : qualités, couleurs DISC, valeurs, morale, traits et axes de caractère. Tes opinions politiques ne comptent pas : on peut être Link de gauche ou de droite.</p>
+    <p class="gtext">Prisme connaît <b>${LICENSES.length} univers</b> et <b>${CAST_TOTAL} personnages</b>, rangés par famille (jeux vidéo, cinéma, séries, animation et manga, et le monde réel). La famille « le monde réel » contient des personnes réelles : seul leur tempérament public est comparé, jamais leurs idées, leur vie privée ou leur bilan — on peut être « Simone Veil » et penser tout autre chose qu'elle. Dans chaque univers, tu es comparé à quinze ou vingt personnages. Chaque personnage a son <b>profil psychologique</b>, écrit avec les mêmes dimensions que le test : qualités, couleurs DISC, valeurs, morale, traits et axes de caractère. Tes opinions politiques ne comptent pas : on peut être Link de gauche ou de droite.</p>
     <p class="gtext">Pour chaque personnage, on mesure l'écart entre ton score et le sien sur chacun de ses traits ; un trait très marqué chez lui (par exemple « détermination 95 ») pèse plus lourd qu'un trait moyen. Le personnage le plus proche l'emporte. La fiche donne le pourcentage de ressemblance, sa description, <b>pourquoi toi</b> (les traits que vous avez vraiment en commun, avec tes scores), <b>là où tu t'en écartes</b>, et les deux suivants du classement.</p>
     <p class="gtext">Dans un cercle, chacun reçoit un personnage <b>différent</b> par univers : la personne la plus ressemblante est servie en premier, puis la suivante parmi les personnages restants. Certains personnages sont des antagonistes : c'est le tempérament qui est comparé, pas les actes.</p>
     ${Object.entries(LIC_GROUPS).map(([g, list]) => `
@@ -404,6 +404,19 @@
     <p class="gtext">Même méthode que pour les personnages, sur une liste de <b>${ANIMALS.length} animaux</b> décrits eux aussi avec les dimensions du test : qualités, couleurs DISC, valeurs, morale et axes de caractère. Aucun trait politique n'entre dans le calcul. Ton animal est celui dont le profil est le plus proche du tien ; les trois suivants sont indiqués à côté.</p>
     <p class="gtext">La liste est volontairement longue pour qu'un cercle entier puisse recevoir <b>un animal différent par personne</b> : le plus ressemblant est servi en premier, et chacun prend ensuite l'animal restant qui lui va le mieux. À onze, personne ne tombe sur le même.</p>
     <div class="gchips">${ANIMALS.map(a => `<span class="gchip">${esc(a.name)}</span>`).join('')}</div>`);
+
+  /* ---------------------------------------------------------
+     10 sexies. Film et musique
+     --------------------------------------------------------- */
+  const FILMS = (window.PRISME_FILMS || { FILMS: [] }).FILMS;
+  const MUSICS = (window.PRISME_MUSICS || { MUSICS: [] }).MUSICS;
+  section('filmusique', 'Le sur-mesure', 'Ton film et ta musique', `
+    <p class="gtext">Même méthode encore, sur deux listes plates : <b>${FILMS.length} films</b> et <b>${MUSICS.length} morceaux</b>. Ce n'est pas une question de goût — Prisme ne sait pas ce que tu aimes. Ce qui est décrit, c'est le <b>tempérament</b> de l'œuvre : son énergie, son rapport au temps, sa façon de traiter les gens, ce qu'elle cherche à provoquer. Un film lent et patient tombera sur quelqu'un de patient, pas sur quelqu'un qui l'a aimé.</p>
+    <p class="gtext">Comme pour les animaux, la liste est assez longue pour qu'un cercle entier reçoive une entrée différente par personne : la page de cercle en tire une <b>filmothèque</b> et une <b>playlist</b>.</p>
+    <h3 class="gsub">Les films</h3>
+    <div class="gchips">${FILMS.map(f => `<span class="gchip">${esc(f.name)}</span>`).join('')}</div>
+    <h3 class="gsub">Les morceaux</h3>
+    <div class="gchips">${MUSICS.map(m => `<span class="gchip">${esc(m.name)}</span>`).join('')}</div>`);
 
   /* ---------------------------------------------------------
      11. Signatures
