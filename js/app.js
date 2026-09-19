@@ -206,6 +206,8 @@
     };
 
     $('btn-import').onclick = () => {
+      const resume = parseResume($('import-input').value);
+      if (resume) { resumeFrom(resume); return; }
       const members = parseLink($('import-input').value);
       if (!members.length) { toast('Lien ou code non reconnu'); return; }
       const [a, b] = members;
@@ -265,6 +267,7 @@
     const saved = state.answers[q.id];
     slider.value = saved ? saved.v : 0;
     heart.checked = !!(saved && saved.h);
+    touched = false;
     paintSlider();
 
     $('btn-prev').disabled = state.index === 0;
@@ -283,6 +286,7 @@
     }
   }
 
+  let touched = false;      // le curseur ou le cœur de la question affichée a été modifié
   let transitioning = false;
   function goNext(skip) {
     if (transitioning) return;
@@ -326,23 +330,33 @@
   }
 
   function initQuiz() {
-    slider.addEventListener('input', paintSlider);
+    slider.addEventListener('input', () => { touched = true; paintSlider(); });
+    heart.addEventListener('change', () => { touched = true; });
     slider.addEventListener('change', () => {
       if (Math.abs(Number(slider.value)) < 6) { slider.value = 0; paintSlider(); }
     });
     $('btn-next').onclick = () => goNext(false);
     $('btn-skip').onclick = () => goNext(true);
     $('btn-prev').onclick = goPrev;
-    $('btn-quit').onclick = () => {
-      commitCurrent(false);
-      saveProgress();
+    $('btn-quit').onclick = openPause;
+    $('btn-pause-continue').onclick = closePause;
+    $('pause-backdrop').onclick = closePause;
+    $('btn-pause-quit').onclick = () => {
+      $('pause-modal').hidden = true;
       history.replaceState(null, '', location.pathname + location.search);
       showScreen('intro');
       initIntro();
     };
+    $('btn-pause-code').onclick = async () => {
+      const ok = await copyText($('pause-code').value);
+      toast(ok ? 'Code copié — garde-le quelque part (note, message à toi-même)' : 'Impossible de copier : sélectionne le code à la main');
+    };
+    $('btn-pause-link').onclick = () => shareLink(resumeUrl(), 'Mon test Prisme en pause : ouvrir ce lien pour reprendre.', 'Lien de reprise copié — ouvre-le sur n\'importe quel appareil pour continuer');
+    $('pause-code').onfocus = e => e.target.select();
 
     document.addEventListener('keydown', e => {
       if (!$('screen-quiz').classList.contains('is-active')) return;
+      if (!$('pause-modal').hidden) { if (e.key === 'Escape') closePause(); return; }
       if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
       if (e.key === 'Enter') {
         if (e.target.closest && e.target.closest('button')) return;
@@ -350,13 +364,112 @@
         goNext(false);
       }
       else if (e.key === 'Backspace' && e.target !== slider) { e.preventDefault(); goPrev(); }
-      else if (e.key.toLowerCase() === 'h') { heart.checked = !heart.checked; }
+      else if (e.key.toLowerCase() === 'h') { heart.checked = !heart.checked; touched = true; }
       else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target !== slider) {
         e.preventDefault();
         slider.value = clamp(Number(slider.value) + (e.key === 'ArrowLeft' ? -5 : 5), -100, 100);
+        touched = true;
         paintSlider();
       }
     });
+  }
+
+  /* ---------------------------------------------------------
+     Pause : code de reprise (les réponses voyagent dans le code)
+     --------------------------------------------------------- */
+  const RESUME_MARK = 200; // premier octet d'un code de reprise (les résultats commencent par 1, 2, 3…)
+
+  // [200, nb questions (2 octets), question en cours (2 octets), une valeur par question, masque des cœurs]
+  // Les réponses sont rangées par identifiant de question : un code reste valable si la banque grandit.
+  function encodeProgress(answers, currentId) {
+    const n = QUESTIONS.length;
+    const bytes = [RESUME_MARK, n & 255, n >> 8, currentId & 255, currentId >> 8];
+    const hearts = new Array(Math.ceil(n / 8)).fill(0);
+    for (let id = 0; id < n; id++) {
+      const a = answers[id];
+      bytes.push(a === undefined ? 254 : a === null ? 255 : clamp(Math.round(a.v), -100, 100) + 100);
+      if (a && a.h) hearts[id >> 3] |= 1 << (id & 7);
+    }
+    return bytesToB64(bytes.concat(hearts));
+  }
+
+  function decodeProgress(code) {
+    const bytes = b64ToBytes(code);
+    if (!bytes || bytes.length < 6 || bytes[0] !== RESUME_MARK) return null;
+    const n = bytes[1] | (bytes[2] << 8);
+    if (!n || n > QUESTIONS.length || bytes.length < 5 + n + Math.ceil(n / 8)) return null;
+    const currentId = bytes[3] | (bytes[4] << 8);
+    const answers = {};
+    let count = 0;
+    for (let id = 0; id < n; id++) {
+      const b = bytes[5 + id];
+      if (b === 254) continue;
+      count++;
+      if (b === 255) { answers[id] = null; continue; }
+      if (b > 200) return null;
+      answers[id] = { v: b - 100, h: !!(bytes[5 + n + (id >> 3)] & (1 << (id & 7))) };
+    }
+    const pos = QUESTIONS.findIndex(q => q.id === currentId);
+    const firstOpen = QUESTIONS.findIndex(q => answers[q.id] === undefined);
+    const index = pos >= 0 ? pos : firstOpen >= 0 ? firstOpen : QUESTIONS.length;
+    return { answers, index, count };
+  }
+
+  // Accepte un code brut ou un lien « #r=CODE » (avec, éventuellement, l'ami qui a lancé l'invitation)
+  function parseResume(raw) {
+    const text = String(raw || '').trim();
+    const hashIdx = text.indexOf('#');
+    const part = hashIdx >= 0 ? text.slice(hashIdx + 1) : text;
+    let code = part, vs = null, vn = '';
+    if (/(^|&)r=/.test(part)) {
+      const params = new URLSearchParams(part);
+      code = params.get('r') || '';
+      vs = params.get('vs');
+      vn = params.get('vn') || '';
+    }
+    code = code.replace(/\s+/g, '');
+    const progress = decodeProgress(code);
+    return progress ? { ...progress, vs, vn } : null;
+  }
+
+  function resumeUrl() {
+    const pending = readJSON(STORAGE_PENDING, null);
+    const friend = pending && pending.code ? '&vs=' + pending.code + (pending.name ? '&vn=' + encodeURIComponent(pending.name) : '') : '';
+    return baseUrl() + '#r=' + $('pause-code').value + friend;
+  }
+
+  function resumeFrom(progress) {
+    const local = loadProgress();
+    const localCount = local ? Object.keys(local.answers).length : 0;
+    if (localCount > progress.count && !confirm(`Cet appareil a déjà une progression plus avancée (${localCount} réponses contre ${progress.count} dans le code). Remplacer par celle du code ?`)) {
+      history.replaceState(null, '', location.pathname + location.search);
+      showScreen('intro');
+      initIntro();
+      return;
+    }
+    if (progress.vs && decodeResult(progress.vs)) store(STORAGE_PENDING, { code: progress.vs, name: progress.vn || '' });
+    state.answers = progress.answers;
+    state.index = progress.index;
+    history.replaceState(null, '', location.pathname + location.search);
+    if (state.index >= QUESTIONS.length) { finishQuiz(); return; }
+    saveProgress();
+    startQuiz();
+    toast(`Reprise : ${progress.count} réponses retrouvées`);
+  }
+
+  function openPause() {
+    if (touched) commitCurrent(false);
+    saveProgress();
+    const done = Object.keys(state.answers).length;
+    $('pause-count').textContent = `${done} réponse${done > 1 ? 's' : ''} sur ${QUESTIONS.length}`;
+    $('pause-code').value = encodeProgress(state.answers, QUESTIONS[state.index].id);
+    $('pause-modal').hidden = false;
+    $('btn-pause-code').focus();
+  }
+
+  function closePause() {
+    $('pause-modal').hidden = true;
+    slider.focus({ preventScroll: true });
   }
 
   /* ---------------------------------------------------------
@@ -1677,6 +1790,13 @@
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const g = params.get('g');
     if (g) { importGroup(g); return; }
+
+    if (params.get('r')) {
+      const progress = parseResume(location.hash);
+      if (progress) { resumeFrom(progress); return; }
+      toast('Ce code de reprise est invalide');
+      history.replaceState(null, '', location.pathname + location.search);
+    }
 
     const p = params.get('p');
     if (p) {

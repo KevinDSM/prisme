@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -88,10 +88,10 @@
     </div>
 
     <details class="intro-import">
-      <summary>J'ai déjà un lien de résultat</summary>
+      <summary>J'ai un code de reprise ou un lien de résultat</summary>
       <div class="import-row">
         <input id="import-input" type="text" placeholder="Colle le lien ou le code ici" autocomplete="off" spellcheck="false">
-        <button id="btn-import" class="btn btn-ghost btn-sm">Afficher</button>
+        <button id="btn-import" class="btn btn-ghost btn-sm">Valider</button>
       </div>
     </details>
 
@@ -104,7 +104,7 @@
   <!-- ===================== QUIZ ===================== -->
   <section id="screen-quiz" class="screen">
     <div class="quiz-top">
-      <button id="btn-quit" class="link-btn" type="button">← Accueil</button>
+      <button id="btn-quit" class="link-btn pause-btn" type="button"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>Pause</button>
       <div class="quiz-top-right">
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Passer en mode sombre">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>
@@ -452,10 +452,27 @@
     </footer>
   </section>
 
+  <div id="pause-modal" class="modal" hidden>
+    <div id="pause-backdrop" class="modal-backdrop"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <p class="card-kicker">Test en pause · <span id="pause-count"></span></p>
+      <h2 id="pause-title">Reprends quand tu veux</h2>
+      <p>Ta progression est déjà gardée <b>sur cet appareil</b> : tu peux fermer la page et revenir plus tard. Pour reprendre <b>ailleurs</b> (autre téléphone, autre navigateur) ou par sécurité, garde ce code. Il contient toutes tes réponses : colle-le sur la page d'accueil pour repartir exactement d'ici.</p>
+      <textarea id="pause-code" class="pause-code" readonly rows="4" spellcheck="false" aria-label="Code de reprise"></textarea>
+      <div class="modal-actions">
+        <button id="btn-pause-code" class="btn btn-primary" type="button"><span>Copier le code</span></button>
+        <button id="btn-pause-link" class="btn btn-ghost" type="button">Copier un lien de reprise</button>
+      </div>
+      <div class="modal-actions secondary">
+        <button id="btn-pause-continue" class="btn btn-ghost" type="button">Continuer le test</button>
+        <button id="btn-pause-quit" class="link-btn" type="button">Quitter vers l'accueil</button>
+      </div>
+    </div>
+  </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=7"></script>
-  <script src="js/profiles.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/questions.js?v=8"></script>
+  <script src="js/profiles.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

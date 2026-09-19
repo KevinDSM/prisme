@@ -15,6 +15,7 @@ Un test politique en profondeur, qui va plus loin que les boussoles politiques h
 - **Signatures** — 60 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
 - **Sujets de cœur** — un cœur par question pour marquer ce qui compte vraiment (et le pondérer).
 - **Résumé** en cinq temps, généré à partir des réponses, avec les curseurs les plus poussés cités mot pour mot.
+- **Pause et code de reprise** — le bouton Pause génère un code (ou un lien `#r=…`) qui contient toutes les réponses déjà données : on reprend au même endroit sur n'importe quel appareil.
 - **PDF** — bouton « Télécharger en PDF » (mise en page d'impression dédiée).
 - **Cercle d'amis** — les liens de résultat de tes amis restent enregistrés dans ton navigateur : classement par affinité, « le cercle en bref » et **carte** où chacun est placé sur deux axes au choix.
 - **Invitation** — un ami qui ouvre ton lien voit ton profil, fait le test et se retrouve aussitôt comparé à toi. Un **lien de groupe** partage tout le cercle d'un coup.
