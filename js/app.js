@@ -964,10 +964,12 @@
     if (polTorn.length) {
       p1 += ` Tu es <strong>partagé</strong> sur ${joinFr(polTorn.map(pairLabel))} : là, tes réponses tirent dans les deux sens et se compensent.`;
     }
-    p1 += ` Ce mélange te rapproche des <strong>${esc(fam[0].name.toLowerCase())}s</strong> (${pct(fam[0].score)} % de proximité)`;
-    if (fam[1] && fam[1].score > fam[0].score - 0.06) p1 += `, à peu de chose près des ${esc(fam[1].name.toLowerCase())}s (${pct(fam[1].score)} %)`;
+    p1 += ` Ce mélange te rapproche des <strong>${esc(familyPlural(fam[0].name))}</strong> (${pct(fam[0].score)} % de proximité)`;
+    if (fam[1] && fam[1].score > fam[0].score - 0.06) p1 += `, à peu de chose près des ${esc(familyPlural(fam[1].name))} (${pct(fam[1].score)} %)`;
     const far = fam[fam.length - 1];
-    p1 += `. À l'opposé, tu n'as presque rien en commun avec les ${esc(far.name.toLowerCase())}s (${pct(far.score)} %).`;
+    p1 += `. À l'opposé, tu n'as presque rien en commun avec les ${esc(familyPlural(far.name))} (${pct(far.score)} %).`;
+    const spotS = seatOf(r, null);
+    p1 += ` Dans l'hémicycle, tu t'assiérais ${esc(spotS.bloc.bench)}, au siège n° ${spotS.seat.num} sur ${HEMI.total}, rang ${spotS.row + 1}.`;
     parts.push({ h: 'Ce que tu penses', p: p1 });
 
     // II. Comment tu le penses
@@ -1828,6 +1830,174 @@
   }
 
   /* ---------------------------------------------------------
+     Hémicycle : un siège précis parmi 577, déduit des axes (aucune question supplémentaire).
+     Angle = position gauche ↔ droite ; rang = engagement (les plus engagés siègent près du perchoir).
+     Représentation symbolique : les blocs ne correspondent à aucun groupe parlementaire réel.
+     --------------------------------------------------------- */
+  const HEMI = { rows: 12, total: 577, W: 640, H: 352, cx: 320, cy: 326, rIn: 96, rOut: 302 };
+  // poids de chaque axe dans le clivage gauche ↔ droite (positif : le pôle droit de l'axe tire à droite)
+  const LR_WEIGHTS = { eco: 1, egl: 1, soc: 1, idn: 1, jus: 0.6, aut: 0.6, geo: 0.4, env: -0.5 };
+  const BLOCS = [
+    { to: 0.12, label: 'Gauche radicale', bench: 'sur les bancs de la gauche radicale', color: '#b3001b' },
+    { to: 0.29, label: 'Gauche', bench: 'sur les bancs de la gauche', color: '#e5485f' },
+    { to: 0.42, label: 'Centre gauche', bench: 'sur les bancs du centre gauche', color: '#f29cb0' },
+    { to: 0.58, label: 'Centre', bench: 'au centre de l\'hémicycle', color: '#f2b705' },
+    { to: 0.71, label: 'Centre droit', bench: 'sur les bancs du centre droit', color: '#7cc4f2' },
+    { to: 0.88, label: 'Droite', bench: 'sur les bancs de la droite', color: '#2f7fd1' },
+    { to: 1.01, label: 'Droite nationale', bench: 'sur les bancs de la droite nationale', color: '#1b3a7a' },
+  ];
+
+  let hemiSeats = null;
+  function hemicycleSeats() {
+    if (hemiSeats) return hemiSeats;
+    const { rows, total, cx, cy, rIn, rOut } = HEMI;
+    const radii = Array.from({ length: rows }, (_, i) => rIn + ((rOut - rIn) * i) / (rows - 1));
+    const sumR = radii.reduce((s, r) => s + r, 0);
+    const counts = radii.map(r => Math.round((total * r) / sumR));
+    counts[rows - 1] += total - counts.reduce((s, n) => s + n, 0);
+    const seats = [];
+    radii.forEach((r, row) => {
+      for (let k = 0; k < counts[row]; k++) {
+        const t = (k + 0.5) / counts[row];
+        const th = Math.PI * (1 - t);
+        seats.push({ row, t, x: cx + Math.cos(th) * r, y: cy - Math.sin(th) * r });
+      }
+    });
+    seats.slice().sort((a, b) => a.t - b.t || a.row - b.row).forEach((s, i) => { s.num = i + 1; });
+    hemiSeats = seats;
+    return seats;
+  }
+
+  // « Social-démocrate » → « sociaux-démocrates », « Populiste de gauche » → « populistes de gauche »
+  function familyPlural(name) {
+    const special = { 'Social-démocrate': 'sociaux-démocrates', 'Libéral progressiste': 'libéraux progressistes', 'Conservateur libéral': 'conservateurs libéraux', 'Populiste de gauche': 'populistes de gauche' };
+    return special[name] || name.toLowerCase() + 's';
+  }
+
+  function blocOf(t) {
+    return BLOCS.find(b => t < b.to) || BLOCS[BLOCS.length - 1];
+  }
+
+  // Position gauche ↔ droite d'un jeu d'axes : −1 (tout à gauche) → +1 (tout à droite)
+  function leftRightOf(axes, has) {
+    let num = 0, den = 0;
+    const parts = [];
+    Object.entries(LR_WEIGHTS).forEach(([id, w]) => {
+      if (!has(id)) return;
+      const c = (axes[id] || 0) * w;
+      num += c; den += Math.abs(w);
+      parts.push({ id, c });
+    });
+    const lr = den ? clamp((num / den) * 1.6, -1, 1) : 0;
+    return { lr, t: (lr + 1) / 2, parts };
+  }
+
+  let familySpots = null;
+  function familyPositions() {
+    if (!familySpots) {
+      familySpots = FAMILIES.map(f => ({ name: f.name, t: leftRightOf(f.v, id => f.v[id] !== undefined).t })).sort((a, b) => a.t - b.t);
+    }
+    return familySpots;
+  }
+
+  function seatOf(r, taken) {
+    const pos = leftRightOf(r.axes, id => r.known.has(id));
+    const row = clamp(Math.round((1 - r.traits.eng) * (HEMI.rows - 1)), 0, HEMI.rows - 1);
+    const inRow = hemicycleSeats().filter(s => s.row === row).sort((a, b) => Math.abs(a.t - pos.t) - Math.abs(b.t - pos.t));
+    const seat = inRow.find(s => !taken || !taken.has(s.num)) || inRow[0];
+    if (taken) taken.add(seat.num);
+    return { seat, ...pos, row, bloc: blocOf(seat.t) };
+  }
+
+  // people : [{ name, tag, color, me, spot }]
+  function renderHemicycle(people, big) {
+    const { W, H, cx, cy } = HEMI;
+    const used = new Map(people.map(p => [p.spot.seat.num, p]));
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Hémicycle de 577 sièges">`;
+    hemicycleSeats().forEach(s => {
+      if (used.has(s.num)) return;
+      svg += `<circle class="hemi-seat" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="4.3" style="fill:${blocOf(s.t).color}"/>`;
+    });
+    svg += `<rect class="hemi-perchoir" x="${cx - 34}" y="${cy - 16}" width="68" height="24" rx="6"/><text class="hemi-perchoir-lbl" x="${cx}" y="${cy + 1}" text-anchor="middle">PERCHOIR</text>`;
+    svg += `<text class="hemi-side" x="8" y="${H - 6}">GAUCHE</text><text class="hemi-side" x="${W - 8}" y="${H - 6}" text-anchor="end">DROITE</text>`;
+    people.forEach(p => {
+      const s = p.spot.seat;
+      const r = big ? 13 : 11;
+      svg += `<g class="hemi-me"><title>${esc(p.name)} — siège n° ${s.num}, rang ${s.row + 1}, ${esc(p.spot.bloc.label.toLowerCase())}</title>`
+        + (big ? `<circle class="hemi-halo" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="25"/>` : '')
+        + `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${r}" style="fill:${p.color}" class="${p.me ? 'me' : ''}"/>`
+        + `<text x="${s.x.toFixed(1)}" y="${(s.y + 3.8).toFixed(1)}" text-anchor="middle" class="${p.me ? 'me' : ''}">${esc(p.tag)}</text></g>`;
+    });
+    return svg + '</svg>';
+  }
+
+  function hemiLegend() {
+    return BLOCS.map(b => `<span class="hemi-key"><i style="background:${b.color}"></i>${esc(b.label)}</span>`).join('');
+  }
+
+  function rowPhrase(row) {
+    return row <= 2 ? 'tout près du perchoir, là où siègent ceux qui montent au créneau'
+      : row <= 7 ? 'au milieu des travées, ni en première ligne ni en retrait'
+      : 'dans les hauteurs de l\'hémicycle, là où l\'on observe plus qu\'on n\'intervient';
+  }
+
+  function renderAssembly(cur) {
+    const r = cur.r;
+    const spot = seatOf(r, null);
+    const me = { name: cur.isMine ? 'Toi' : (cur.name || 'Ce profil'), tag: cur.isMine ? 'Toi' : (cur.name || '?').charAt(0).toUpperCase(), color: 'var(--ink)', me: true, spot };
+    $('seat-svg').innerHTML = renderHemicycle([me], true);
+    $('seat-legend').innerHTML = hemiLegend();
+    $('seat-num').innerHTML = `Siège n° ${spot.seat.num}<small> sur ${HEMI.total}</small>`;
+    $('seat-rank').textContent = `${spot.bloc.label} · rang ${spot.row + 1} sur ${HEMI.rows}`;
+
+    const fams = familyPositions();
+    const left = fams.filter(f => f.t <= spot.t).pop(), right = fams.find(f => f.t > spot.t);
+    const neighbours = [left, right].filter(Boolean).map(f => `les ${familyPlural(f.name)}`);
+    let text = `Si l'Assemblée comptait un siège pour toi, tu t'assiérais <strong>${esc(spot.bloc.bench)}</strong>, ${esc(rowPhrase(spot.row))}.`;
+    if (neighbours.length === 2) text += ` Tes voisins de banc : ${esc(neighbours[0])} à ta gauche, ${esc(neighbours[1])} à ta droite.`;
+    else if (neighbours.length) text += ` À côté de toi : ${esc(neighbours[0])} — de l'autre côté, il n'y a plus que le mur.`;
+    $('seat-text').innerHTML = text;
+
+    const pulls = spot.parts.filter(p => Math.abs(p.c) >= 0.12).sort((a, b) => Math.abs(b.c) - Math.abs(a.c));
+    const name = p => `${nuancedLabel(axisById(p.id), r.axes[p.id]).toLowerCase()} (${pct(Math.abs(r.axes[p.id]))})`;
+    const toLeft = pulls.filter(p => p.c < 0).slice(0, 3).map(name), toRight = pulls.filter(p => p.c > 0).slice(0, 3).map(name);
+    let why = '<b>Pourquoi ce siège :</b> ';
+    why += toLeft.length ? `ce qui te tire vers la gauche — ${esc(joinFr(toLeft))}` : 'rien ne te tire nettement vers la gauche';
+    why += toRight.length ? ` ; ce qui te tire vers la droite — ${esc(joinFr(toRight))}.` : ' ; rien ne te tire nettement vers la droite.';
+    why += ` Le rang vient de ton engagement (${pct(r.traits.eng)}) : plus il est haut, plus tu sièges près du perchoir.`;
+    if (toLeft.length && toRight.length) why += ' Tu es tiré des deux côtés : ton siège est une moyenne, et sur certains votes tu traverserais l\'allée.';
+    $('seat-why').innerHTML = why;
+  }
+
+  function renderGroupAssembly(people, pre) {
+    const card = $(pre + 'assembly-card');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    const tags = shortTags(people);
+    const taken = new Set();
+    const seated = people.map((p, i) => ({ ...p, tag: tags[i], name: p.me ? 'Toi' : p.name, spot: seatOf(p.r, taken) }));
+    $(pre + 'assembly-svg').innerHTML = renderHemicycle(seated, false);
+    $(pre + 'assembly-legend').innerHTML = hemiLegend();
+
+    const who = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`;
+    $(pre + 'assembly-blocs').innerHTML = BLOCS.map(b => {
+      const list = seated.filter(p => p.spot.bloc === b).sort((x, y) => x.spot.t - y.spot.t);
+      return list.length ? `<li style="--c:${b.color}"><b>${esc(b.label)}</b><span>${list.map(p => `<span class="nowrap">${who(p)} <small>n° ${p.spot.seat.num}</small></span>`).join('')}</span></li>` : '';
+    }).join('');
+
+    const n = seated.length;
+    const leftN = seated.filter(p => p.spot.t < 0.42).length, rightN = seated.filter(p => p.spot.t >= 0.58).length, centerN = n - leftN - rightN;
+    const byT = seated.slice().sort((x, y) => x.spot.t - y.spot.t);
+    const front = seated.slice().sort((x, y) => x.spot.row - y.spot.row)[0], back = seated.slice().sort((x, y) => y.spot.row - x.spot.row)[0];
+    const half = n / 2;
+    const majority = leftN > half ? 'une majorité à gauche' : rightN > half ? 'une majorité à droite' : centerN > half ? 'une majorité au centre' : 'aucune majorité : il faudrait une coalition';
+    $(pre + 'assembly-text').innerHTML =
+      `Si ce cercle était une Assemblée : <b>${leftN}</b> à gauche, <b>${centerN}</b> au centre, <b>${rightN}</b> à droite — ${majority}. `
+      + `Le siège le plus à gauche : <b>${esc(byT[0].name)}</b> (n° ${byT[0].spot.seat.num}) ; le plus à droite : <b>${esc(byT[n - 1].name)}</b> (n° ${byT[n - 1].spot.seat.num}). `
+      + `Le plus près du perchoir : <b>${esc(front.name)}</b> (rang ${front.spot.row + 1}, engagement ${pct(front.r.traits.eng)}) ; tout en haut : <b>${esc(back.name)}</b> (rang ${back.spot.row + 1}).`;
+  }
+
+  /* ---------------------------------------------------------
      Cercle : tout le monde sur chaque ligne (pastilles), avec « qui est le plus… » à chaque bout
      --------------------------------------------------------- */
   function shortTags(people) {
@@ -2064,6 +2234,7 @@
     $('disc-section').hidden = !dp;
     if (dp) renderDiscSection(r, dp);
 
+    renderAssembly(cur);
     renderQualities(r);
     renderLife(r);
     $('values-section').hidden = !vp;
@@ -2241,6 +2412,7 @@
     renderMap();
     renderCircleDisc([{ name: 'Toi', r: cur.r, me: true }, ...entries], '');
     const groupPeople = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
+    renderGroupAssembly(groupPeople, '');
     renderGroup(groupPeople, '');
     renderStrips(groupPeople, '');
   }
@@ -2719,6 +2891,7 @@
       + (discs.length ? fact('Couleur DISC dominante', mostCommon(discs), discs.length) : '')
       + (vals.length ? fact('Valeur boussole la plus partagée', mostCommon(vals), vals.length) : '');
 
+    renderGroupAssembly(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
     renderCircleDisc(people, 'g-');

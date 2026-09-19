@@ -222,6 +222,15 @@
     <h3 class="gsub">Les ${PSYCHE_TYPES.length} archétypes de personnalité <small>— calculés sur les ${AXES.filter(a => a.group === 'psyche').length} axes de personnalité</small></h3>
     ${portraitList(PSYCHE_TYPES, 3)}`);
 
+  section('hemicycle', 'Les portraits', 'Ta place dans l\'hémicycle', `
+    <p class="gtext">Sans aucune question supplémentaire, Prisme te place sur <b>un siège précis parmi 577</b>, comme à l'Assemblée nationale. Deux choses déterminent ce siège :</p>
+    <ul class="glist">
+      <li><b>L'angle, de la gauche à la droite</b> : une moyenne pondérée des axes qui structurent le clivage — économie, égalité, mœurs et identité (poids 1), justice et autorité (0,6), souveraineté (0,4) ; l'écologie tire légèrement vers la gauche (0,5). Le résultat est un peu étiré pour occuper tout l'hémicycle.</li>
+      <li><b>Le rang, du perchoir aux hauteurs</b> : ton score d'engagement. Comme dans la vraie Assemblée, ceux qui montent au créneau siègent en bas, près du perchoir ; les observateurs sont tout en haut. Il y a 12 rangs.</li>
+    </ul>
+    <p class="gtext">L'hémicycle est découpé en <b>sept blocs intemporels</b> (gauche radicale, gauche, centre gauche, centre, centre droit, droite, droite nationale) : ils ne correspondent à aucun groupe parlementaire réel, qui changent à chaque législature. Tes <b>voisins de banc</b> sont les deux familles politiques de Prisme dont la position gauche-droite encadre la tienne. « Pourquoi ce siège » liste les axes qui te tirent le plus vers chaque côté : si tu es tiré des deux côtés, ton siège est une moyenne, et tu « traverserais l'allée » sur certains votes.</p>
+    <p class="gtext">Dans un cercle, tout le monde est assis dans le même hémicycle : on voit d'un coup d'œil s'il y aurait une majorité, qui est le plus à gauche, le plus à droite, et qui siège le plus près du perchoir.</p>`);
+
   /* ---------------------------------------------------------
      10. DISC
      --------------------------------------------------------- */

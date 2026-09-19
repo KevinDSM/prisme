@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -262,6 +262,23 @@
           </div>
         </article>
 
+
+        <article class="res-card group-card" id="assembly-card" hidden>
+          <p class="card-kicker">Le cercle à l'Assemblée</p>
+          <h2>Qui siège où</h2>
+          <div class="group-assembly">
+            <div class="hemi">
+              <div id="assembly-svg"></div>
+              <div id="assembly-legend" class="hemi-legend"></div>
+            </div>
+            <div>
+              <p id="assembly-text" class="group-assembly-text"></p>
+              <ul id="assembly-blocs" class="hemi-blocs"></ul>
+              <p class="assembly-note">L'angle vient de la position gauche-droite de chacun, le rang de son engagement (les plus engagés près du perchoir). Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
+            </div>
+          </div>
+        </article>
+
         <article class="res-card group-card" id="awards-card" hidden>
           <p class="card-kicker">Palmarès</p>
           <h2>Qui est qui dans le cercle</h2>
@@ -417,6 +434,28 @@
         <p class="fam-desc" id="psy-desc"></p>
         <ul class="fam-list" id="psy-list"></ul>
       </article>
+    </section>
+
+    <!-- Hémicycle -->
+    <section class="res-section" id="assembly-section">
+      <div class="section-head">
+        <h2>Ta place dans l'hémicycle</h2>
+        <p>Si l'Assemblée nationale comptait un 577<sup>e</sup> siège pour toi : l'angle vient de ta position gauche-droite, le rang de ton engagement.</p>
+      </div>
+      <div class="assembly">
+        <div class="hemi">
+          <div id="seat-svg"></div>
+          <div id="seat-legend" class="hemi-legend"></div>
+        </div>
+        <div>
+          <p class="card-kicker">Ton siège</p>
+          <h3 class="assembly-seat" id="seat-num"></h3>
+          <p class="assembly-rank" id="seat-rank"></p>
+          <p class="assembly-text" id="seat-text"></p>
+          <p class="assembly-why" id="seat-why"></p>
+          <p class="assembly-note">Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
+        </div>
+      </div>
     </section>
 
     <!-- Signatures -->
@@ -612,7 +651,24 @@
     </section>
 
     <section class="res-section">
-      <article class="res-card group-card first" id="g-awards-card" hidden>
+
+      <article class="res-card group-card first" id="g-assembly-card" hidden>
+        <p class="card-kicker">Le cercle à l'Assemblée</p>
+        <h2>Qui siège où</h2>
+        <div class="group-assembly">
+          <div class="hemi">
+            <div id="g-assembly-svg"></div>
+            <div id="g-assembly-legend" class="hemi-legend"></div>
+          </div>
+          <div>
+            <p id="g-assembly-text" class="group-assembly-text"></p>
+            <ul id="g-assembly-blocs" class="hemi-blocs"></ul>
+            <p class="assembly-note">L'angle vient de la position gauche-droite de chacun, le rang de son engagement (les plus engagés près du perchoir). Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="res-card group-card" id="g-awards-card" hidden>
         <p class="card-kicker">Palmarès</p>
         <h2>Qui est qui dans le cercle</h2>
         <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses.</p>
@@ -703,8 +759,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=12"></script>
-  <script src="js/profiles.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/questions.js?v=13"></script>
+  <script src="js/profiles.js?v=13"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>
