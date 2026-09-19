@@ -1365,17 +1365,26 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .xs-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 16px 0 6px; padding: 12px 14px; border-radius: var(--radius-sm); background: rgba(var(--bg-rgb), 0.6); border: 1px solid var(--line); position: sticky; top: 8px; z-index: 5; backdrop-filter: blur(8px); }
 .xs-key { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; }
 .xs-dot {
-  position: absolute; transform: translate(-50%, -50%);
+  position: absolute; top: 22px; transform: translateX(-50%);
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 22px; height: 22px; padding: 0 4px; border-radius: 11px; box-sizing: border-box;
+  min-width: 21px; height: 21px; padding: 0 5px; border-radius: 11px; box-sizing: border-box;
   border: 2px solid var(--bg-2); color: #fff; white-space: nowrap;
   font-size: 10px; font-weight: 800; line-height: 1; letter-spacing: -0.04em;
   cursor: default; transition: transform 0.15s var(--ease);
 }
-.xs-dot:hover { transform: translate(-50%, -50%) scale(1.25); z-index: 3; }
-.xs-dot.me { color: var(--bg); }
-.xs-dot.static { position: static; transform: none; flex: none; }
+.xs-dot:hover { transform: translateX(-50%) scale(1.3); z-index: 4; }
+.xs-dot.me { color: var(--bg); box-shadow: 0 0 0 2px rgba(var(--ink-rgb), 0.5); }
+.xs-dot.static { position: static; transform: none; flex: none; top: auto; }
 .xs-dot.static:hover { transform: none; }
+/* Repère sur la ligne : la position exacte de la personne, qui ne bouge jamais */
+.xs-tick {
+  position: absolute; top: 6px; height: 12px; width: 3px; border-radius: 2px;
+  transform: translateX(-50%); z-index: 2; cursor: default;
+  box-shadow: 0 0 0 1.5px rgba(var(--panel-rgb), 0.9);
+}
+/* Trait de rappel entre le repère et sa pastille quand celle-ci a dû être écartée */
+.xs-lead { position: absolute; width: 1.5px; margin-left: -0.75px; transform-origin: top center; opacity: 0.55; border-radius: 1px; }
+.xs-print { display: none; }
 
 .xs-group { margin-top: 14px; border-top: 1px solid var(--line); }
 .xs-group summary { display: flex; align-items: baseline; gap: 12px; padding: 14px 2px 10px; cursor: pointer; list-style: none; }
@@ -1385,9 +1394,9 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .xs-group summary .chev { width: 9px; height: 9px; border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3); transform: rotate(45deg); transition: transform 0.25s var(--ease); }
 .xs-group[open] summary .chev { transform: rotate(-135deg); }
 
-.xs-row { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) minmax(0, 150px); align-items: center; gap: 14px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+.xs-row { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) minmax(0, 150px); align-items: start; gap: 14px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .xs-row:last-child { border-bottom: 0; }
-.xs-end { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.xs-end { display: flex; flex-direction: column; min-width: 0; padding-top: 3px; line-height: 1.25; }
 .xs-end.l { text-align: right; align-items: flex-end; }
 .xs-end .pole { font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .xs-end.l .pole { color: color-mix(in srgb, var(--cl, var(--ink-2)) var(--label-mix), var(--label-toward)); }
@@ -1396,11 +1405,11 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .xs-row.uni .xs-end.r .pole { color: var(--ink-3); }
 .xs-end .champ { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .xs-end .champ b { font-family: var(--font-display); font-size: 15px; font-weight: 500; color: var(--ink); }
-.xs-track { position: relative; min-height: 26px; }
-.xs-track::before { content: ''; position: absolute; left: 0; right: 0; top: 13px; height: 4px; transform: translateY(-50%); border-radius: 4px; background: linear-gradient(90deg, color-mix(in srgb, var(--cr, var(--ink-3)) 12%, transparent), color-mix(in srgb, var(--cr, var(--ink-3)) 55%, transparent)); }
+.xs-track { position: relative; height: 47px; }
+.xs-track::before { content: ''; position: absolute; left: 0; right: 0; top: 12px; height: 4px; transform: translateY(-50%); border-radius: 4px; background: linear-gradient(90deg, color-mix(in srgb, var(--cr, var(--ink-3)) 12%, transparent), color-mix(in srgb, var(--cr, var(--ink-3)) 55%, transparent)); }
 .xs-track.bi::before { background: linear-gradient(90deg, color-mix(in srgb, var(--cl) 60%, transparent), rgba(var(--ink-rgb), 0.08) 50%, color-mix(in srgb, var(--cr) 60%, transparent)); }
-.xs-track.bi::after { content: ''; position: absolute; left: 50%; top: 4px; height: 18px; width: 1px; background: var(--ink-3); }
-.xs-mean { position: absolute; top: 13px; width: 0; height: 0; transform: translate(-50%, 9px); border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 7px solid var(--ink-2); opacity: 0.7; }
+.xs-track.bi::after { content: ''; position: absolute; left: 50%; top: 5px; height: 14px; width: 1px; background: var(--ink-3); opacity: 0.5; }
+.xs-mean { position: absolute; top: 0; width: 0; height: 0; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--ink-2); opacity: 0.6; }
 .xs-note { margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
 
 @media (max-width: 700px) {
@@ -1415,9 +1424,17 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   .xs-group > *:not(summary) { display: grid !important; }
   .xs-group summary .chev { display: none; }
   .xs-row { break-inside: avoid; padding: 4px 0; }
-  .xs-dot, .xs-track::before, .xs-mean { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .xs-dot { border-color: #fff; }
-  .xs-dot.me { background: var(--ink) !important; color: #fff; }
+  .xs-tick, .xs-track::before, .xs-mean, .xs-print b { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Les pastilles sont placées au pixel près par le script : sur papier la largeur
+     change et ce calcul ne vaut plus rien. On garde la ligne et ses repères, et
+     l'ordre exact passe dans une ligne de texte sous la ligne. */
+  .xs-track .xs-dot, .xs-lead { display: none !important; }
+  .xs-dot.static { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-color: #fff; }
+  .xs-dot.static.me { background: var(--ink) !important; color: #fff; }
+  .xs-tick { height: 14px; width: 4px; box-shadow: none; }
+  .xs-track { height: auto !important; min-height: 0; padding-bottom: 1px; }
+  .xs-print { display: block; padding-top: 20px; font-size: 8.5pt; line-height: 1.5; color: var(--ink-2); }
+  .xs-print b { font-weight: 800; }
   #g-strips-card, #strips-card { break-before: page; break-inside: auto; }
 }
 
@@ -1551,15 +1568,25 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 /* ============================================================
    QUEL PERSONNAGE SERAIS-TU ?
    ============================================================ */
-.cast { display: grid; gap: 4px; }
-.cast-stack { display: grid; gap: 10px; }
-.lic-group {
-  display: flex; align-items: center; gap: 14px; margin: 22px 0 8px;
-  font-family: var(--font-ui); font-size: 13px; font-weight: 800;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);
+.cast { display: grid; gap: 10px; }
+.cast-stack { display: grid; gap: 10px; padding: 4px 0 14px; animation: rise 0.4s var(--ease) both; }
+.cast-group { border-radius: var(--radius); border: 1px solid var(--line); background: rgba(var(--panel-rgb), 0.7); overflow: hidden; }
+.cast-group[open] { background: rgba(var(--panel-rgb), 0.5); }
+.cast-group > summary {
+  display: grid; grid-template-columns: minmax(0, 1fr) 16px; align-items: center;
+  column-gap: 14px; padding: 16px 20px; cursor: pointer; list-style: none;
 }
-.lic-group:first-child { margin-top: 0; }
-.lic-group::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.cast-group > summary::-webkit-details-marker { display: none; }
+.cast-group > summary:hover { background: rgba(var(--ink-rgb), 0.03); }
+.cast-group > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cg-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.cg-name { font-family: var(--font-display); font-weight: 500; font-size: clamp(21px, 2.6vw, 27px); letter-spacing: -0.015em; }
+.cg-count { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.cg-list { margin-top: 3px; font-size: 14px; line-height: 1.45; color: var(--ink-3); }
+.cast-group[open] .cg-list { color: var(--ink-2); }
+.cast-group > summary .chev { grid-column: 2; grid-row: 1 / 3; width: 10px; height: 10px; border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3); transform: rotate(45deg); transition: transform 0.25s var(--ease); }
+.cast-group[open] > summary .chev { transform: rotate(-135deg); }
+.cast-group .cast-stack { padding: 0 12px 14px; }
 .lic { border-radius: var(--radius); border: 1px solid var(--line); border-left: 6px solid var(--c); background: rgba(var(--panel-rgb), 0.85); overflow: hidden; }
 .lic[open] { border-color: color-mix(in srgb, var(--c) 45%, transparent); border-left-color: var(--c); background: color-mix(in srgb, var(--c) 5%, rgba(var(--panel-rgb), 0.92)); }
 .lic summary { display: grid; grid-template-columns: minmax(0, 1fr) auto 16px; align-items: center; column-gap: 14px; padding: 18px 22px; cursor: pointer; list-style: none; }
@@ -1609,8 +1636,9 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   .lic, .lic-char, .lic-kind { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .lic .chev, .lic-cta { display: none; }
   .lic-body { animation: none; padding: 0 14px 10px; }
-  /* Une vingtaine d'univers : deux colonnes, sinon le casting mange le PDF */
-  .cast-stack { display: block; }
+  /* Sur papier, les volets de familles s'effacent : tout est déplié */
+  .cast-stack { display: block; padding: 0; animation: none; }
+  .cast-group .cast-stack { padding: 0; }
   .cast-stack .lic { display: flow-root; break-inside: avoid; page-break-inside: avoid; margin: 0 0 8px; }
   .lic summary { break-after: avoid; break-inside: avoid; }
   .lic-body { break-inside: avoid; }
@@ -1618,9 +1646,13 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   .lic-k, .lic-char, .lic-tag, .lic-body > p:not([class]) { grid-column: 1; }
   .lic-why, .lic-others { grid-column: 2; }
   .lic-why { margin-top: 2px; }
-  /* une famille par page : ni intertitre orphelin, ni fiche coupee en deux */
-  .lic-group { break-after: avoid; margin: 0 0 6px; font-size: 8.5pt; }
-  #cast .lic-group:not(:first-child), #g-cast .lic-group:not(:first-child) { break-before: page; margin-top: 0; }
+  .lic-body .casting { grid-column: 1 / -1; }
+  /* une famille par page : ni intertitre orphelin, ni fiche coupée en deux */
+  .cast-group { border: 0; border-radius: 0; background: none !important; overflow: visible; }
+  .cast-group + .cast-group { break-before: page; }
+  .cast-group > summary { display: block; padding: 0 0 6px; break-after: avoid; }
+  .cg-name { font-size: 12pt; }
+  .cg-count, .cg-list, .cast-group > summary .chev { display: none; }
   .lic summary { padding: 7px 14px 2px; }
   .lic-kind { font-size: 7pt; }
   .lic-name { font-size: 12.5pt; }
@@ -1631,8 +1663,12 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   .lic-body p { font-size: 9pt; line-height: 1.38; margin-bottom: 5px; }
   .lic-why { padding: 6px 8px; }
   .lic-others { font-size: 8.5pt !important; }
-  .casting li { font-size: 10pt; padding: 6px 0; }
-  .casting .role b { font-size: 12pt; }
+  /* Dans un cercle, chaque univers liste tout le monde : on resserre, sans toucher aux colonnes */
+  .casting li { break-inside: avoid; font-size: 9pt; padding: 3px 0; }
+  .casting .role b { font-size: 11pt; }
+  .casting .role em { display: inline; font-size: 9pt; }
+  .casting .role em::before { content: ' — '; }
+  .casting .because { font-size: 8pt; }
 }
 
 /* ============================================================

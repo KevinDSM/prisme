@@ -2014,22 +2014,98 @@
     });
   }
 
-  // Place les pastilles sur plusieurs étages quand elles se chevauchent
+  /* Un repère par personne à sa position exacte sur la ligne, et la pastille juste en dessous.
+     Les pastilles qui se chevaucheraient sont écartées (mise en page en pixels, voir layoutStrips)
+     et reliées à leur repère par un trait fin : la position reste lisible, la ligne garde
+     toujours la même hauteur. */
   function stripDots(items) {
     const sorted = items.slice().sort((a, b) => a.pos - b.pos);
-    const minGap = window.innerWidth < 700 ? 8.5 : 4.2; // écart minimal (en % de la ligne) avant de passer à l'étage du dessous
-    const lanes = [];
-    sorted.forEach(it => {
-      let lane = lanes.findIndex(last => it.pos - last >= minGap);
-      if (lane < 0) { lane = lanes.length; lanes.push(-100); }
-      lanes[lane] = it.pos;
-      it.lane = lane;
-    });
-    const count = Math.max(1, lanes.length);
-    const html = sorted.map(it =>
-      `<span class="xs-dot ${it.p.me ? 'me' : ''}" style="left:${it.pos.toFixed(1)}%;top:${it.lane * 24 + 13}px;background:${it.p.color}" title="${esc(it.p.name)} : ${esc(it.label)}">${esc(it.p.tag)}</span>`).join('');
-    return { html, height: count * 24 + 2 };
+    const html = sorted.map(it => {
+      const title = `${esc(it.p.name)} : ${esc(it.label)}`;
+      return `<span class="xs-tick" style="left:${it.pos.toFixed(2)}%;background:${it.p.color}" title="${title}"></span>`
+        + `<i class="xs-lead" style="left:${it.pos.toFixed(2)}%;background:${it.p.color}" aria-hidden="true"></i>`
+        + `<span class="xs-dot ${it.p.me ? 'me' : ''}" data-pos="${it.pos.toFixed(2)}" style="left:${it.pos.toFixed(2)}%;background:${it.p.color}" title="${title}">${esc(it.p.tag)}</span>`;
+    }).join('');
+    /* Sur papier, la mise en page en pixels ne survit pas au changement de largeur :
+       on garde la ligne et ses repères, et on ajoute l'ordre exact, de gauche à droite. */
+    const order = sorted.map(it =>
+      `<b style="color:${it.p.color}">${esc(it.p.tag)}</b> ${Math.round(it.pos)}`).join(' · ');
+    return html + `<span class="xs-print" aria-hidden="true">${order}</span>`;
   }
+
+  const TICK_H = 18;   // bas du repère sur la ligne (6 px de marge + 12 px de repère)
+  const DOT_H = 21;    // hauteur d'une pastille
+  const ROW_GAP = 4;   // entre deux rangées de pastilles
+
+  // Écarte les pastilles d'une ligne pour qu'elles ne se recouvrent plus, sans bouger les repères
+  function layoutTrack(track, force) {
+    const w = track.clientWidth;
+    const dots = [...track.querySelectorAll('.xs-dot')];
+    if (!w || !dots.length) return;
+    // surtout pas `data-w` : cet attribut sert déjà à animer la largeur des barres
+    if (!force && track.dataset.lw === String(w)) return;
+    track.dataset.lw = String(w);
+    const leads = [...track.querySelectorAll('.xs-lead')];
+    const items = dots.map((el, i) => ({
+      el, lead: leads[i], w: el.offsetWidth || 24,
+      x0: (parseFloat(el.dataset.pos) / 100) * w,
+    })).sort((a, b) => a.x0 - b.x0);
+
+    const total = items.reduce((s, it) => s + it.w + 3, 0);
+    const rows = Math.max(1, Math.ceil(total / Math.max(1, w)));
+    for (let r = 0; r < rows; r++) {
+      const line = items.filter((_, i) => i % rows === r);
+      if (!line.length) continue;
+      line.forEach(it => { it.x = it.x0; });
+      const push = () => {
+        for (let i = 1; i < line.length; i++) {
+          const min = line[i - 1].x + line[i - 1].w / 2 + line[i].w / 2 + 3;
+          if (line[i].x < min) line[i].x = min;
+        }
+        const last = line[line.length - 1];
+        last.x = Math.min(last.x, w - last.w / 2);
+        for (let i = line.length - 2; i >= 0; i--) {
+          const max = line[i + 1].x - line[i + 1].w / 2 - line[i].w / 2 - 3;
+          if (line[i].x > max) line[i].x = max;
+        }
+        line[0].x = Math.max(line[0].x, line[0].w / 2);
+      };
+      push(); push();
+      const top = TICK_H + ROW_GAP + r * (DOT_H + ROW_GAP);
+      line.forEach(it => {
+        it.el.style.left = it.x.toFixed(1) + 'px';
+        it.el.style.top = top + 'px';
+        const dx = it.x - it.x0, dy = top - TICK_H;
+        const len = Math.hypot(dx, dy);
+        it.lead.style.left = it.x0.toFixed(1) + 'px';
+        it.lead.style.top = TICK_H + 'px';
+        it.lead.style.height = len.toFixed(1) + 'px';
+        it.lead.style.transform = `rotate(${(-Math.atan2(dx, dy) * 180 / Math.PI).toFixed(2)}deg)`;
+      });
+    }
+    track.style.height = (TICK_H + ROW_GAP + rows * (DOT_H + ROW_GAP)) + 'px';
+  }
+
+  /* Toute variation de largeur (fenêtre, bloc qu'on déplie, passage à l'impression)
+     doit relancer la mise en page : un observateur suffit, et il ne refait le calcul
+     que si la largeur a vraiment changé. */
+  const stripObserver = typeof ResizeObserver === 'function'
+    ? new ResizeObserver(entries => entries.forEach(e => layoutTrack(e.target)))
+    : null;
+
+  function layoutStrips(root) {
+    (root || document).querySelectorAll('.xs-track').forEach(track => {
+      layoutTrack(track, true);
+      if (stripObserver) stripObserver.observe(track);
+    });
+  }
+
+  let stripTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(stripTimer);
+    stripTimer = setTimeout(() => layoutStrips(), 150);
+  });
+  window.addEventListener('beforeprint', () => layoutStrips());
 
   function renderStrips(people, pre) {
     const card = $(pre + 'strips-card');
@@ -2053,7 +2129,7 @@
       return `
         <div class="xs-row" style="--cl:${a.colorL};--cr:${a.colorR}">
           <div class="xs-end l"><span class="pole">${esc(a.left)}</span><span class="champ">${lo.v < -0.05 ? `${esc(nameOf(lo.p))} <b>${pct(Math.abs(lo.v))}</b>` : '—'}</span></div>
-          <div class="xs-track bi" style="height:${dots.height}px"><span class="xs-mean" style="left:${50 + mean * 50}%" title="Moyenne du cercle : ${esc(nuancedLabel(a, mean))}"></span>${dots.html}</div>
+          <div class="xs-track bi"><span class="xs-mean" style="left:${50 + mean * 50}%" title="Moyenne du cercle : ${esc(nuancedLabel(a, mean))}"></span>${dots}</div>
           <div class="xs-end r"><span class="pole">${esc(a.right)}</span><span class="champ">${hi.v > 0.05 ? `${esc(nameOf(hi.p))} <b>${pct(Math.abs(hi.v))}</b>` : '—'}</span></div>
         </div>`;
     };
@@ -2068,7 +2144,7 @@
       return `
         <div class="xs-row uni" style="--cr:${color}">
           <div class="xs-end l"><span class="pole one">${esc(label)}</span><span class="champ">le moins : ${esc(nameOf(lo.p))} <b>${pct(lo.v)}</b></span></div>
-          <div class="xs-track" style="height:${dots.height}px">${dots.html}</div>
+          <div class="xs-track">${dots}</div>
           <div class="xs-end r"><span class="pole">le plus</span><span class="champ">${esc(nameOf(hi.p))} <b>${pct(hi.v)}</b></span></div>
         </div>`;
     };
@@ -2094,6 +2170,7 @@
         unipolar('Radicalité', 'var(--neg)', r => r.stats.radical),
         unipolar('Cohérence', 'var(--neg)', r => r.stats.coherence),
       ], false);
+    layoutStrips($(pre + 'strips'));
   }
 
   /* ---------------------------------------------------------
@@ -3330,10 +3407,21 @@
     return out;
   }
 
+  // Une famille = un volet replié : on ne déroule que l'univers qui intéresse
   function castHtml(build) {
     return licenseGroups().map(({ g, list }) => {
-      const inner = list.map(build).filter(Boolean).join('');
-      return inner ? `<h3 class="lic-group">${esc(g)}</h3><div class="cast-stack">${inner}</div>` : '';
+      const kept = list.filter(lic => build(lic));
+      const inner = kept.map(build).join('');
+      if (!inner) return '';
+      return `
+      <details class="cast-group">
+        <summary>
+          <span class="cg-head"><span class="cg-name">${esc(g)}</span><span class="cg-count">${kept.length} univers</span></span>
+          <span class="cg-list">${esc(kept.map(l => l.name).join(' · '))}</span>
+          <span class="chev" aria-hidden="true"></span>
+        </summary>
+        <div class="cast-stack">${inner}</div>
+      </details>`;
     }).join('');
   }
 
@@ -3399,10 +3487,11 @@
 
   // Impression : on déplie les licences le temps d'imprimer
   window.addEventListener('beforeprint', () => {
-    document.querySelectorAll('.screen.is-active details.lic:not([open])').forEach(d => { d.open = true; d.dataset.printOpened = '1'; });
+    document.querySelectorAll('.screen.is-active details.cast-group:not([open]), .screen.is-active details.lic:not([open])')
+      .forEach(d => { d.open = true; d.dataset.printOpened = '1'; });
   });
   window.addEventListener('afterprint', () => {
-    document.querySelectorAll('details.lic[data-print-opened]').forEach(d => { d.open = false; delete d.dataset.printOpened; });
+    document.querySelectorAll('details[data-print-opened]').forEach(d => { d.open = false; delete d.dataset.printOpened; });
   });
 
   /* ---------------------------------------------------------
@@ -3549,7 +3638,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 17;
+  const BUILD = 18;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
