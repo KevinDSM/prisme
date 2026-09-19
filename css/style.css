@@ -1810,3 +1810,6 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   grid-column: 1; margin-top: 7px; padding: 7px 11px; border-radius: 8px;
   background: rgba(var(--ink-rgb), 0.05); font-size: 13px; line-height: 1.45; color: var(--ink-3);
 }
+.animal-by { margin: 2px 0 0; font-size: 15px; font-weight: 700; letter-spacing: 0.02em; color: var(--ink-3); }
+.animal-sub { font-size: 13px; font-weight: 700; color: var(--ink-3); }
+.casting .role-by { display: block; font-size: 13px; font-weight: 700; color: var(--ink-3); }

@@ -2629,7 +2629,9 @@
     renderQualities(r);
     renderLife(r);
     renderCast(cur);
-    renderAnimal(cur);
+    renderPick(cur, 'animal');
+    renderPick(cur, 'film');
+    renderPick(cur, 'musique');
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
     const upgradable = canUpgrade(r);
@@ -3255,7 +3257,9 @@
     renderGroupAssembly(people, 'g-');
     renderGovernment(people, 'g-');
     renderGroupCast(people, 'g-');
-    renderGroupAnimals(people, 'g-');
+    renderGroupPick(people, 'g-', 'animal');
+    renderGroupPick(people, 'g-', 'film');
+    renderGroupPick(people, 'g-', 'musique');
     renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
@@ -3534,42 +3538,63 @@
 
 
   /* ---------------------------------------------------------
-     « Quel animal serais-tu ? » — même comparaison que les personnages,
-     sur une seule liste : dans un cercle, chacun reçoit un animal différent.
+     Les « listes plates » : animal, film, musique.
+     Même comparaison que les personnages, sur une liste unique — et dans un
+     cercle, chacun reçoit une entrée différente.
      --------------------------------------------------------- */
-  const ANIMALS = (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS;
+  const PICK_LISTS = {
+    animal: {
+      items: (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS,
+      kicker: 'Ton animal', like: 'comme lui', next: 'Tu aurais aussi pu être',
+      section: 'animal-section', card: 'animal-card', group: 'animal', list: 'animals',
+    },
+    film: {
+      items: (window.PRISME_FILMS || { FILMS: [] }).FILMS,
+      kicker: 'Ton film', like: 'comme ce film', next: 'Ta séance de rattrapage',
+      section: 'film-section', card: 'film-card', group: 'film', list: 'films',
+    },
+    musique: {
+      items: (window.PRISME_MUSICS || { MUSICS: [] }).MUSICS,
+      kicker: 'Ton morceau', like: 'comme ce morceau', next: 'La suite de la playlist',
+      section: 'musique-section', card: 'musique-card', group: 'musique', list: 'musiques',
+    },
+  };
 
-  function animalsFor(r) {
-    return ANIMALS.map(a => matchCharacter(r, a)).filter(Boolean).sort((x, y) => y.score - x.score);
+  function pickFor(r, key) {
+    return PICK_LISTS[key].items.map(a => matchCharacter(r, a)).filter(Boolean).sort((x, y) => y.score - x.score);
   }
 
-  function renderAnimal(cur) {
-    const ranked = animalsFor(cur.r);
-    $('animal-section').hidden = !ranked.length;
+  function renderPick(cur, key) {
+    const cfg = PICK_LISTS[key];
+    const ranked = pickFor(cur.r, key);
+    $(cfg.section).hidden = !ranked.length;
     if (!ranked.length) return;
     const best = ranked[0];
     const why = matchWhy(best, 4), gap = matchGap(best);
     const others = ranked.slice(1, 4);
-    $('animal-card').innerHTML = `
+    const sub = s => (s ? `<span class="animal-sub">${esc(s)}</span>` : '');
+    $(cfg.card).innerHTML = `
       <article class="animal" style="--c:${best.ch.color}">
-        <p class="animal-k">Ton animal</p>
+        <p class="animal-k">${esc(cfg.kicker)}</p>
         <h3 class="animal-name">${esc(best.ch.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
+        ${best.ch.by ? `<p class="animal-by">${esc(best.ch.by)}</p>` : ''}
         <p class="animal-tag">${esc(best.ch.tag)}</p>
         <p class="animal-desc">${esc(best.ch.desc)}</p>
-        <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'comme lui, tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+        <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? cfg.like + ', tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
       </article>
       <div class="animal-next">
-        <p class="animal-next-k">Tu aurais aussi pu être</p>
-        <ul>${others.map(x => `<li style="--c:${x.ch.color}"><span class="dot"></span><span class="an-id"><b>${esc(x.ch.name)}</b><small>${esc(x.ch.tag)}</small></span><span class="pct">${pct(x.score)}\u00a0%</span></li>`).join('')}</ul>
+        <p class="animal-next-k">${esc(cfg.next)}</p>
+        <ul>${others.map(x => `<li style="--c:${x.ch.color}"><span class="dot"></span><span class="an-id"><b>${esc(x.ch.name)}</b>${sub(x.ch.by)}<small>${esc(x.ch.tag)}</small></span><span class="pct">${pct(x.score)}\u00a0%</span></li>`).join('')}</ul>
       </div>`;
   }
 
-  // Cercle : un animal différent pour chacun
-  function renderGroupAnimals(people, pre) {
-    const card = $(pre + 'animal-card-group');
+  // Cercle : une entrée différente pour chacun
+  function renderGroupPick(people, pre, key) {
+    const cfg = PICK_LISTS[key];
+    const card = $(pre + cfg.group + '-card-group');
     card.hidden = people.length < 2;
     if (people.length < 2) return;
-    const table = people.map(p => animalsFor(p.r));
+    const table = people.map(p => pickFor(p.r, key));
     const freeP = new Set(people.map((p, i) => i).filter(i => table[i].length));
     const taken = new Set();
     const picks = [];
@@ -3584,9 +3609,9 @@
       freeP.delete(best.i);
     }
     picks.sort((a, b) => a.i - b.i);
-    $(pre + 'animals').innerHTML = `<ul class="casting menagerie">${picks.map(x => {
+    $(pre + cfg.list).innerHTML = `<ul class="casting menagerie">${picks.map(x => {
       const why = matchWhy(x.m, 2);
-      return `<li style="--c:${x.m.ch.color}">${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)}\u00a0%</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+      return `<li style="--c:${x.m.ch.color}">${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)}\u00a0%</small>${x.m.ch.by ? `<span class="role-by">${esc(x.m.ch.by)}</span>` : ''}<em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
     }).join('')}</ul>`;
   }
 
