@@ -9,12 +9,21 @@
   <meta http-equiv="Cache-Control" content="no-cache">
   <script>try { if (localStorage.getItem('prisme.theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
   <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
-  <meta property="og:description" content="24 axes politiques, méta-politiques et de personnalité, 6 fondements moraux, un tempérament, un archétype, un profil DISC. Compare-toi à tes amis.">
+  <meta property="og:description" content="231 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, ton profil DISC et tes valeurs. Puis compare-toi à tes amis.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Prisme">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:url" content="https://kevindsm.github.io/prisme/">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=20">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d6d'/%3E%3Cstop offset='.5' stop-color='%23ffd60a'/%3E%3Cstop offset='1' stop-color='%234dc9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='32,6 60,56 4,56' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=19">
+  <link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -229,146 +238,6 @@
 
     <section class="res-section teaser-top" id="values-teaser-section" hidden>
       <div id="values-teaser" class="visitor teaser"></div>
-    </section>
-
-    <!-- Cercle d'amis -->
-    <section id="circle-section" class="res-section circle" hidden>
-      <div class="section-head">
-        <h2>Mon cercle <span class="count" id="circle-count"></span></h2>
-        <p>Les amis qui ont fait le test. Ils restent enregistrés dans ce navigateur, rien n'est envoyé sur un serveur.</p>
-      </div>
-
-      <div class="circle-toolbar">
-        <div class="circle-add">
-          <input id="circle-input" type="text" placeholder="Colle le lien de résultat d'un ami" autocomplete="off" spellcheck="false">
-          <input id="circle-name" class="name" type="text" placeholder="Son prénom" maxlength="24" autocomplete="off">
-          <button id="btn-circle-add" class="btn btn-primary btn-sm" type="button"><span>Ajouter</span></button>
-        </div>
-        <div class="circle-actions">
-          <button id="btn-invite" class="btn btn-ghost btn-sm" type="button">Copier mon lien d'invitation</button>
-          <button id="btn-share-circle" class="btn btn-ghost btn-sm" type="button">Partager tout le cercle</button>
-        </div>
-      </div>
-
-      <div id="circle-empty" class="circle-empty">
-        <strong>Ton cercle est vide pour l'instant.</strong>
-        <ol>
-          <li>Envoie ton <b>lien d'invitation</b> à tes amis.</li>
-          <li>En l'ouvrant, ils voient ton profil et font le test à leur tour : ils sont aussitôt comparés à toi.</li>
-          <li>Ils te renvoient leur lien de résultat : colle-le ci-dessus, et ils apparaissent ici, sur la carte et dans les comparaisons.</li>
-        </ol>
-      </div>
-
-      <div id="circle-body" hidden>
-        <div class="circle-grid">
-          <article class="res-card">
-            <p class="card-kicker">Affinités</p>
-            <h2>Qui te ressemble ?</h2>
-            <ul id="circle-ranking" class="ranking"></ul>
-            <ul id="circle-facts" class="circle-facts"></ul>
-          </article>
-          <article class="res-card">
-            <p class="card-kicker">Carte du cercle</p>
-            <h2>Où chacun se place</h2>
-            <div class="map-controls">
-              <label>Horizontal<select id="map-x"></select></label>
-              <label>Vertical<select id="map-y"></select></label>
-            </div>
-            <div id="circle-map" class="circle-map"></div>
-            <p id="map-note" class="map-note"></p>
-          </article>
-        </div>
-
-        <article class="res-card circle-disc-card" id="circle-disc-card" hidden>
-          <p class="card-kicker">Profils DISC</p>
-          <h2>Les couleurs du cercle</h2>
-          <div class="circle-disc">
-            <div id="circle-disc-wheel" class="disc-wheel"></div>
-            <div>
-              <ul id="circle-disc-list" class="circle-disc-list"></ul>
-              <p id="circle-disc-notes" class="circle-disc-notes"></p>
-            </div>
-          </div>
-        </article>
-
-
-
-        <article class="res-card group-card robot" id="robot-card" hidden>
-          <p class="card-kicker">Le portrait-robot du cercle</p>
-          <h2 class="robot-title" id="robot-title"></h2>
-          <div id="robot-chips" class="disc-chips"></div>
-          <p id="robot-text" class="robot-text"></p>
-          <div id="robot-people" class="duo-cards"></div>
-          <p class="card-kicker robot-k">Qui ressemble le plus au groupe</p>
-          <ul id="robot-rank" class="found-list robot-rank"></ul>
-        </article>
-
-        <article class="res-card group-card" id="assembly-card" hidden>
-          <p class="card-kicker">Le cercle à l'Assemblée</p>
-          <h2>Qui siège où</h2>
-          <div class="group-assembly">
-            <div class="hemi">
-              <div id="assembly-svg"></div>
-              <div id="assembly-legend" class="hemi-legend"></div>
-            </div>
-            <div>
-              <p id="assembly-text" class="group-assembly-text"></p>
-              <ul id="assembly-blocs" class="hemi-blocs"></ul>
-              <p class="assembly-note">L'angle vient de la position gauche-droite de chacun, le rang de son engagement (les plus engagés près du perchoir). Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
-            </div>
-          </div>
-        </article>
-
-
-        <article class="res-card group-card" id="gov-card" hidden>
-          <p class="card-kicker">Le gouvernement du cercle</p>
-          <h2>Qui aurait quel ministère</h2>
-          <p id="gov-note" class="group-intro"></p>
-          <div id="gov" class="awards govs"></div>
-        </article>
-
-        <article class="res-card group-card" id="awards-card" hidden>
-          <p class="card-kicker">Palmarès</p>
-          <h2>Qui est qui dans le cercle</h2>
-          <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses. Toi compris.</p>
-          <div id="awards-medals" class="medals"></div>
-          <div id="awards" class="awards"></div>
-        </article>
-
-        <article class="res-card group-card" id="strips-card" hidden>
-          <p class="card-kicker">Tout le monde, ligne par ligne</p>
-          <h2>Où chacun se situe</h2>
-          <p class="group-intro">Une ligne par dimension. Chaque personne a un repère à sa position exacte, et sa pastille juste en dessous — reliée par un trait quand il a fallu l'écarter. À chaque bout : qui va le plus loin de ce côté. Le petit triangle marque la moyenne. Survole une pastille pour lire le détail.</p>
-          <div id="strips-legend" class="xs-legend"></div>
-          <div id="strips" class="xs"></div>
-        </article>
-
-
-        <article class="res-card group-card" id="clans-card" hidden>
-          <p class="card-kicker">Alliances et clans</p>
-          <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
-          <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
-          <div id="clans" class="clans"></div>
-          <p id="clans-notes" class="circle-disc-notes"></p>
-        </article>
-
-        <article class="res-card group-card" id="matrix-card" hidden>
-          <p class="card-kicker">Affinités croisées</p>
-          <h2 data-nav="Affinités">Qui est proche de qui</h2>
-          <div id="matrix-duos" class="duo-cards"></div>
-          <div id="matrix" class="matrix-wrap"></div>
-        </article>
-
-        <article class="res-card group-card" id="topics-card" hidden>
-          <p class="card-kicker">Les sujets du groupe</p>
-          <h2 data-nav="Sujets du groupe">Ce qui vous rassemble, ce qui vous fâche</h2>
-          <div class="topics">
-            <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="topics-divide"></div></div>
-            <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="topics-unite"></div></div>
-          </div>
-          <p id="topics-values" class="circle-disc-notes" hidden></p>
-        </article>
-      </div>
     </section>
 
     <!-- Comparaison détaillée -->
@@ -879,9 +748,9 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=19"></script>
-  <script src="js/profiles.js?v=19"></script>
-  <script src="js/characters.js?v=19"></script>
-  <script src="js/app.js?v=19"></script>
+  <script src="js/questions.js?v=20"></script>
+  <script src="js/profiles.js?v=20"></script>
+  <script src="js/characters.js?v=20"></script>
+  <script src="js/app.js?v=20"></script>
 </body>
 </html>

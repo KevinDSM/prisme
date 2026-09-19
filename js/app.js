@@ -1447,7 +1447,7 @@
       const top = colors.some(c => c.id === x.id);
       return `<div class="disc-bar ${top ? 'is-top' : ''}" style="--c:var(${x.css})">
           <span class="badge">${x.letter}</span>
-          <div><div class="name">${esc(x.label)}<small>${esc(x.color)}</small></div><div class="track"><i data-w="${pct(v)}"></i></div></div>
+          <div><div class="name">${esc(x.label)}<small>${esc(x.color)}</small></div><div class="track"><i data-bar="${pct(v)}"></i></div></div>
           <span class="num">${pct(v)}</span>
         </div>`;
     }).join('');
@@ -1611,7 +1611,7 @@
     $('values-bars').innerHTML = vp.ranked.map((v, i) => `
       <div class="val-bar ${i < 3 ? 'is-top' : ''}" style="--c:${v.color}">
         <span class="rank">${i + 1}</span>
-        <div><div class="name">${esc(v.label)}<small>${esc(v.short)}</small></div><div class="track"><i data-w="${pct(v.v)}"></i></div></div>
+        <div><div class="name">${esc(v.label)}<small>${esc(v.short)}</small></div><div class="track"><i data-bar="${pct(v.v)}"></i></div></div>
         <span class="num">${pct(v.v)}</span>
       </div>`).join('');
 
@@ -1739,7 +1739,7 @@
     $('qualities-top').innerHTML = top.map((q, i) => `
       <article class="qual" style="--d:${i * 70}ms">
         <div class="qual-head"><span class="qual-rank">${ROMAN[i]}</span><h4>${esc(q.name)}</h4><span class="qual-score">${pct(q.score)}</span></div>
-        <div class="qual-track"><i data-w="${pct(q.score)}"></i></div>
+        <div class="qual-track"><i data-bar="${pct(q.score)}"></i></div>
         <p>${esc(q.high)}</p>
         <p class="why"><b>D'où ça vient :</b> ${esc(qualityWhy(r, q))}.</p>
       </article>`).join('');
@@ -1748,13 +1748,13 @@
       return `
       <article class="qual low">
         <div class="qual-head"><h4>${esc(q.name)}</h4><span class="qual-score">${pct(q.score)}</span></div>
-        <div class="qual-track"><i data-w="${pct(q.score)}"></i></div>
+        <div class="qual-track"><i data-bar="${pct(q.score)}"></i></div>
         <p>${esc(q.low)}</p>
         ${why ? `<p class="why"><b>D'où ça vient :</b> ${esc(why)}.</p>` : ''}
       </article>`;
     }).join('');
     $('qualities-all').innerHTML = ranked.map(q =>
-      `<li><b>${esc(q.name)}</b><span class="bar"><i data-w="${pct(q.score)}"></i></span><span class="num">${pct(q.score)}</span></li>`).join('');
+      `<li><b>${esc(q.name)}</b><span class="bar"><i data-bar="${pct(q.score)}"></i></span><span class="num">${pct(q.score)}</span></li>`).join('');
   }
 
   function renderLife(r) {
@@ -2096,7 +2096,7 @@
     const w = track.clientWidth;
     const dots = [...track.querySelectorAll('.xs-dot')];
     if (!w || !dots.length) return;
-    // surtout pas `data-w` : cet attribut sert déjà à animer la largeur des barres
+    // nom distinct de `data-bar` / `data-arc`, qui sont lus globalement pour animer les barres
     if (!force && track.dataset.lw === String(w)) return;
     track.dataset.lw = String(w);
     const leads = [...track.querySelectorAll('.xs-lead')];
@@ -2292,7 +2292,7 @@
       <article class="duo-card"><p class="k">Le plus loin de la moyenne</p><h4>${whoChip(far.p)}<span class="pct">${pct(far.a)} %</span></h4>
         <p>Celui ou celle qui tire le groupe ailleurs${farGap ? ` — surtout sur ${esc(theme(farGap.x.id))} : ${esc(nuancedLabel(farGap.x, farGap.m).toLowerCase())}, quand le groupe est ${esc(nuancedLabel(farGap.x, farGap.t).toLowerCase())}` : ''}.</p></article>`;
     $(pre + 'robot-rank').innerHTML = ranked.map(x =>
-      `<li>${whoChip(x.p)}<span class="bar"><i data-w="${pct(x.a)}" style="background:${x.p.color}"></i></span><span class="num">${pct(x.a)}</span></li>`).join('');
+      `<li>${whoChip(x.p)}<span class="bar"><i data-bar="${pct(x.a)}" style="background:${x.p.color}"></i></span><span class="num">${pct(x.a)}</span></li>`).join('');
   }
 
   function ministryScore(r, m) {
@@ -2485,7 +2485,7 @@
       text += ` Le plus grand écart : ${g.v.label.toLowerCase()}, qui compte bien plus pour ${g.d > 0 ? (meLabel.toLowerCase() === 'toi' ? 'toi' : meLabel) : name} (${pct(g.d > 0 ? a.values[g.v.id] : b.values[g.v.id])} contre ${pct(g.d > 0 ? b.values[g.v.id] : a.values[g.v.id])}).`;
       $('cmp-values-text').textContent = text;
       $('cmp-values-bars').innerHTML = VALUES.map(v =>
-        `<li><b style="color:color-mix(in srgb, ${v.color} var(--label-mix), var(--label-toward))">${esc(v.label)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(a.values[v.id])}"></i></span><span class="bar them"><i data-w="${pct(b.values[v.id])}"></i></span></span><span class="num">${pct(a.values[v.id])}<em>${pct(b.values[v.id])}</em></span></li>`).join('');
+        `<li><b style="color:color-mix(in srgb, ${v.color} var(--label-mix), var(--label-toward))">${esc(v.label)}</b><span class="duo-bars"><span class="bar me"><i data-bar="${pct(a.values[v.id])}"></i></span><span class="bar them"><i data-bar="${pct(b.values[v.id])}"></i></span></span><span class="num">${pct(a.values[v.id])}<em>${pct(b.values[v.id])}</em></span></li>`).join('');
     }
 
     const qa = qualityScores(a), qb = qualityScores(b);
@@ -2501,7 +2501,7 @@
       $('cmp-qual-me').innerHTML = mine.length ? mine.map(item).join('') : '<li><span>Rien de net : vos qualités se recouvrent.</span></li>';
       $('cmp-qual-them').innerHTML = theirs.length ? theirs.map(item).join('') : '<li><span>Rien de net : vos qualités se recouvrent.</span></li>';
       $('cmp-qual-bars').innerHTML = rows.slice().sort((x, y) => Math.abs(y.d) - Math.abs(x.d)).map(x =>
-        `<li><b>${esc(x.q.name)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(x.m)}"></i></span><span class="bar them"><i data-w="${pct(x.t)}"></i></span></span><span class="num">${pct(x.m)}<em>${pct(x.t)}</em></span></li>`).join('');
+        `<li><b>${esc(x.q.name)}</b><span class="duo-bars"><span class="bar me"><i data-bar="${pct(x.m)}"></i></span><span class="bar them"><i data-bar="${pct(x.t)}"></i></span></span><span class="num">${pct(x.m)}<em>${pct(x.t)}</em></span></li>`).join('');
     }
   }
 
@@ -2566,13 +2566,13 @@
 
   function rankList(items, count, color) {
     return items.slice(0, count).map(f =>
-      `<li><strong>${esc(f.name)}</strong><span class="pct">${pct(f.score)} %</span><span class="bar"><i data-w="${pct(f.score)}" style="background:${color}"></i></span></li>`).join('');
+      `<li><strong>${esc(f.name)}</strong><span class="pct">${pct(f.score)} %</span><span class="bar"><i data-bar="${pct(f.score)}" style="background:${color}"></i></span></li>`).join('');
   }
 
   function ringSvg(value, r, cls) {
     const circ = 2 * Math.PI * r;
     const size = r * 2 + 10;
-    return `<svg viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="${cls}" cx="${size / 2}" cy="${size / 2}" r="${r}" style="stroke-dasharray:${circ.toFixed(1)};stroke-dashoffset:${circ.toFixed(1)}" data-off="${(circ * (1 - value)).toFixed(1)}"/></svg>`;
+    return `<svg viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="${cls}" cx="${size / 2}" cy="${size / 2}" r="${r}" style="stroke-dasharray:${circ.toFixed(1)};stroke-dashoffset:${circ.toFixed(1)}" data-arc="${(circ * (1 - value)).toFixed(1)}"/></svg>`;
   }
 
   /* ---------------------------------------------------------
@@ -2660,7 +2660,7 @@
 
     $('radar').innerHTML = renderRadar(r.found, them ? them.found : null);
     $('found-list').innerHTML = FOUNDATIONS.map(f =>
-      `<li><b>${esc(f.label)}</b><span class="bar"><i data-w="${pct(r.found[f.id])}" style="background:${f.color}"></i></span><span class="num">${pct(r.found[f.id])}</span></li>`).join('');
+      `<li><b>${esc(f.label)}</b><span class="bar"><i data-bar="${pct(r.found[f.id])}" style="background:${f.color}"></i></span><span class="num">${pct(r.found[f.id])}</span></li>`).join('');
 
     $('traits').innerHTML = TRAITS.map(t => {
       const v = r.traits[t.id];
@@ -2669,7 +2669,7 @@
         <div class="trait">
           <div class="trait-name">${esc(t.label)} <span style="color:var(--ink-3);font-weight:500">· ${pct(v)}</span></div>
           <p class="trait-desc">${esc(t.desc)}</p>
-          <div class="trait-track"><i data-w="${pct(v)}"></i>${marker}</div>
+          <div class="trait-track"><i data-bar="${pct(v)}"></i>${marker}</div>
           <div class="trait-ends"><span class="${v < 0.45 ? 'on' : ''}">${esc(t.low)}</span><span class="${v > 0.55 ? 'on' : ''}">${esc(t.high)}</span></div>
         </div>`;
     }).join('');
@@ -2696,8 +2696,6 @@
     $('summary').innerHTML = summarize(r, fam, temp, psy).map((p, i) =>
       `<h3 data-n="${ROMAN[i]}">${esc(p.h)}</h3><p>${p.p}</p>`).join('');
 
-    // Cercle (uniquement sur son propre profil)
-    $('circle-section').hidden = true; // l'ancien cercle enregistré dans le navigateur est remplacé par les cercles par URL
     $('url-panel').hidden = true;
 
     // Comparaison détaillée
@@ -2708,8 +2706,8 @@
     if (silent) return;
     showScreen('results');
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.querySelectorAll('#screen-results [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
-      document.querySelectorAll('#screen-results [data-off]').forEach(el => { el.style.strokeDashoffset = el.dataset.off; });
+      document.querySelectorAll('#screen-results [data-bar]').forEach(el => { el.style.width = el.dataset.bar + '%'; });
+      document.querySelectorAll('#screen-results [data-arc]').forEach(el => { el.style.strokeDashoffset = el.dataset.arc; });
       buildNav('screen-results', 'res-nav');
     }));
     if (scrollTarget) {
@@ -2720,72 +2718,6 @@
   }
 
 
-  /* ---------------------------------------------------------
-     Rendu : cercle d'amis
-     --------------------------------------------------------- */
-  function renderCircle(cur, selectedCode) {
-    const circle = loadCircle();
-    $('circle-section').hidden = false;
-    $('circle-count').textContent = circle.length ? `· ${circle.length}` : '';
-    $('circle-empty').hidden = circle.length > 0;
-    $('circle-body').hidden = circle.length === 0;
-    $('btn-share-circle').hidden = circle.length === 0;
-    if (!circle.length) { mapState = null; return; }
-
-    const entries = circle.map((f, i) => {
-      const r = decodeResult(f.code);
-      return { ...f, r, color: FRIEND_COLORS[i % FRIEND_COLORS.length], aff: affinityBetween(cur.r, r), fam: rankFamilies(r)[0], temp: rankTemperaments(r)[0] };
-    });
-    const ranked = entries.slice().sort((x, y) => y.aff.total - x.aff.total);
-
-    $('circle-ranking').innerHTML = ranked.map((f, k) => `
-      <li class="rank ${f.code === selectedCode ? 'is-selected' : ''}">
-        <button class="rank-main" type="button" data-action="select" data-code="${f.code}" aria-label="Me comparer à ${esc(f.name)}">
-          <span class="rank-pos">${k + 1}</span>
-          <span class="rank-dot" style="background:${f.color}"></span>
-          <span class="rank-who"><strong>${esc(f.name)}</strong><small>${discMini(f.r)}${esc(f.fam.name)} · ${esc(f.temp.name)}</small></span>
-          <span class="rank-pct">${pct(f.aff.total)}<small> %</small></span>
-          <span class="rank-bar"><i data-w="${pct(f.aff.total)}" style="background:${f.color}"></i></span>
-        </button>
-        <button class="rank-remove" type="button" data-action="remove" data-code="${f.code}" aria-label="Retirer ${esc(f.name)} du cercle" title="Retirer du cercle">×</button>
-      </li>`).join('');
-
-    // Le cercle en bref
-    const facts = [];
-    const best = ranked[0];
-    const worst = ranked[ranked.length - 1];
-    facts.push([best.aff.total >= 0.7 ? 'Âme sœur' : 'Le plus proche de toi', best.name, `${pct(best.aff.total)} % d'affinité`]);
-    if (ranked.length > 1) {
-      facts.push([worst.aff.total <= 0.45 ? 'Ton opposé' : 'Le plus éloigné de toi', worst.name, `${pct(worst.aff.total)} % d'affinité`]);
-      const byPol = entries.filter(f => f.aff.pol !== null).sort((x, y) => y.aff.pol - x.aff.pol)[0];
-      if (byPol && byPol.code !== best.code && byPol.code !== worst.code && byPol.aff.pol >= 0.55) {
-        facts.push(['Allié sur le fond', byPol.name, `${pct(byPol.aff.pol)} % sur les idées politiques`]);
-      }
-    }
-    const byPsy = entries.filter(f => f.aff.psy !== null).sort((x, y) => y.aff.psy - x.aff.psy)[0];
-    if (byPsy && byPsy.aff.psy >= 0.55) facts.push(['Caractère le plus proche', byPsy.name, `${pct(byPsy.aff.psy)} % en personnalité`]);
-    const myTemp = rankTemperaments(cur.r)[0].name;
-    const sameTemp = entries.filter(f => f.temp.name === myTemp).map(f => f.name);
-    if (sameTemp.length) facts.push(['Même tempérament que toi', joinFr(sameTemp), myTemp]);
-    const everyone = [{ name: 'Toi', r: cur.r }, ...entries];
-    const mostRadical = everyone.slice().sort((x, y) => y.r.stats.radical - x.r.stats.radical)[0];
-    facts.push(['Qui tranche le plus', mostRadical.name, `${pct(mostRadical.r.stats.radical)} % de curseurs aux extrêmes`]);
-    const mostOpen = everyone.slice().sort((x, y) => x.r.traits.dog - y.r.traits.dog)[0];
-    facts.push(['Esprit le plus ouvert', mostOpen.name, `dogmatisme ${pct(mostOpen.r.traits.dog)}`]);
-    $('circle-facts').innerHTML = facts.map(([k, who, detail]) =>
-      `<li><span class="k">${esc(k)}</span><b>${esc(who)}</b> · ${esc(detail)}</li>`).join('');
-
-    mapState = { cur, entries, selectedCode };
-    renderMap();
-    renderCircleDisc([{ name: 'Toi', r: cur.r, me: true }, ...entries], '');
-    const groupPeople = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
-    renderRobot(groupPeople, '');
-    renderGroupAssembly(groupPeople, '');
-    renderGovernment(groupPeople, '');
-    renderClans(groupPeople, '');
-    renderGroup(groupPeople, '');
-    renderStrips(groupPeople, '');
-  }
 
   function renderMap() {
     if (!mapState) return;
@@ -2869,7 +2801,7 @@
     $('affinity-pct').textContent = p;
     const arc = $('affinity-arc');
     arc.style.strokeDashoffset = '326.7';
-    arc.dataset.off = String(326.7 * (1 - aff.total));
+    arc.dataset.arc = String(326.7 * (1 - aff.total));
     const [lab, desc] = affinityLabel(p);
     $('affinity-label').textContent = lab;
     $('affinity-desc').textContent = desc;
@@ -2890,7 +2822,7 @@
       const ct = row.t < 0 ? row.x.colorL : row.x.colorR;
       return `<div class="gap-row">
           <div class="gap-head"><span>${esc(cap(theme(row.x.id)))}</span><span class="gap-val">${Math.round(row.d * 100)}<small> pts</small></span></div>
-          <div class="gap-track"><i data-w="${Math.min(100, row.d * 50)}" style="background:linear-gradient(90deg, ${cm}, ${ct})"></i></div>
+          <div class="gap-track"><i data-bar="${Math.min(100, row.d * 50)}" style="background:linear-gradient(90deg, ${cm}, ${ct})"></i></div>
           <div class="gap-sub">${esc(meLabel.toLowerCase() === 'toi' ? 'toi' : meLabel)} : ${esc(nuancedLabel(row.x, row.m).toLowerCase())} · ${esc(name)} : ${esc(nuancedLabel(row.x, row.t).toLowerCase())}</div>
         </div>`;
     }).join('');
@@ -2898,7 +2830,7 @@
     // Fondements moraux côte à côte
     $('cmp-radar').innerHTML = renderRadar(a.found, b.found);
     $('cmp-found').innerHTML = FOUNDATIONS.map(f =>
-      `<li><b>${esc(f.label)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(a.found[f.id])}"></i></span><span class="bar them"><i data-w="${pct(b.found[f.id])}"></i></span></span><span class="num">${pct(a.found[f.id])}<em>${pct(b.found[f.id])}</em></span></li>`).join('');
+      `<li><b>${esc(f.label)}</b><span class="duo-bars"><span class="bar me"><i data-bar="${pct(a.found[f.id])}"></i></span><span class="bar them"><i data-bar="${pct(b.found[f.id])}"></i></span></span><span class="num">${pct(a.found[f.id])}<em>${pct(b.found[f.id])}</em></span></li>`).join('');
 
     // Tous les axes face à face
     const groups = [['politique', 'Politique'], ['meta', 'Méta-politique'], ['psyche', 'Personnalité']];
@@ -2928,7 +2860,7 @@
       $('cmp-disc-who').innerHTML = `<span>${esc(meLabel)}</span>${discPills(da, true)}<span class="amp">·</span><span>${esc(name)}</span>${discPills(db, true)}`;
       $('cmp-disc-text').textContent = DISC_DUO[discKey(da.primary, db.primary)];
       $('cmp-disc-bars').innerHTML = DISC.map(x =>
-        `<li><b style="color:color-mix(in srgb, var(${x.css}) var(--label-mix), var(--label-toward))">${esc(x.color)}</b><span class="duo-bars"><span class="bar me"><i data-w="${pct(a.disc[x.id])}"></i></span><span class="bar them"><i data-w="${pct(b.disc[x.id])}"></i></span></span><span class="num">${pct(a.disc[x.id])}<em>${pct(b.disc[x.id])}</em></span></li>`).join('');
+        `<li><b style="color:color-mix(in srgb, var(${x.css}) var(--label-mix), var(--label-toward))">${esc(x.color)}</b><span class="duo-bars"><span class="bar me"><i data-bar="${pct(a.disc[x.id])}"></i></span><span class="bar them"><i data-bar="${pct(b.disc[x.id])}"></i></span></span><span class="num">${pct(a.disc[x.id])}<em>${pct(b.disc[x.id])}</em></span></li>`).join('');
     }
 
     renderCompareExtras(a, b, meLabel, name);
@@ -2967,33 +2899,7 @@
     else location.hash = hash;
   }
 
-  function selectFriend(code) {
-    const mine = myCode();
-    if (!mine) return;
-    scrollTarget = code ? 'compare-block' : 'circle-section';
-    goToProfile(mine, myName(), code, '');
-  }
 
-  function importGroup(raw) {
-    const members = parseGroup(raw);
-    const mine = myCode();
-    let count = 0;
-    members.forEach(m => {
-      const res = m.code === mine ? null : addToCircle(m.code, m.name);
-      if (res === 'added' || res === 'updated') count++;
-    });
-    const msg = count ? `${count} personne${count > 1 ? 's' : ''} ajoutée${count > 1 ? 's' : ''} à ton cercle` : 'Ton cercle était déjà à jour';
-    if (mine) {
-      history.replaceState(null, '', location.pathname + location.search + '#p=' + mine + nameParam(myName()));
-      scrollTarget = 'circle-section';
-      route();
-    } else {
-      history.replaceState(null, '', location.pathname + location.search);
-      showScreen('intro');
-      initIntro();
-    }
-    toast(msg);
-  }
 
   function route() {
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
@@ -3077,94 +2983,15 @@
       startQuiz();
     };
 
-    const invite = async () => {
-      const name = askMyName();
-      if (current) current.name = name;
-      await shareLink(profileUrl(myCode() || current.code, name),
-        `${name ? name + ' a' : 'J\'ai'} fait le test Prisme. Fais-le à ton tour et compare-toi :`,
-        'Lien copié — envoie-le à tes amis : en l\'ouvrant, ils pourront se comparer à toi');
-    };
-    $('btn-invite').onclick = invite;
-
-    $('btn-share-circle').onclick = async () => {
-      const name = askMyName();
-      const mine = myCode();
-      const members = [{ code: mine, name }, ...loadCircle().map(f => ({ code: f.code, name: f.name }))];
-      await shareLink(baseUrl() + '#g=' + encodeGroup(members),
-        'Notre cercle sur Prisme : ouvre le lien pour voir où chacun se place.',
-        `Lien du cercle copié (${members.length} personnes) : chacun pourra importer tout le monde d'un coup`);
-    };
 
 
 
-    // Ajout d'un ami par lien collé
-    const addFromInput = () => {
-      const members = parseLink($('circle-input').value);
-      if (!members.length) { toast('Lien ou code non reconnu'); return; }
-      const mine = myCode();
-      const typedName = $('circle-name').value.trim();
-      let added = 0, lastCode = null;
-      members.forEach(m => {
-        if (m.code === mine) return;
-        let name = m.name || (members.length === 1 ? typedName : '');
-        if (!name && members.length === 1) name = (prompt('Comment s\'appelle cette personne ?') || '').trim();
-        const res = addToCircle(m.code, name);
-        if (res) { lastCode = m.code; if (res !== 'exists') added++; }
-      });
-      if (!lastCode) { toast('C\'est ton propre résultat'); return; }
-      $('circle-input').value = '';
-      $('circle-name').value = '';
-      toast(added > 1 ? `${added} personnes ajoutées à ton cercle` : added ? 'Ajouté à ton cercle' : 'Déjà dans ton cercle');
-      selectFriend(members.length === 1 ? lastCode : null);
-    };
-    $('btn-circle-add').onclick = addFromInput;
-    $('circle-input').onkeydown = e => { if (e.key === 'Enter') addFromInput(); };
-    $('circle-name').onkeydown = e => { if (e.key === 'Enter') addFromInput(); };
 
-    // Classement : comparer ou retirer
-    $('circle-ranking').addEventListener('click', e => {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-      const code = btn.dataset.code;
-      if (btn.dataset.action === 'select') {
-        selectFriend(code);
-      } else if (btn.dataset.action === 'remove') {
-        const f = loadCircle().find(x => x.code === code);
-        if (!confirm(`Retirer ${f ? f.name : 'cette personne'} de ton cercle ?`)) return;
-        removeFromCircle(code);
-        const params = new URLSearchParams(location.hash.replace(/^#/, ''));
-        if (params.get('vs') === code) {
-          scrollTarget = 'circle-section';
-          goToProfile(myCode(), myName(), null, '');
-        } else {
-          const y = window.scrollY;
-          route();
-          window.scrollTo(0, y);
-        }
-      }
-    });
 
-    // Carte : sélection d'un point, changement d'axes
-    const mapClick = e => {
-      const g = e.target.closest('.map-pt[data-code]');
-      if (g) selectFriend(g.dataset.code);
-    };
-    $('circle-map').addEventListener('click', mapClick);
-    $('circle-map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mapClick(e); } });
-    const mapChange = () => {
-      store(STORAGE_MAP, { x: $('map-x').value, y: $('map-y').value });
-      renderMap();
-    };
-    $('map-x').onchange = mapChange;
-    $('map-y').onchange = mapChange;
+
 
     $('btn-compare-close').onclick = () => {
-      if (current && current.isMine) {
-        scrollTarget = 'circle-section';
-        goToProfile(current.code, current.name, null, '');
-      } else if (current) {
-        goToProfile(current.code, current.name, null, '');
-      }
+      if (current) goToProfile(current.code, current.name, null, '');
     };
 
     // Visiteur
@@ -3278,7 +3105,7 @@
     showScreen('group');
     $('group-url').value = location.href;
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.querySelectorAll('#screen-group [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+      document.querySelectorAll('#screen-group [data-bar]').forEach(el => { el.style.width = el.dataset.bar + '%'; });
       buildNav('screen-group', 'group-nav');
     }));
   }
@@ -3294,7 +3121,7 @@
     const mine = myCode();
     renderResults({ code: member.code, name, r, isMine: false, hasMine: !!mine }, null, true);
 
-    const skip = new Set(['circle-section', 'compare-block', 'values-teaser-section']);
+    const skip = new Set(['compare-block', 'values-teaser-section']);
     const head = document.createElement('div');
     head.className = 'person-head';
     head.innerHTML = `<h3 class="res-title">${$('res-title').innerHTML}</h3>`
@@ -3311,8 +3138,8 @@
       clone.removeAttribute('id');
       clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
       clone.querySelectorAll('[hidden]').forEach(el => el.remove());
-      clone.querySelectorAll('[data-w]').forEach(el => { el.style.transition = 'none'; el.style.width = el.dataset.w + '%'; });
-      clone.querySelectorAll('[data-off]').forEach(el => { el.style.strokeDashoffset = el.dataset.off; });
+      clone.querySelectorAll('[data-bar]').forEach(el => { el.style.transition = 'none'; el.style.width = el.dataset.bar + '%'; });
+      clone.querySelectorAll('[data-arc]').forEach(el => { el.style.strokeDashoffset = el.dataset.arc; });
       body.appendChild(clone);
     });
     body.dataset.done = '1';
@@ -3662,7 +3489,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 19;
+  const BUILD = 20;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
