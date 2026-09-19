@@ -1828,6 +1828,103 @@
   }
 
   /* ---------------------------------------------------------
+     Cercle : tout le monde sur chaque ligne (pastilles), avec « qui est le plus… » à chaque bout
+     --------------------------------------------------------- */
+  function shortTags(people) {
+    const names = people.map(p => (p.me ? 'Toi' : p.name.trim() || '?'));
+    const cut = (name, n) => name.charAt(0).toUpperCase() + name.slice(1, n).toLowerCase();
+    return names.map((name, i) => {
+      for (let n = 1; n <= 3; n++) {
+        const tag = cut(name, n);
+        if (!names.some((other, j) => j !== i && cut(other, n) === tag)) return tag;
+      }
+      return cut(name, 3);
+    });
+  }
+
+  // Place les pastilles sur plusieurs étages quand elles se chevauchent
+  function stripDots(items) {
+    const sorted = items.slice().sort((a, b) => a.pos - b.pos);
+    const minGap = window.innerWidth < 700 ? 8.5 : 4.2; // écart minimal (en % de la ligne) avant de passer à l'étage du dessous
+    const lanes = [];
+    sorted.forEach(it => {
+      let lane = lanes.findIndex(last => it.pos - last >= minGap);
+      if (lane < 0) { lane = lanes.length; lanes.push(-100); }
+      lanes[lane] = it.pos;
+      it.lane = lane;
+    });
+    const count = Math.max(1, lanes.length);
+    const html = sorted.map(it =>
+      `<span class="xs-dot ${it.p.me ? 'me' : ''}" style="left:${it.pos.toFixed(1)}%;top:${it.lane * 24 + 13}px;background:${it.p.color}" title="${esc(it.p.name)} : ${esc(it.label)}">${esc(it.p.tag)}</span>`).join('');
+    return { html, height: count * 24 + 2 };
+  }
+
+  function renderStrips(people, pre) {
+    const card = $(pre + 'strips-card');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    const tags = shortTags(people);
+    people = people.map((p, i) => ({ ...p, tag: tags[i] }));
+    const nameOf = p => (p.me ? 'Toi' : p.name);
+
+    $(pre + 'strips-legend').innerHTML = people.map(p =>
+      `<span class="xs-key"><span class="xs-dot static ${p.me ? 'me' : ''}" style="background:${p.color}">${esc(p.tag)}</span>${esc(nameOf(p))}</span>`).join('');
+
+    const bipolar = a => {
+      const list = people.filter(p => p.r.known.has(a.id));
+      if (list.length < 2) return '';
+      const items = list.map(p => ({ p, v: p.r.axes[a.id], pos: 50 + p.r.axes[a.id] * 50, label: `${nuancedLabel(a, p.r.axes[a.id])} (${pct(Math.abs(p.r.axes[a.id]))})` }));
+      const byV = items.slice().sort((x, y) => x.v - y.v);
+      const lo = byV[0], hi = byV[byV.length - 1];
+      const dots = stripDots(items);
+      const mean = items.reduce((s, x) => s + x.v, 0) / items.length;
+      return `
+        <div class="xs-row" style="--cl:${a.colorL};--cr:${a.colorR}">
+          <div class="xs-end l"><span class="pole">${esc(a.left)}</span><span class="champ">${lo.v < -0.05 ? `${esc(nameOf(lo.p))} <b>${pct(Math.abs(lo.v))}</b>` : '—'}</span></div>
+          <div class="xs-track bi" style="height:${dots.height}px"><span class="xs-mean" style="left:${50 + mean * 50}%" title="Moyenne du cercle : ${esc(nuancedLabel(a, mean))}"></span>${dots.html}</div>
+          <div class="xs-end r"><span class="pole">${esc(a.right)}</span><span class="champ">${hi.v > 0.05 ? `${esc(nameOf(hi.p))} <b>${pct(Math.abs(hi.v))}</b>` : '—'}</span></div>
+        </div>`;
+    };
+
+    const unipolar = (label, color, getter) => {
+      const items = people.map(p => ({ p, v: getter(p.r) })).filter(x => x.v !== null && x.v !== undefined)
+        .map(x => ({ ...x, pos: x.v * 100, label: `${label} ${pct(x.v)}` }));
+      if (items.length < 2) return '';
+      const byV = items.slice().sort((x, y) => x.v - y.v);
+      const lo = byV[0], hi = byV[byV.length - 1];
+      const dots = stripDots(items);
+      return `
+        <div class="xs-row uni" style="--cr:${color}">
+          <div class="xs-end l"><span class="pole one">${esc(label)}</span><span class="champ">le moins : ${esc(nameOf(lo.p))} <b>${pct(lo.v)}</b></span></div>
+          <div class="xs-track" style="height:${dots.height}px">${dots.html}</div>
+          <div class="xs-end r"><span class="pole">le plus</span><span class="champ">${esc(nameOf(hi.p))} <b>${pct(hi.v)}</b></span></div>
+        </div>`;
+    };
+
+    const block = (title, sub, rows, open) => {
+      const body = rows.filter(Boolean).join('');
+      return body ? `<details class="xs-group" ${open ? 'open' : ''}><summary><span class="t">${esc(title)}</span><span class="s">${esc(sub)}</span><span class="chev" aria-hidden="true"></span></summary>${body}</details>` : '';
+    };
+
+    const quality = id => r => { const q = qualityScores(r).find(x => x.id === id); return q ? q.score : null; };
+    $(pre + 'strips').innerHTML =
+      block('Politique', 'ce que chacun pense', POLITICAL.map(bipolar), true)
+      + block('Méta-politique', 'comment chacun le pense', META.map(bipolar), true)
+      + block('Personnalité', 'qui chacun est', PSYCHE.map(bipolar), true)
+      + block('Qualités', 'de 0 à 100', QUALITIES.map(q => unipolar(q.name, 'var(--accent)', quality(q.id))), true)
+      + block('Profil DISC', 'les quatre couleurs', DISC.map(x => unipolar(`${x.color} · ${x.label}`, `var(${x.css})`, r => (r.disc ? r.disc[x.id] : null))), false)
+      + block('Valeurs', 'ce qui fait avancer chacun', VALUES.map(v => unipolar(v.label, v.color, r => (r.values ? r.values[v.id] : null))), false)
+      + block('Fondements moraux', 'ce qui fait réagir chacun', FOUNDATIONS.map(f => unipolar(f.label, f.color, r => r.found[f.id])), false)
+      + block('Traits et style de réponse', 'la façon d\'y aller', [
+        ...TRAITS.map(t => unipolar(t.label, 'var(--pos)', r => r.traits[t.id])),
+        unipolar('Intensité', 'var(--neg)', r => r.stats.intensity),
+        unipolar('Nuance', 'var(--neg)', r => r.stats.nuance),
+        unipolar('Radicalité', 'var(--neg)', r => r.stats.radical),
+        unipolar('Cohérence', 'var(--neg)', r => r.stats.coherence),
+      ], false);
+  }
+
+  /* ---------------------------------------------------------
      Comparaison : valeurs et qualités face à face
      --------------------------------------------------------- */
   function renderCompareExtras(a, b, meLabel, name) {
@@ -2145,6 +2242,7 @@
     renderCircleDisc([{ name: 'Toi', r: cur.r, me: true }, ...entries], '');
     const groupPeople = [{ name: 'Toi', r: cur.r, color: 'var(--ink)', me: true }, ...entries.map(e => ({ name: e.name, r: e.r, color: e.color, code: e.code }))];
     renderGroup(groupPeople, '');
+    renderStrips(groupPeople, '');
   }
 
   function renderMap() {
@@ -2622,6 +2720,7 @@
       + (vals.length ? fact('Valeur boussole la plus partagée', mostCommon(vals), vals.length) : '');
 
     renderGroup(people, 'g-');
+    renderStrips(people, 'g-');
     renderCircleDisc(people, 'g-');
     mapState = { cur: null, entries: people, selectedCode: null, pre: 'g-' };
     renderMap();

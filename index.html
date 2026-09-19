@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -268,6 +268,14 @@
           <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses. Toi compris.</p>
           <div id="awards-medals" class="medals"></div>
           <div id="awards" class="awards"></div>
+        </article>
+
+        <article class="res-card group-card" id="strips-card" hidden>
+          <p class="card-kicker">Tout le monde, ligne par ligne</p>
+          <h2>Où chacun se situe</h2>
+          <p class="group-intro">Une ligne par dimension, une pastille par personne. À chaque bout de la ligne : qui va le plus loin de ce côté. Le petit triangle marque la moyenne du cercle. Survole une pastille pour lire le détail.</p>
+          <div id="strips-legend" class="xs-legend"></div>
+          <div id="strips" class="xs"></div>
         </article>
 
         <article class="res-card group-card" id="matrix-card" hidden>
@@ -612,6 +620,14 @@
         <div id="g-awards" class="awards"></div>
       </article>
 
+      <article class="res-card group-card" id="g-strips-card" hidden>
+        <p class="card-kicker">Tout le monde, ligne par ligne</p>
+        <h2>Où chacun se situe</h2>
+        <p class="group-intro">Une ligne par dimension, une pastille par personne. À chaque bout de la ligne : qui va le plus loin de ce côté. Le petit triangle marque la moyenne du cercle. Survole une pastille pour lire le détail.</p>
+        <div id="g-strips-legend" class="xs-legend"></div>
+        <div id="g-strips" class="xs"></div>
+      </article>
+
       <article class="res-card group-card" id="g-matrix-card" hidden>
         <p class="card-kicker">Affinités croisées</p>
         <h2>Qui est proche de qui</h2>
@@ -687,8 +703,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=11"></script>
-  <script src="js/profiles.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
+  <script src="js/questions.js?v=12"></script>
+  <script src="js/profiles.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>

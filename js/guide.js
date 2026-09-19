@@ -400,7 +400,7 @@
       <li><b>Le cercle en bref</b> désigne la personne la plus proche, la plus éloignée, l'allié sur le fond, le caractère le plus proche, qui tranche le plus et l'esprit le plus ouvert.</li>
       <li><b>La carte</b> place tout le monde sur deux axes que tu choisis (par défaut économie × identité). Chaque point est cliquable pour lancer la comparaison.</li>
       <li><b>Les couleurs du cercle</b> placent chacun sur la roue DISC, et signalent la couleur la plus présente — ou celle qui manque au groupe.</li>
-      <li>À partir de trois personnes : <b>le palmarès</b> (un titre par qualité, avec la raison), <b>la matrice des affinités</b> (qui est proche de qui, les jumeaux, les opposés) et <b>les sujets du groupe</b> (ceux qui fâchent, ceux qui rassemblent, avec tout le monde placé sur l'axe).</li>
+      <li>À partir de trois personnes : <b>le palmarès</b> (un titre par qualité, avec la raison), <b>où chacun se situe</b> (une ligne par axe, qualité, couleur ou valeur, avec la pastille de chaque personne et, à chaque bout, qui va le plus loin), <b>la matrice des affinités</b> (qui est proche de qui, les jumeaux, les opposés) et <b>les sujets du groupe</b> (ceux qui fâchent, ceux qui rassemblent, avec tout le monde placé sur l'axe).</li>
     </ul>
     <h3 class="gsub">Inviter, partager</h3>
     <ul class="glist">
