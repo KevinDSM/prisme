@@ -368,13 +368,21 @@
      10 ter. Quel personnage
      --------------------------------------------------------- */
   const LICENSES = (window.PRISME_CHARACTERS || { LICENSES: [] }).LICENSES;
+  const CAST_TOTAL = LICENSES.reduce((n, l) => n + l.cast.length, 0);
+  const LIC_GROUPS = LICENSES.reduce((acc, l) => {
+    const g = l.group || 'Univers';
+    (acc[g] = acc[g] || []).push(l);
+    return acc;
+  }, {});
   section('personnages', 'Le sur-mesure', 'Quel personnage serais-tu ?', `
-    <p class="gtext">Dans chaque univers, Prisme te compare à une dizaine de personnages. Chaque personnage a son <b>profil psychologique</b>, écrit avec les mêmes dimensions que le test : qualités, couleurs DISC, valeurs, morale, traits et axes de caractère. Tes opinions politiques ne comptent pas : on peut être Link de gauche ou de droite.</p>
-    <p class="gtext">Pour chaque personnage, on mesure l'écart entre ton score et le sien sur chacun de ses traits ; un trait très marqué chez lui (par exemple « détermination 95 ») pèse plus lourd qu'un trait moyen. Le personnage le plus proche l'emporte. La fiche donne le pourcentage de ressemblance, <b>pourquoi toi</b> (les traits que vous avez vraiment en commun, avec tes scores), <b>là où tu t'en écartes</b>, et les deux suivants du classement.</p>
+    <p class="gtext">Prisme connaît <b>${LICENSES.length} univers</b> et <b>${CAST_TOTAL} personnages</b>, rangés par famille (jeux vidéo, cinéma, séries, animation et manga). Dans chaque univers, tu es comparé à une douzaine de personnages. Chaque personnage a son <b>profil psychologique</b>, écrit avec les mêmes dimensions que le test : qualités, couleurs DISC, valeurs, morale, traits et axes de caractère. Tes opinions politiques ne comptent pas : on peut être Link de gauche ou de droite.</p>
+    <p class="gtext">Pour chaque personnage, on mesure l'écart entre ton score et le sien sur chacun de ses traits ; un trait très marqué chez lui (par exemple « détermination 95 ») pèse plus lourd qu'un trait moyen. Le personnage le plus proche l'emporte. La fiche donne le pourcentage de ressemblance, sa description, <b>pourquoi toi</b> (les traits que vous avez vraiment en commun, avec tes scores), <b>là où tu t'en écartes</b>, et les deux suivants du classement.</p>
     <p class="gtext">Dans un cercle, chacun reçoit un personnage <b>différent</b> par univers : la personne la plus ressemblante est servie en premier, puis la suivante parmi les personnages restants. Certains personnages sont des antagonistes : c'est le tempérament qui est comparé, pas les actes.</p>
-    <div class="gcards">
-      ${LICENSES.map(l => `<article class="gcard" style="--c:${l.color}"><h4><span class="dot"></span>${esc(l.name)} <small>${esc(l.kind)}</small></h4><p>${esc(l.cast.map(c => c.name).join(' · '))}</p></article>`).join('')}
-    </div>`);
+    ${Object.entries(LIC_GROUPS).map(([g, list]) => `
+      <h3 class="gsub">${esc(g)}</h3>
+      <div class="gcards">
+        ${list.map(l => `<article class="gcard" style="--c:${l.color}"><h4><span class="dot"></span>${esc(l.name)} <small>${esc(l.kind)}</small></h4><p>${esc(l.cast.map(c => c.name).join(' · '))}</p></article>`).join('')}
+      </div>`).join('')}`);
 
   /* ---------------------------------------------------------
      11. Signatures

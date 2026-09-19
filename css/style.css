@@ -1551,7 +1551,15 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 /* ============================================================
    QUEL PERSONNAGE SERAIS-TU ?
    ============================================================ */
-.cast { display: grid; gap: 10px; }
+.cast { display: grid; gap: 4px; }
+.cast-stack { display: grid; gap: 10px; }
+.lic-group {
+  display: flex; align-items: center; gap: 14px; margin: 22px 0 8px;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);
+}
+.lic-group:first-child { margin-top: 0; }
+.lic-group::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .lic { border-radius: var(--radius); border: 1px solid var(--line); border-left: 6px solid var(--c); background: rgba(var(--panel-rgb), 0.85); overflow: hidden; }
 .lic[open] { border-color: color-mix(in srgb, var(--c) 45%, transparent); border-left-color: var(--c); background: color-mix(in srgb, var(--c) 5%, rgba(var(--panel-rgb), 0.92)); }
 .lic summary { display: grid; grid-template-columns: minmax(0, 1fr) auto 16px; align-items: center; column-gap: 14px; padding: 18px 22px; cursor: pointer; list-style: none; }
@@ -1596,12 +1604,35 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 }
 @media print {
   .maker, .group-url, #btn-group-addone { display: none !important; }
-  #screen-results > #cast-section { order: 5; }
-  .lic { break-inside: avoid; background: #fff !important; }
+  #screen-results > #cast-section { order: 5; break-before: page; }
+  .lic { break-inside: avoid; overflow: visible; background: #fff !important; }
   .lic, .lic-char, .lic-kind { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .lic .chev, .lic-cta { display: none; }
-  .lic-body { animation: none; }
-  .lic-char { font-size: 22pt; }
+  .lic-body { animation: none; padding: 0 14px 10px; }
+  /* Une vingtaine d'univers : deux colonnes, sinon le casting mange le PDF */
+  .cast-stack { display: block; }
+  .cast-stack .lic { display: flow-root; break-inside: avoid; page-break-inside: avoid; margin: 0 0 8px; }
+  .lic summary { break-after: avoid; break-inside: avoid; }
+  .lic-body { break-inside: avoid; }
+  .lic-body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 0 18px; align-items: start; }
+  .lic-k, .lic-char, .lic-tag, .lic-body > p:not([class]) { grid-column: 1; }
+  .lic-why, .lic-others { grid-column: 2; }
+  .lic-why { margin-top: 2px; }
+  /* une famille par page : ni intertitre orphelin, ni fiche coupee en deux */
+  .lic-group { break-after: avoid; margin: 0 0 6px; font-size: 8.5pt; }
+  #cast .lic-group:not(:first-child), #g-cast .lic-group:not(:first-child) { break-before: page; margin-top: 0; }
+  .lic summary { padding: 7px 14px 2px; }
+  .lic-kind { font-size: 7pt; }
+  .lic-name { font-size: 12.5pt; }
+  .lic-k { font-size: 7pt; }
+  .lic-char { font-size: 14pt; margin-top: 2px; }
+  .lic-char .pct { font-size: 10pt; }
+  .lic-tag { margin: 1px 0 6px; font-size: 10pt; }
+  .lic-body p { font-size: 9pt; line-height: 1.38; margin-bottom: 5px; }
+  .lic-why { padding: 6px 8px; }
+  .lic-others { font-size: 8.5pt !important; }
+  .casting li { font-size: 10pt; padding: 6px 0; }
+  .casting .role b { font-size: 12pt; }
 }
 
 /* ============================================================

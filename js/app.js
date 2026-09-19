@@ -3318,29 +3318,48 @@
     return g ? g.label : '';
   }
 
+  // Les licences sont rangées par famille : avec une vingtaine d'univers, la liste brute est illisible
+  function licenseGroups() {
+    const out = [];
+    LICENSES.forEach(lic => {
+      const g = lic.group || 'Univers';
+      let row = out.find(x => x.g === g);
+      if (!row) out.push(row = { g, list: [] });
+      row.list.push(lic);
+    });
+    return out;
+  }
+
+  function castHtml(build) {
+    return licenseGroups().map(({ g, list }) => {
+      const inner = list.map(build).filter(Boolean).join('');
+      return inner ? `<h3 class="lic-group">${esc(g)}</h3><div class="cast-stack">${inner}</div>` : '';
+    }).join('');
+  }
+
   function renderCast(cur) {
     const r = cur.r;
-    const blocks = LICENSES.map(lic => {
+    const html = castHtml(lic => {
       const ranked = castFor(r, lic);
       if (!ranked.length) return '';
       const best = ranked[0];
       const why = matchWhy(best, 4), gap = matchGap(best);
-      const others = ranked.slice(1, 3).map(x => `${esc(x.ch.name)} (${pct(x.score)} %)`);
+      const others = ranked.slice(1, 3).map(x => `${esc(x.ch.name)} (${pct(x.score)} %)`);
       return `
       <details class="lic" style="--c:${lic.color}">
         <summary><span class="lic-kind">${esc(lic.kind)}</span><span class="lic-name">${esc(lic.name)}</span><span class="lic-cta">Découvrir mon personnage</span><span class="chev" aria-hidden="true"></span></summary>
         <div class="lic-body">
           <p class="lic-k">Dans ${esc(lic.name)}, tu serais</p>
-          <h3 class="lic-char">${esc(best.ch.name)}<span class="pct">${pct(best.score)} %</span></h3>
+          <h3 class="lic-char">${esc(best.ch.name)}<span class="pct">${pct(best.score)} %</span></h3>
           <p class="lic-tag">${esc(best.ch.tag)}</p>
           <p>${esc(best.ch.desc)}</p>
           <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'comme ce personnage, tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
           ${others.length ? `<p class="lic-others">Tu n'étais pas loin non plus de : ${others.join(' · ')}.</p>` : ''}
         </div>
       </details>`;
-    }).filter(Boolean);
-    $('cast-section').hidden = !blocks.length;
-    $('cast').innerHTML = blocks.join('');
+    });
+    $('cast-section').hidden = !html;
+    $('cast').innerHTML = html;
   }
 
   // Cercle : un personnage différent pour chacun, tant que la licence en a assez
@@ -3348,7 +3367,7 @@
     const card = $(pre + 'cast-card');
     card.hidden = people.length < 2;
     if (people.length < 2) return;
-    $(pre + 'cast').innerHTML = LICENSES.map(lic => {
+    $(pre + 'cast').innerHTML = castHtml(lic => {
       const table = people.map(p => castFor(p.r, lic));
       const freeP = new Set(people.map((p, i) => i).filter(i => table[i].length));
       const taken = new Set();
@@ -3371,11 +3390,11 @@
         <div class="lic-body">
           <ul class="casting">${picks.map(x => {
             const why = matchWhy(x.m, 2);
-            return `<li>${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)} %</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+            return `<li>${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)} %</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
           }).join('')}</ul>
         </div>
       </details>`;
-    }).join('');
+    });
   }
 
   // Impression : on déplie les licences le temps d'imprimer
@@ -3530,7 +3549,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 16;
+  const BUILD = 17;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
