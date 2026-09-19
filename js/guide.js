@@ -214,6 +214,8 @@
   }
   section('portraits', 'Les portraits', 'Famille, tempérament, archétype', `
     <p class="gtext">Trois « portraits » résument ton profil en un mot. Chacun est un <b>profil type</b>, défini par une position sur chaque axe de sa catégorie. Prisme mesure la <b>distance</b> entre tes scores et ceux de chaque profil type, puis l'exprime en pourcentage de proximité : 100 % serait un profil identique, 0 % un profil opposé. Le plus proche donne son nom à ton titre ; les suivants sont listés en dessous, car tu es rarement à 100 % d'un seul.</p>
+    <p class="gtext">La proximité ne se mesure pas seulement à l'écart : elle tient compte aussi du <b>sens</b> de tes positions, d'autant plus que tu es tranché. Sans cela, les profils types les plus neutres gagneraient à peu près chez tout le monde — ils sont proches de tous — et les profils très marqués ne seraient jamais atteints par personne. Un profil type volontairement neutre (« Modéré », « L'Équilibriste ») ne peut l'emporter que chez quelqu'un de réellement partagé.</p>
+    <p class="gtext">Comme deux personnes proches tombent souvent sur le même profil type, Prisme affiche aussi ta <b>nuance</b> : l'axe sur lequel tu t'écartes le plus de ce profil, et de quel côté. C'est ce qui distingue deux « conservateurs libéraux », l'un versant productiviste, l'autre versant identitaire.</p>
     <p class="gtext">Les étiquettes ci-dessous montrent, pour chaque profil type, ses trois positions les plus marquées.</p>
     <h3 class="gsub">Les ${FAMILIES.length} familles politiques <small>— calculées sur les ${AXES.filter(a => a.group === 'politique').length} axes politiques</small></h3>
     ${portraitList(FAMILIES, 3)}
@@ -383,6 +385,16 @@
       <div class="gcards">
         ${list.map(l => `<article class="gcard" style="--c:${l.color}"><h4><span class="dot"></span>${esc(l.name)} <small>${esc(l.kind)}</small></h4><p>${esc(l.cast.map(c => c.name).join(' · '))}</p></article>`).join('')}
       </div>`).join('')}`);
+
+  /* ---------------------------------------------------------
+     10 quater. Angles morts et curseurs les plus tranchés
+     --------------------------------------------------------- */
+  section('angles', 'Le sur-mesure', 'Tes angles morts et tes curseurs', `
+    <h3 class="gsub">Les angles morts</h3>
+    <p class="gtext">Un angle mort n'est pas une opinion fausse : c'est une opinion que tu as peu de chances de réviser. Prisme classe tes axes en croisant trois choses — <b>la force de ta position</b> (au moins 50), <b>ton dogmatisme</b> et <b>ton ouverture d'esprit</b> — et ajoute un léger bonus si l'axe fait partie de tes sujets de cœur, parce qu'un sujet qui touche s'aborde plus difficilement à froid. Les trois premiers sont affichés, avec la raison précise et tes scores.</p>
+    <p class="gtext">Si ton dogmatisme est bas et ton ouverture haute, le texte le dit : tu n'as pas d'angle mort au sens strict, et la section montre simplement tes positions les plus fermes. En dessous, <b>ce qui peut encore te faire bouger</b> liste les axes où tu n'as pas tranché — tes sujets de cœur en premier — car ce sont les seuls endroits où une conversation peut encore te déplacer.</p>
+    <h3 class="gsub">Les curseurs les plus tranchés</h3>
+    <p class="gtext">Ton lien garde les <b>quatre affirmations</b> que tu as poussées le plus loin : celles marquées d'un cœur d'abord, puis les plus extrêmes. Elles sont affichées telles quelles, avec ta position sur le curseur et les dimensions qu'elles alimentent. C'est la partie du rapport que personne d'autre n'a : deux personnes ont rarement les quatre mêmes.</p>`);
 
   /* ---------------------------------------------------------
      11. Signatures

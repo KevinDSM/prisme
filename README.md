@@ -16,8 +16,10 @@ Un test politique en profondeur, qui va plus loin que les boussoles politiques h
 - **6 fondements moraux** (Haidt) — soin, équité, loyauté, autorité, sacré, liberté.
 - **3 traits** — tolérance à l'incertitude, dogmatisme, engagement.
 - **Statistiques de style** — intensité, nuance, radicalité, cohérence interne.
-- **Trois portraits** — famille politique (13), tempérament politique (10), archétype de personnalité (12).
-- **Signatures** — 72 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
+- **Trois portraits** — famille politique (22), tempérament politique (16), archétype de personnalité (20), chacun avec sa **nuance** : l'axe sur lequel tu t'écartes le plus du profil type, et de quel côté. C'est ce qui distingue deux « conservateurs libéraux », l'un versant productiviste, l'autre versant identitaire. La proximité ne se mesure pas qu'à l'écart : elle tient compte du **sens** des positions, d'autant plus que le profil est tranché — sans quoi les profils types neutres gagneraient chez presque tout le monde et les profils marqués ne seraient jamais atteints.
+- **Tes angles morts** — les positions où ta certitude est la plus haute et ton ouverture la plus faible : l'endroit où ta marge d'erreur est la plus grande. Avec son inverse, « ce qui peut encore te faire bouger » (les axes où tu n'as pas tranché, tes sujets de cœur en premier).
+- **Tes curseurs les plus tranchés** — les quatre affirmations que tu as poussées le plus loin, citées mot pour mot, avec ta position et les dimensions qu'elles alimentent.
+- **Signatures** — 94 combinaisons et tensions détectées entre dimensions (« Protéger les gens et les frontières », « Militant du doute », « Prudent chez toi, révolutionnaire dehors »…), les plus fortes sont affichées.
 - **Sujets de cœur** — un cœur par question pour marquer ce qui compte vraiment (et le pondérer).
 - **Résumé** en cinq temps, généré à partir des réponses, avec les curseurs les plus poussés cités mot pour mot.
 - **Pause et code de reprise** — le bouton Pause génère un code (ou un lien `#r=…`) qui contient toutes les réponses déjà données : on reprend au même endroit sur n'importe quel appareil.

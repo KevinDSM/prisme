@@ -911,12 +911,31 @@
     return list.filter(a => r.known.has(a.id));
   }
 
+  /* Proximité à un profil type. La distance seule favorise mécaniquement les profils
+     types les plus plats : ils sont proches de tout le monde, et les profils tranchés
+     (Anarchiste, Progressiste radical…) devenaient inatteignables. On ajoute donc la
+     ressemblance de direction, pondérée par l'amplitude de la personne : plus tu es
+     tranché, plus c'est le sens de tes positions qui décide, pas seulement l'écart. */
   function similarity(vec, ref, ids) {
     if (!ids.length) return 0;
-    let s = 0;
-    ids.forEach(id => { const d = (vec[id] || 0) - (ref[id] || 0); s += d * d; });
+    let s = 0, dot = 0, nv = 0, nr = 0;
+    ids.forEach(id => {
+      const x = vec[id] || 0, y = ref[id] || 0;
+      s += (x - y) * (x - y);
+      dot += x * y; nv += x * x; nr += y * y;
+    });
     const dist = Math.sqrt(s / ids.length); // 0 → 2 en théorie, ~1.4 entre profils opposés en pratique
-    return clamp(1 - dist / 1.4, 0, 1);
+    const byDist = clamp(1 - dist / 1.4, 0, 1);
+    if (!nv || !nr) return byDist;
+    const cos = dot / (Math.sqrt(nv) * Math.sqrt(nr));   // -1 → 1
+    const byDir = (cos + 1) / 2;
+    const amp = Math.sqrt(nv / ids.length);              // à quel point la personne est tranchée
+    const refAmp = Math.sqrt(nr / ids.length);
+    // Un profil type volontairement neutre (« Modéré », « L'Équilibriste ») n'a pas de
+    // direction : il ne doit gagner que chez quelqu'un de réellement partagé.
+    if (refAmp < 0.2) return clamp(byDist * (1 - clamp(amp, 0, 1) * 0.8), 0, 1);
+    const w = clamp(amp / 0.5, 0, 1) * 0.45;
+    return clamp(byDist * (1 - w) + byDir * w, 0, 1);
   }
 
   function rankFamilies(r) {
@@ -2639,10 +2658,12 @@
     $('fam-tag').textContent = fam[0].tag;
     $('fam-desc').textContent = fam[0].desc;
     $('fam-list').innerHTML = rankList(fam, 5, 'var(--accent)');
+    fillNuance('fam-nuance', 'fam-why', r, fam[0]);
 
     $('temp-name').textContent = temp[0].name;
     $('temp-desc').textContent = temp[0].desc;
     $('temp-list').innerHTML = rankList(temp, 4, '#57cc99');
+    fillNuance('temp-nuance', 'temp-why', r, temp[0]);
 
     $('psy-card').hidden = !psy.length;
     $('psyche-section').hidden = !psy.length;
@@ -2650,7 +2671,11 @@
       $('psy-name').textContent = psy[0].name;
       $('psy-desc').textContent = psy[0].desc;
       $('psy-list').innerHTML = rankList(psy, 4, '#c77dff');
+      fillNuance('psy-nuance', 'psy-why', r, psy[0]);
     }
+
+    renderBlindSpots(r);
+    renderExtremes(r);
 
     const them = friend ? friend.r : null;
     const theirValue = id => (them && them.known.has(id) ? them.axes[id] : undefined);
@@ -2782,6 +2807,160 @@
     $(pre + 'map-note').textContent = missing
       ? `${missing} ami${missing > 1 ? 's' : ''} absent${missing > 1 ? 's' : ''} de la carte : ancienne version du test, sans cet axe.`
       : cur ? 'Clique sur un point pour te comparer à cette personne.' : 'Clique sur un point pour déplier le profil de cette personne.';
+  }
+
+
+  /* ---------------------------------------------------------
+     La nuance : ce qui écarte la personne du profil type le plus proche.
+     Deux personnes de la même famille tombent presque toujours sur une nuance
+     différente — c'est ce qui empêche deux profils voisins d'être identiques.
+     --------------------------------------------------------- */
+  function nuanceOf(r, ref) {
+    if (!ref || !ref.v) return null;
+    let best = null;
+    Object.keys(ref.v).forEach(id => {
+      const a = axisById(id);
+      if (!a || !r.known.has(id)) return;
+      const dev = r.axes[id] - ref.v[id];
+      if (!best || Math.abs(dev) > Math.abs(best.dev)) best = { a, dev, mine: r.axes[id], theirs: ref.v[id] };
+    });
+    if (!best) return null;
+    const pole = (best.dev < 0 ? best.a.left : best.a.right).toLowerCase();
+    const mineLbl = nuancedLabel(best.a, best.mine).toLowerCase();
+    const theirLbl = nuancedLabel(best.a, best.theirs).toLowerCase();
+    if (Math.abs(best.dev) < 0.3) {
+      return {
+        tag: 'au plus près',
+        text: `Tu colles à ce profil type de très près : ton plus grand écart n'est que de ${pct(Math.abs(best.dev))} points, sur <b>${esc(pairLabel(best.a))}</b>.`,
+      };
+    }
+    return {
+      tag: 'versant ' + pole,
+      text: `Ce qui t'en écarte le plus : <b>${esc(pairLabel(best.a))}</b>. Toi : ${esc(mineLbl)} (${pct(Math.abs(best.mine))}). Ce profil type : ${esc(theirLbl)}.`,
+    };
+  }
+
+  function fillNuance(tagId, textId, r, ref) {
+    const n = nuanceOf(r, ref);
+    $(tagId).textContent = n ? n.tag : '';
+    $(tagId).hidden = !n;
+    $(textId).innerHTML = n ? n.text : '';
+    $(textId).hidden = !n;
+  }
+
+  /* ---------------------------------------------------------
+     Angles morts : où la certitude est la plus forte et l'ouverture la plus faible.
+     --------------------------------------------------------- */
+  function blindSpots(r) {
+    const dog = r.traits.dog;
+    const ouvQ = qualityScores(r).find(q => q.id === 'ouv');
+    const ouv = ouvQ && ouvQ.score !== null ? ouvQ.score : 0.5;
+    const heart = new Set(r.heartAxes);
+    const list = knownList(AXES, r)
+      .map(a => {
+        const v = Math.abs(r.axes[a.id]);
+        return { a, v, heart: heart.has(a.id), score: v * (0.4 + dog) * (1.4 - ouv) * (heart.has(a.id) ? 1.15 : 1) };
+      })
+      .filter(x => x.v >= 0.5)
+      .sort((x, y) => y.score - x.score);
+    return { list, dog, ouv, inc: r.traits.inc };
+  }
+
+  const BLIND_RISK = [
+    "Si on te sert l'argument d'en face, tu l'entendras comme une position de principe, pas comme une information.",
+    "Tu as sans doute de bonnes raisons — le problème est que tu n'as plus besoin de les réexaminer.",
+    "C'est le genre de sujet où tu réponds avant la fin de la phrase.",
+  ];
+
+  function blindSpotCard(x, rank, r) {
+    const v = r.axes[x.a.id];
+    const lbl = nuancedLabel(x.a, v).toLowerCase();
+    const other = poleLabel(x.a, -v).toLowerCase();
+    const solidity = x.v >= 0.8
+      ? `Presque toutes tes réponses sur cet axe vont dans le même sens.`
+      : `Ta position est nette sans être absolue.`;
+    return `
+      <article class="blind-card">
+        <p class="blind-axis">${esc(pairLabel(x.a))}</p>
+        <h4>${esc(cap(lbl))}<span class="blind-score">${pct(x.v)}</span></h4>
+        <p>${esc(solidity)} Le versant <b>${esc(other)}</b> ne pèse presque rien dans ce que tu as répondu.</p>
+        <p class="why">${esc(BLIND_RISK[rank % BLIND_RISK.length])}${x.heart ? " <b>Et c'est un sujet qui te tient à cœur</b>, donc difficile à aborder à froid." : ''}</p>
+      </article>`;
+  }
+
+  function renderBlindSpots(r) {
+    const ctx = blindSpots(r);
+    const section = $('blind-section');
+    const soft = ctx.dog < 0.45 && ctx.ouv > 0.55;
+    const top = ctx.list.slice(0, 3);
+    if (!top.length) { section.hidden = true; return; }
+    section.hidden = false;
+
+    const profil = soft
+      ? `Ton dogmatisme est bas (${pct(ctx.dog)}) et ton ouverture élevée (${pct(ctx.ouv)}) : tu n'as pas d'angle mort au sens strict. Voici quand même les trois positions sur lesquelles tu es le moins disponible pour te faire contredire.`
+      : ctx.dog >= 0.6 && ctx.ouv <= 0.4
+        ? `Tu es plutôt sûr d'avoir raison (dogmatisme ${pct(ctx.dog)}) et une bonne objection te fait rarement changer d'avis (ouverture ${pct(ctx.ouv)}). Voici les trois sujets où ça pèse le plus lourd.`
+        : `Avec un dogmatisme de ${pct(ctx.dog)} et une ouverture de ${pct(ctx.ouv)}, voici les trois sujets sur lesquels tu écoutes le moins.`;
+    $('blind-intro').textContent = `${profil} Ce n'est pas un jugement sur le fond : c'est l'endroit où ta marge d'erreur est la plus grande.`;
+    $('blind-cards').innerHTML = top.map((x, i) => blindSpotCard(x, i, r)).join('');
+
+    // L'inverse : ce qui peut encore bouger
+    const known = knownList(AXES, r);
+    const torn = known
+      .map(a => ({ a, v: Math.abs(r.axes[a.id]), heart: r.heartAxes.includes(a.id) }))
+      .filter(x => x.v < 0.22)
+      .sort((x, y) => (Number(y.heart) - Number(x.heart)) || x.v - y.v)
+      .slice(0, 4);
+    if (torn.length) {
+      const bits = torn.map(x => `<b>${esc(pairLabel(x.a))}</b> (${pct(x.v)}${x.heart ? ', et ça te tient à cœur' : ''})`);
+      $('blind-move').innerHTML = `<b>Ce qui peut encore te faire bouger :</b> ${joinFr(bits)}. Tes réponses y tirent dans les deux sens — c'est là qu'une conversation peut encore te déplacer, et ${ctx.inc >= 0.55 ? `tu supportes bien de rester sans réponse (tolérance à l'incertitude ${pct(ctx.inc)})` : `ça te coûte, parce que tu as besoin de repères clairs (tolérance à l'incertitude ${pct(ctx.inc)})`}.`;
+    } else {
+      const n = known.filter(a => Math.abs(r.axes[a.id]) >= 0.45).length;
+      $('blind-move').innerHTML = `<b>Ce qui peut encore te faire bouger :</b> pas grand-chose, pour l'instant. Tu es tranché sur ${n} axes sur ${known.length}, et tu n'as laissé aucun sujet en suspens.`;
+    }
+    $('blind-move').hidden = false;
+  }
+
+  /* ---------------------------------------------------------
+     Tes curseurs les plus tranchés : les affirmations citées mot pour mot.
+     --------------------------------------------------------- */
+  function dimLabel(key) {
+    const a = axisById(key);
+    if (a) return pairLabel(a);
+    const f = FOUNDATIONS.find(x => x.id === key);
+    if (f) return f.label.toLowerCase();
+    const t = TRAITS.find(x => x.id === key);
+    if (t) return t.label.toLowerCase();
+    const d = DISC.find(x => x.id === key);
+    if (d) return `DISC ${d.color.toLowerCase()}`;
+    const v = VALUES.find(x => x.id === key);
+    if (v) return `valeur « ${v.label.toLowerCase()} »`;
+    return key;
+  }
+
+  function renderExtremes(r) {
+    const section = $('extremes-section');
+    const list = (r.extremes || []).map(e => ({ e, q: QUESTIONS.find(x => x.id === e.id) })).filter(x => x.q);
+    section.hidden = !list.length;
+    if (!list.length) return;
+    $('extremes-cards').innerHTML = list.map(({ e, q }) => {
+      const v = e.v / 100;
+      const feeds = Object.keys(q.w).map(dimLabel);
+      return `
+        <article class="ext-card">
+          <p class="ext-q">« ${esc(q.t)} »</p>
+          <div class="ext-track">
+            <span class="ext-fill" style="left:${(50 + Math.min(0, v) * 50).toFixed(1)}%;width:${(Math.abs(v) * 50).toFixed(1)}%;background:${v < 0 ? 'var(--neg)' : 'var(--pos)'}"></span>
+            <span class="ext-mark" style="left:${(50 + v * 50).toFixed(1)}%"></span>
+          </div>
+          <p class="ext-ends"><span>Absolument pas d'accord</span><span>Absolument d'accord</span></p>
+          <p class="ext-label"><b>${esc(labelFor(e.v))}</b> <span>${e.v > 0 ? '+' : ''}${e.v}</span></p>
+          <p class="ext-feeds">Compte pour : ${esc(joinFr(feeds))}.</p>
+        </article>`;
+    }).join('');
+    $('extremes-note').textContent = list.length >= 4
+      ? 'Ces quatre-là sont gardées dans ton lien : ce sont elles qui rendent ton résultat reconnaissable entre tous.'
+      : 'Ces réponses sont gardées dans ton lien : ce sont elles qui rendent ton résultat reconnaissable.';
   }
 
   /* ---------------------------------------------------------
@@ -3489,7 +3668,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 20;
+  const BUILD = 21;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

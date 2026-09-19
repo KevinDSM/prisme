@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=20">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=21">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20">
+  <link rel="stylesheet" href="css/style.css?v=21">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -345,19 +345,25 @@
         <p class="card-kicker">Famille politique la plus proche</p>
         <h2 id="fam-name" data-nav="Famille politique"></h2>
         <p class="fam-tag" id="fam-tag"></p>
+        <p class="fam-nuance" id="fam-nuance" hidden></p>
         <p class="fam-desc" id="fam-desc"></p>
+        <p class="fam-why" id="fam-why" hidden></p>
         <ul class="fam-list" id="fam-list"></ul>
       </article>
       <article class="res-card temper-card">
         <p class="card-kicker">Tempérament politique</p>
         <h2 id="temp-name" data-nav="Tempérament"></h2>
+        <p class="fam-nuance" id="temp-nuance" hidden></p>
         <p class="fam-desc" id="temp-desc"></p>
+        <p class="fam-why" id="temp-why" hidden></p>
         <ul class="fam-list" id="temp-list"></ul>
       </article>
       <article class="res-card psy-card" id="psy-card">
         <p class="card-kicker">Archétype de personnalité</p>
         <h2 id="psy-name" data-nav="Archétype"></h2>
+        <p class="fam-nuance" id="psy-nuance" hidden></p>
         <p class="fam-desc" id="psy-desc"></p>
+        <p class="fam-why" id="psy-why" hidden></p>
         <ul class="fam-list" id="psy-list"></ul>
       </article>
     </section>
@@ -471,6 +477,24 @@
     </section>
 
     <!-- Quel personnage -->
+    <section class="res-section" id="blind-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Angles morts">Tes angles morts</h2>
+        <p id="blind-intro"></p>
+      </div>
+      <div id="blind-cards" class="blind-cards"></div>
+      <p id="blind-move" class="blind-move" hidden></p>
+    </section>
+
+    <section class="res-section" id="extremes-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Tes curseurs">Tes curseurs les plus tranchés</h2>
+        <p>Les affirmations que tu as poussées le plus loin, mot pour mot. C'est la partie la plus personnelle du rapport : deux personnes n'ont presque jamais les mêmes.</p>
+      </div>
+      <div id="extremes-cards" class="ext-cards"></div>
+      <p id="extremes-note" class="xs-note-txt"></p>
+    </section>
+
     <section class="res-section" id="cast-section" hidden>
       <div class="section-head">
         <h2 data-nav="Personnages">Quel personnage serais-tu ?</h2>
@@ -748,9 +772,9 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=20"></script>
-  <script src="js/profiles.js?v=20"></script>
-  <script src="js/characters.js?v=20"></script>
-  <script src="js/app.js?v=20"></script>
+  <script src="js/questions.js?v=21"></script>
+  <script src="js/profiles.js?v=21"></script>
+  <script src="js/characters.js?v=21"></script>
+  <script src="js/app.js?v=21"></script>
 </body>
 </html>
