@@ -2629,6 +2629,7 @@
     renderQualities(r);
     renderLife(r);
     renderCast(cur);
+    renderAnimal(cur);
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
     const upgradable = canUpgrade(r);
@@ -3254,6 +3255,7 @@
     renderGroupAssembly(people, 'g-');
     renderGovernment(people, 'g-');
     renderGroupCast(people, 'g-');
+    renderGroupAnimals(people, 'g-');
     renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
@@ -3524,6 +3526,64 @@
   }
 
 
+
+  /* ---------------------------------------------------------
+     « Quel animal serais-tu ? » — même comparaison que les personnages,
+     sur une seule liste : dans un cercle, chacun reçoit un animal différent.
+     --------------------------------------------------------- */
+  const ANIMALS = (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS;
+
+  function animalsFor(r) {
+    return ANIMALS.map(a => matchCharacter(r, a)).filter(Boolean).sort((x, y) => y.score - x.score);
+  }
+
+  function renderAnimal(cur) {
+    const ranked = animalsFor(cur.r);
+    $('animal-section').hidden = !ranked.length;
+    if (!ranked.length) return;
+    const best = ranked[0];
+    const why = matchWhy(best, 4), gap = matchGap(best);
+    const others = ranked.slice(1, 4);
+    $('animal-card').innerHTML = `
+      <article class="animal" style="--c:${best.ch.color}">
+        <p class="animal-k">Ton animal</p>
+        <h3 class="animal-name">${esc(best.ch.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
+        <p class="animal-tag">${esc(best.ch.tag)}</p>
+        <p class="animal-desc">${esc(best.ch.desc)}</p>
+        <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'comme lui, tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+      </article>
+      <div class="animal-next">
+        <p class="animal-next-k">Tu aurais aussi pu être</p>
+        <ul>${others.map(x => `<li style="--c:${x.ch.color}"><span class="dot"></span><span class="an-id"><b>${esc(x.ch.name)}</b><small>${esc(x.ch.tag)}</small></span><span class="pct">${pct(x.score)}\u00a0%</span></li>`).join('')}</ul>
+      </div>`;
+  }
+
+  // Cercle : un animal différent pour chacun
+  function renderGroupAnimals(people, pre) {
+    const card = $(pre + 'animal-card-group');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    const table = people.map(p => animalsFor(p.r));
+    const freeP = new Set(people.map((p, i) => i).filter(i => table[i].length));
+    const taken = new Set();
+    const picks = [];
+    while (freeP.size) {
+      let best = null;
+      freeP.forEach(i => {
+        const m = table[i].find(x => !taken.has(x.ch.name)) || table[i][0];
+        if (!best || m.score > best.m.score) best = { i, m };
+      });
+      picks.push(best);
+      taken.add(best.m.ch.name);
+      freeP.delete(best.i);
+    }
+    picks.sort((a, b) => a.i - b.i);
+    $(pre + 'animals').innerHTML = `<ul class="casting menagerie">${picks.map(x => {
+      const why = matchWhy(x.m, 2);
+      return `<li style="--c:${x.m.ch.color}">${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)}\u00a0%</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+    }).join('')}</ul>`;
+  }
+
   /* ---------------------------------------------------------
      Cercles par URL : rien à enregistrer, on colle des URL et on obtient l'URL du cercle
      --------------------------------------------------------- */
@@ -3668,7 +3728,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 21;
+  const BUILD = 22;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

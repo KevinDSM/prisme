@@ -397,6 +397,15 @@
     <p class="gtext">Ton lien garde les <b>quatre affirmations</b> que tu as poussées le plus loin : celles marquées d'un cœur d'abord, puis les plus extrêmes. Elles sont affichées telles quelles, avec ta position sur le curseur et les dimensions qu'elles alimentent. C'est la partie du rapport que personne d'autre n'a : deux personnes ont rarement les quatre mêmes.</p>`);
 
   /* ---------------------------------------------------------
+     10 quinquies. Quel animal
+     --------------------------------------------------------- */
+  const ANIMALS = (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS;
+  section('animal', 'Le sur-mesure', 'Quel animal serais-tu ?', `
+    <p class="gtext">Même méthode que pour les personnages, sur une liste de <b>${ANIMALS.length} animaux</b> décrits eux aussi avec les dimensions du test : qualités, couleurs DISC, valeurs, morale et axes de caractère. Aucun trait politique n'entre dans le calcul. Ton animal est celui dont le profil est le plus proche du tien ; les trois suivants sont indiqués à côté.</p>
+    <p class="gtext">La liste est volontairement longue pour qu'un cercle entier puisse recevoir <b>un animal différent par personne</b> : le plus ressemblant est servi en premier, et chacun prend ensuite l'animal restant qui lui va le mieux. À onze, personne ne tombe sur le même.</p>
+    <div class="gchips">${ANIMALS.map(a => `<span class="gchip">${esc(a.name)}</span>`).join('')}</div>`);
+
+  /* ---------------------------------------------------------
      11. Signatures
      --------------------------------------------------------- */
   section('signatures', 'Le sur-mesure', 'Les signatures', `

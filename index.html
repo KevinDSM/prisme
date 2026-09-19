@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=21">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=22">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=21">
+  <link rel="stylesheet" href="css/style.css?v=22">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -503,6 +503,14 @@
       <div id="cast" class="cast"></div>
     </section>
 
+    <section class="res-section" id="animal-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Ton animal">Quel animal serais-tu ?</h2>
+        <p>Toujours d'après ton profil psychologique, comparé à 73 animaux décrits sur les mêmes dimensions. Dans un cercle, chacun reçoit un animal différent.</p>
+      </div>
+      <div id="animal-card" class="animal-wrap"></div>
+    </section>
+
     <!-- Axes politiques -->
     <section class="res-section">
       <div class="section-head">
@@ -671,6 +679,13 @@
         <div id="g-cast" class="cast"></div>
       </article>
 
+      <article class="res-card group-card" id="g-animal-card-group" hidden>
+        <p class="card-kicker">La ménagerie du cercle</p>
+        <h2 data-nav="Ménagerie">Qui serait quel animal</h2>
+        <p class="group-intro">Chacun son animal, et un animal différent pour chacun : le plus ressemblant est servi en premier, les suivants prennent l'animal restant qui leur va le mieux.</p>
+        <div id="g-animals"></div>
+      </article>
+
       <article class="res-card group-card" id="g-awards-card" hidden>
         <p class="card-kicker">Palmarès</p>
         <h2>Qui est qui dans le cercle</h2>
@@ -772,9 +787,10 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=21"></script>
-  <script src="js/profiles.js?v=21"></script>
-  <script src="js/characters.js?v=21"></script>
-  <script src="js/app.js?v=21"></script>
+  <script src="js/questions.js?v=22"></script>
+  <script src="js/profiles.js?v=22"></script>
+  <script src="js/characters.js?v=22"></script>
+  <script src="js/animals.js?v=22"></script>
+  <script src="js/app.js?v=22"></script>
 </body>
 </html>
