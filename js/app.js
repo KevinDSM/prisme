@@ -3828,19 +3828,30 @@
      combinaison race / classe / spécialisation est notée comme un personnage,
      sur le tempérament qu'il faut avoir pour s'y plaire — ce ne sont pas des
      conseils de jeu : personne ne dira qu'un orc ne peut pas être prêtre. */
-  const WOW = (window.PRISME_WOW || { WOW: [] }).WOW;
+  const WOWD = window.PRISME_WOW || { WOW: [] };
+  const WOW = WOWD.WOW;
   WOW.forEach(w => { w.name = w.race + ' · ' + w.classe + ' · ' + w.spec; });
+
+  // Pourquoi cette race, cette classe, cette spécialisation : trois phrases, une par part
+  function wowWhy(w) {
+    return [
+      { label: 'La race', value: w.race, why: (WOWD.WOW_RACES || {})[w.race] },
+      { label: 'La classe', value: w.classe, why: (WOWD.WOW_CLASSES || {})[w.classe] },
+      { label: 'La spécialisation', value: w.spec, why: (WOWD.WOW_SPECS || {})[w.classe + ' · ' + w.spec] },
+    ];
+  }
 
   function wowFor(r) {
     return WOW.map(w => matchCharacter(r, w)).filter(Boolean).sort((a, b) => b.score - a.score);
   }
 
-  function wowCombo(w, score) {
-    return `<div class="wow-combo" style="--w:${w.color}">`
-      + `<span class="wow-part"><small>Race</small><b>${esc(w.race)}</b></span>`
-      + `<span class="wow-part"><small>Classe</small><b>${esc(w.classe)}</b></span>`
-      + `<span class="wow-part"><small>Spécialisation</small><b>${esc(w.spec)}</b></span>`
-      + `<span class="wow-pct">${pct(score)} %</span></div>`;
+  function wowCombo(w) {
+    return `<div class="wow-combo">${wowWhy(w).map(p => `
+      <div class="wow-part">
+        <small>${esc(p.label)}</small>
+        <b>${esc(p.value)}</b>
+        ${p.why ? `<p>${esc(p.why)}</p>` : ''}
+      </div>`).join('')}</div>`;
   }
 
   function wowHtml(r) {
@@ -3851,8 +3862,8 @@
     const others = ranked.slice(1, 3).map(x => `${esc(x.ch.name)} (${pct(x.score)} %)`);
     return `
       <div class="wow-build" style="--w:${w.color}">
-        <p class="wow-k">Et tu jouerais</p>
-        ${wowCombo(w, best.score)}
+        <p class="wow-k">Et tu jouerais<span class="wow-pct">${pct(best.score)} %</span></p>
+        ${wowCombo(w)}
         <p class="wow-meta">${esc(w.faction)} · ${esc(w.role)} · <i>${esc(w.tag)}</i></p>
         <p class="wow-desc">${esc(w.desc)}</p>
         <p class="lic-why"><b>Pourquoi cette combinaison :</b> ${why.length
@@ -4286,7 +4297,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 32;
+  const BUILD = 33;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

@@ -2121,28 +2121,30 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   background: rgba(var(--ink-rgb), 0.04);
 }
 .wow-k {
-  margin: 0 0 12px; font-size: 12.5px; font-weight: 800;
+  display: flex; align-items: baseline; gap: 12px;
+  margin: 0 0 14px; font-size: 12.5px; font-weight: 800;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
 }
-.wow-combo {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 22px;
-  padding-bottom: 14px; border-bottom: 1px solid var(--line);
+.wow-pct {
+  margin-left: auto; letter-spacing: 0;
+  font-family: var(--font-display); font-size: 22px; font-weight: 400;
+  font-variant-numeric: tabular-nums; color: var(--ink-2);
 }
-.wow-part { display: grid; gap: 2px; }
+.wow-combo {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line);
+}
+.wow-part { display: grid; align-content: start; gap: 3px; }
 .wow-part small {
   font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--ink-3);
 }
 .wow-part b {
-  font-family: var(--font-display); font-weight: 500; font-size: 26px; line-height: 1.1;
+  font-family: var(--font-display); font-weight: 500; font-size: 25px; line-height: 1.1;
   letter-spacing: -0.01em;
   color: color-mix(in srgb, var(--w) var(--label-mix), var(--label-toward));
 }
-.wow-pct {
-  margin-left: auto; align-self: center;
-  font-family: var(--font-display); font-size: 22px;
-  font-variant-numeric: tabular-nums; color: var(--ink-2);
-}
+.wow-part p { margin: 6px 0 0; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
 .wow-meta { margin: 12px 0 0; font-size: 14px; font-weight: 700; color: var(--ink-3); }
 .wow-meta i { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px; color: var(--ink-2); }
 .wow-desc { margin: 10px 0 0; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); }
@@ -2155,9 +2157,12 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 }
 .wow-line small { color: var(--ink-3); font-weight: 700; }
 
+@media (max-width: 900px) {
+  .wow-combo { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .wow-part { padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
+  .wow-part:last-child { padding-bottom: 0; border-bottom: 0; }
+}
 @media (max-width: 560px) {
   .wow-build { padding: 16px 16px 18px; }
-  .wow-combo { gap: 6px 16px; }
   .wow-part b { font-size: 22px; }
-  .wow-pct { margin-left: 0; }
 }
