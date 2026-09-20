@@ -20,6 +20,7 @@
   const STORAGE_CIRCLE = 'prisme.circle.v1';
   const STORAGE_PENDING = 'prisme.pending.v1';
   const STORAGE_MAP = 'prisme.map.v1';
+  const STORAGE_BACK = 'prisme.back.v1';
   const STORAGE_THEME = 'prisme.theme';
 
   const POLITICAL = AXES.filter(a => a.group === 'politique');
@@ -475,6 +476,7 @@
   const heart = $('heart');
 
   function startQuiz() {
+    if (state.mode !== 'values') store(STORAGE_BACK, null);
     $('q-total').textContent = quizList().length;
     showScreen('quiz');
     renderQuestion('in');
@@ -620,8 +622,28 @@
   function gapChip(r) {
     const gaps = gapsOf(r);
     if (!gaps.length) return '';
+    const why = `Test fait avant l'ajout ${gapWhat(gaps)}`;
+    if (canUpgrade(r)) return `<span class="person-gap is-update" title="${esc(why)}">mise à jour disponible</span>`;
     const label = gaps.length === 1 ? gaps[0].short : 'profil partiel';
-    return `<span class="person-gap" title="Test fait avant l'ajout ${esc(gapWhat(gaps))}">${esc(label)}</span>`;
+    return `<span class="person-gap" title="${esc(why)}">${esc(label)}</span>`;
+  }
+
+  /* Cliquer sur le prénom de quelqu'un lance sa mise à jour. Comme on n'est pas
+     forcément la personne concernée, on demande avant d'embarquer quelqu'un dans
+     un quiz — et on note où revenir, pour que le cercle ne soit pas perdu. */
+  function askUpgrade(code) {
+    const r = decodeResult(code);
+    if (!canUpgrade(r)) return;
+    const m = groupMembers.find(x => x.code === code);
+    const who = m && m.name ? m.name : 'ce profil';
+    const nq = missingQuestions(code).length;
+    const mins = Math.max(3, Math.round(nq / 9));
+    const ok = confirm(`Compléter le profil de ${who} ?\n\n`
+      + `${nq} curseurs, environ ${mins} minutes. Les réponses déjà données sont gardées : le test n'est pas à refaire.\n\n`
+      + `À la fin, on revient à ce cercle avec le profil à jour.`);
+    if (!ok) return;
+    store(STORAGE_BACK, { code, members: groupMembers.map(x => ({ code: x.code, name: x.name })) });
+    startUpgrade(code);
   }
 
   function canUpgrade(r) {
@@ -639,12 +661,24 @@
 
   function finishQuiz() {
     const fresh = compute(state.answers);
-    const base = state.mode === 'values' ? decodeResult(state.base) : null;
+    const baseCode = state.mode === 'values' ? state.base : null;
+    const base = baseCode ? decodeResult(baseCode) : null;
     const code = encodeResult(base ? mergeUpgrade(base, fresh) : fresh);
     sessionCode = code;
     store(STORAGE_LAST, code);
     clearProgress();
     setState(0, {}, 'full', null);
+
+    // Mise à jour lancée depuis un cercle : on y retourne, avec le profil échangé sur place
+    const back = readJSON(STORAGE_BACK, null);
+    store(STORAGE_BACK, null);
+    if (back && baseCode && back.code === baseCode && Array.isArray(back.members) && back.members.length > 1) {
+      const members = back.members.map(x => (x.code === baseCode ? { code, name: x.name } : x));
+      location.hash = 'g=' + encodeGroup(withNames(members));
+      toast('Profil à jour : le cercle repart avec. Pense à copier la nouvelle URL pour la partager.');
+      return;
+    }
+
     const pending = readJSON(STORAGE_PENDING, null);
     store(STORAGE_PENDING, null);
     let hash = 'p=' + code + nameParam(myName());
@@ -2007,27 +2041,84 @@
     }
     const meanAff = people.map((p, i) => aff[i].reduce((s, v) => s + (v || 0), 0) / (n - 1));
 
-    // Palmarès des qualités
+    /* Palmarès
+       Un titre va à qui a le score le plus haut — mais les seize qualités sont
+       des composites bâtis sur les mêmes axes : un profil tranché en rafle une
+       moitié à lui seul. Deux garde-fous : les titres viennent aussi d'autres
+       familles de mesures (traits, morale, cœurs, position politique), qui ne
+       bougent pas ensemble ; et un ex aequo au score affiché est un vrai ex
+       aequo, donc il revient à qui a le moins de titres — sans ça, c'est
+       l'ordre du tableau qui tranchait, pas le test. */
     const awards = [];
-    QUALITIES.forEach(q => {
-      const ranked = people.map(p => ({ p, q: qualityScores(p.r).find(x => x.id === q.id) })).filter(x => x.q.score !== null).sort((x, y) => y.q.score - x.q.score);
+    const titleCount = new Map(people.map(p => [p, 0]));
+    const give = (title, sub, ranked, fmt, text, nextWord) => {
       if (ranked.length < 2) return;
-      const [w, second] = ranked;
-      awards.push({
-        title: q.award, sub: q.sub, p: w.p, score: pct(w.q.score),
-        text: `Parce que : ${qualityWhy(w.p.r, w.q)}.`,
-        next: `devant ${second.p.name} (${pct(second.q.score)})`,
-      });
-    });
-    const byStat = (title, sub, fn, fmt, text) => {
-      const ranked = people.map((p, i) => ({ p, v: fn(p, i) })).sort((x, y) => y.v - x.v);
-      awards.push({ title, sub, p: ranked[0].p, score: fmt(ranked[0].v), text: text(ranked[0]), next: `devant ${ranked[1].p.name} (${fmt(ranked[1].v)})` });
+      const top = String(fmt(ranked[0].v));
+      const tied = ranked.filter(x => String(fmt(x.v)) === top);
+      const w = tied.reduce((a, b) => (titleCount.get(b.p) < titleCount.get(a.p) ? b : a));
+      const next = ranked.find(x => x.p !== w.p);
+      titleCount.set(w.p, titleCount.get(w.p) + 1);
+      awards.push({ title, sub, p: w.p, score: top, text: text(w), next: `${nextWord || 'devant'} ${next.p.name} (${fmt(next.v)})` });
     };
-    byStat('Le plus tranché', 'pousse ses curseurs à fond', p => p.r.stats.radical, v => pct(v) + ' %', x => `${pct(x.v)} % de ses curseurs sont aux extrêmes : avec ${x.p.me ? 'toi' : x.p.name}, on sait à quoi s'en tenir.`);
-    byStat('Le plus nuancé', 'pèse le pour et le contre', p => p.r.stats.nuance, v => pct(v) + ' %', x => `${pct(x.v)} % de ses curseurs restent près du centre : « ça dépend » est une vraie réponse.`);
-    byStat('Le plus cohérent', 'ne se contredit presque jamais', p => p.r.stats.coherence, v => pct(v) + ' %', x => `Ses réponses vont dans le même sens sur chaque axe (${pct(x.v)} % de cohérence) : une pensée construite.`);
-    byStat('Le ciment du groupe', 'le plus proche de tout le monde à la fois', (p, i) => meanAff[i], v => pct(v) + ' %', x => `${pct(x.v)} % d'affinité moyenne avec les autres : la personne par qui tout le monde peut se parler.`);
-    byStat('Le cas à part', 'ne ressemble à personne ici', (p, i) => 1 - meanAff[i], v => pct(1 - v) + ' %', x => `Seulement ${pct(1 - x.v)} % d'affinité moyenne avec le reste du cercle : la voix différente, celle qui évite au groupe de tourner en rond.`);
+    const rank = fn => people.map((p, i) => ({ p, v: fn(p, i) }))
+      .filter(x => x.v !== null && x.v !== undefined && !Number.isNaN(x.v))
+      .sort((x, y) => y.v - x.v);
+    const asPct = v => pct(v) + ' %';
+
+    const quals = new Map(people.map(p => [p, qualityScores(p.r)]));
+    QUALITIES.forEach(q => {
+      const ranked = people.map(p => ({ p, q: quals.get(p).find(x => x.id === q.id) }))
+        .filter(x => x.q && x.q.score !== null)
+        .map(x => ({ p: x.p, v: x.q.score, q: x.q }))
+        .sort((x, y) => y.v - x.v);
+      give(q.award, q.sub, ranked, v => pct(v), w => `Parce que : ${qualityWhy(w.p.r, w.q)}.`);
+    });
+
+    // Style de réponse et place dans le groupe
+    give("Le plus tranché", "pousse ses curseurs à fond", rank(p => p.r.stats.radical), asPct,
+      x => `${pct(x.v)} % de ses curseurs sont aux extrêmes : avec ${x.p.me ? 'toi' : x.p.name}, on sait à quoi s'en tenir.`);
+    give("Le plus nuancé", "pèse le pour et le contre", rank(p => p.r.stats.nuance), asPct,
+      x => `${pct(x.v)} % de ses curseurs restent près du centre : « ça dépend » est une vraie réponse.`);
+    give("Le plus cohérent", "ne se contredit presque jamais", rank(p => p.r.stats.coherence), asPct,
+      x => `Ses réponses vont dans le même sens sur chaque axe (${pct(x.v)} % de cohérence) : une pensée construite.`);
+    give("Le ciment du groupe", "le plus proche de tout le monde à la fois", rank((p, i) => meanAff[i]), asPct,
+      x => `${pct(x.v)} % d'affinité moyenne avec les autres : la personne par qui tout le monde peut se parler.`);
+    give("Le cas à part", "ne ressemble à personne ici", rank((p, i) => -meanAff[i]), v => pct(-v) + ' %',
+      x => `Seulement ${pct(-x.v)} % d'affinité moyenne avec le reste du cercle : la voix différente, celle qui évite au groupe de tourner en rond.`,
+      'ensuite');
+
+    // Les trois traits : une autre famille de mesures, qui ne suit pas les qualités
+    give("Le funambule", "avance sans filet", rank(p => p.r.traits.inc), asPct,
+      x => `${pct(x.v)} % de tolérance à l'incertitude : les questions sans réponse ne l'empêchent pas de dormir.`);
+    give("L'inébranlable", "ne doute pas de sa boussole", rank(p => p.r.traits.dog), asPct,
+      x => `${pct(x.v)} % sur l'échelle du dogmatisme : quand c'est pesé, c'est pesé — et ça ne rebouge plus.`);
+    give("Le militant", "ne regarde pas passer le train", rank(p => p.r.traits.eng), asPct,
+      x => `${pct(x.v)} % d'engagement : ses idées ne restent pas à la maison.`);
+
+    // Les fondements moraux que les seize qualités ne couvrent pas déjà
+    give("L'arbitre", "ne supporte pas le passe-droit", rank(p => p.r.found.fair), v => pct(v),
+      x => `L'équité pèse ${pct(x.v)} sur 100 dans sa morale : la règle vaut pour tout le monde, à commencer par les siens.`);
+    give("Le garant de l'ordre", "les règles existent pour une raison", rank(p => p.r.found.auth), v => pct(v),
+      x => `L'autorité pèse ${pct(x.v)} sur 100 dans sa morale : sans cadre tenu, rien ne tient longtemps.`);
+    give("Le gardien du sacré", "tout ne se négocie pas", rank(p => p.r.found.sanc), v => pct(v),
+      x => `Le sacré pèse ${pct(x.v)} sur 100 dans sa morale : certaines choses ne se monnaient pas, même pour une bonne raison.`);
+
+    // Ce qui tient à cœur, et la place sur l'échiquier
+    const heartRank = rank(p => p.r.heartAxes.length);
+    if (heartRank.length && heartRank[0].v > 0) {
+      give("Le passionné", "a le plus de sujets qui lui tiennent à cœur", heartRank, v => String(v),
+        x => `${x.v} sujet${x.v > 1 ? 's' : ''} marqué${x.v > 1 ? 's' : ''} d'un cœur : là-dessus, ce n'est pas une opinion, c'est personnel.`);
+    }
+    const lrOf = p => leftRightOf(p.r.axes, id => p.r.known.has(id)).lr;
+    const toLeft = rank(p => -lrOf(p)), toRight = rank(p => lrOf(p));
+    if (toLeft.length > 1 && toLeft[0].v > 0.04) {
+      give("Le plus à gauche", "la position la plus marquée de ce côté", toLeft, v => pct(v),
+        x => `${pct(x.v)} sur 100 vers la gauche, tous axes politiques confondus : personne ne siège plus loin de ce côté de l'hémicycle.`);
+    }
+    if (toRight.length > 1 && toRight[0].v > 0.04) {
+      give("Le plus à droite", "la position la plus marquée de ce côté", toRight, v => pct(v),
+        x => `${pct(x.v)} sur 100 vers la droite, tous axes politiques confondus : personne ne siège plus loin de ce côté de l'hémicycle.`);
+    }
 
     $(pre + 'awards').innerHTML = awards.map((a, k) => `
       <article class="award ${a.p.me ? 'is-me' : ''}" style="--d:${Math.min(k, 10) * 40}ms">
@@ -3468,7 +3559,9 @@
       <details class="person" id="person-${p.code}" data-code="${p.code}">
         <summary>
           <span class="dot" style="background:${p.color}"></span>
-          <span class="person-name">${esc(p.name)}</span>
+          ${canUpgrade(p.r)
+            ? `<button type="button" class="person-name is-stale" data-upgrade-code="${p.code}" title="Compléter ce profil sans refaire le test">${esc(p.name)}</button>`
+            : `<span class="person-name">${esc(p.name)}</span>`}
           <span class="person-line">${esc(line)}</span>
           <span class="person-tags">${discMini(p.r)}${vp ? `<span class="person-val">${esc(valueTitle(vp))}</span>` : ''}${gapChip(p.r)}</span>
           <span class="chev" aria-hidden="true"></span>
@@ -3978,6 +4071,13 @@
     $('group-add-url').onkeydown = e => { if (e.key === 'Enter') addOne(); };
     $('group-add-name').onkeydown = e => { if (e.key === 'Enter') addOne(); };
     $('group-list').addEventListener('click', async e => {
+      const up = e.target.closest('[data-upgrade-code]');
+      if (up) {
+        e.preventDefault();   // sinon le clic ouvrirait aussi le volet de la personne
+        e.stopPropagation();
+        askUpgrade(up.dataset.upgradeCode);
+        return;
+      }
       const rm = e.target.closest('[data-remove]');
       if (rm) {
         const m = groupMembers.find(x => x.code === rm.dataset.remove);
@@ -4045,7 +4145,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 28;
+  const BUILD = 29;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

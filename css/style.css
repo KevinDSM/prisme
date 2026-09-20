@@ -1965,6 +1965,29 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   border: 1px dashed var(--line-2); background: none;
   font-size: 12.5px; font-weight: 700; color: var(--ink-3); white-space: nowrap;
 }
+.person-gap.is-update {
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+}
+
+/* Le prénom devient le bouton : on clique dessus pour compléter son profil */
+.person-name.is-stale {
+  appearance: none; -webkit-appearance: none; border: 0; background: none;
+  padding: 0; margin: 0; text-align: left; cursor: pointer;
+  font-family: var(--font-display); font-size: 24px; font-weight: 500;
+  letter-spacing: -0.01em; line-height: inherit; color: var(--ink);
+  animation: name-glow 3s ease-in-out infinite;
+}
+.person-name.is-stale:hover { text-decoration: underline; text-underline-offset: 4px; }
+.person-name.is-stale:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+@keyframes name-glow {
+  0%, 100% { color: var(--ink); text-shadow: none; }
+  50% { color: var(--accent); text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.45); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .person-name.is-stale { animation: none; color: var(--accent); }
+}
 
 .group-gaps { display: grid; gap: 8px; margin-top: 16px; }
 .group-gaps p {
