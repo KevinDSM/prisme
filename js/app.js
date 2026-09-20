@@ -591,6 +591,39 @@
     };
   }
 
+  /* Un profil d'une version antérieure entre dans un cercle sans problème : il
+     apparaît partout où il a les réponses, et nulle part ailleurs. Encore
+     faut-il le dire — sinon on voit deux pastilles au lieu de trois sur une
+     ligne et on croit à un bug. */
+  const GAPS = [
+    { test: r => r.partial, label: "les axes de personnalité", short: "sans la personnalité", where: "les neuf lignes de personnalité et l'archétype" },
+    { test: r => !r.known.has('egl'), label: "l'axe égalité", short: "sans l'égalité", where: "la ligne égalité" },
+    { test: r => !r.disc, label: "le profil DISC", short: "sans le DISC", where: "les couleurs du cercle" },
+    { test: r => !r.values, label: "les valeurs", short: "sans les valeurs", where: "la boussole de valeurs et les dix lignes de valeurs" },
+  ];
+
+  function gapsOf(r) {
+    return r ? GAPS.filter(g => g.test(r)) : [];
+  }
+
+  // « de » + un libellé qui porte déjà son article : de les → des, de le → du
+  function deOf(label) {
+    if (label.startsWith('les ')) return 'des ' + label.slice(4);
+    if (label.startsWith('le ')) return 'du ' + label.slice(3);
+    if (label.startsWith('la ')) return 'de la ' + label.slice(3);
+    return 'de ' + label;
+  }
+  function gapWhat(gaps) { return joinFr(gaps.map(g => deOf(g.label))); }
+  function gapWhere(gaps) { return gaps.length === 1 ? gaps[0].where : gaps.map(g => g.where).join(' ; '); }
+
+  // L'étiquette courte, dans la ligne d'une personne
+  function gapChip(r) {
+    const gaps = gapsOf(r);
+    if (!gaps.length) return '';
+    const label = gaps.length === 1 ? gaps[0].short : 'profil partiel';
+    return `<span class="person-gap" title="Test fait avant l'ajout ${esc(gapWhat(gaps))}">${esc(label)}</span>`;
+  }
+
   function canUpgrade(r) {
     return !!r && !r.values && QUESTIONS_BY_VERSION[r.version] !== undefined;
   }
@@ -3412,6 +3445,7 @@
       + (discs.length ? fact('Couleur DISC dominante', mostCommon(discs), discs.length) : '')
       + (vals.length ? fact('Valeur boussole la plus partagée', mostCommon(vals), vals.length) : '');
 
+    renderGaps(people);
     renderRobot(people, 'g-');
     renderGroupAssembly(people, 'g-');
     renderGovernment(people, 'g-');
@@ -3436,7 +3470,7 @@
           <span class="dot" style="background:${p.color}"></span>
           <span class="person-name">${esc(p.name)}</span>
           <span class="person-line">${esc(line)}</span>
-          <span class="person-tags">${discMini(p.r)}${vp ? `<span class="person-val">${esc(valueTitle(vp))}</span>` : ''}</span>
+          <span class="person-tags">${discMini(p.r)}${vp ? `<span class="person-val">${esc(valueTitle(vp))}</span>` : ''}${gapChip(p.r)}</span>
           <span class="chev" aria-hidden="true"></span>
         </summary>
         <div class="person-body"></div>
@@ -3452,6 +3486,41 @@
       document.querySelectorAll('#screen-group [data-bar]').forEach(el => { el.style.width = el.dataset.bar + '%'; });
       buildNav('screen-group', 'group-nav');
     }));
+  }
+
+  // Ce qui manque à ce profil, dit dans son propre volet plutôt que dans le résumé du cercle
+  function gapNote(member, r, name) {
+    const gaps = gapsOf(r);
+    if (!gaps.length) return '';
+    const nq = canUpgrade(r) ? missingQuestions(member.code).length : 0;
+    const minutes = Math.max(3, Math.round(nq / 9));
+    return `<div class="person-note">
+      <p>Ce test a été fait avant l'ajout ${gapWhat(gaps)} : ce profil ne compte pas dans ${gapWhere(gaps)}. Partout ailleurs, il compte normalement.</p>
+      ${nq ? `<p>Si c'est le tien, inutile de refaire le test : ${nq} curseurs suffisent, environ ${minutes} minutes. Ouvre ce profil seul pour le compléter — ou envoie le lien à ${esc(name)}, puis remplace-le ici avec sa nouvelle URL.</p>
+        <button class="btn btn-ghost btn-sm" type="button" data-copy-update="${member.code}">Copier le lien de mise à jour</button>` : ''}
+    </div>`;
+  }
+
+  /* Qui, dans ce cercle, a répondu à une version plus courte du test — et ce que
+     ça change. Les gens sont regroupés par ce qui leur manque. */
+  function renderGaps(people) {
+    const box = $('group-gaps');
+    if (!box) return;
+    const by = new Map();
+    people.forEach(p => {
+      const gaps = gapsOf(p.r);
+      if (!gaps.length) return;
+      const key = gaps.map(g => g.label).join('|');
+      if (!by.has(key)) by.set(key, { gaps, who: [] });
+      by.get(key).who.push(p.name);
+    });
+    box.hidden = !by.size;
+    if (!by.size) return;
+    box.innerHTML = [...by.values()].map(({ gaps, who }) => {
+      const many = who.length > 1;
+      const names = joinFr(who.map(w => `<b>${esc(w)}</b>`));
+      return `<p>${names} ${many ? 'ont' : 'a'} répondu avant l'ajout ${gapWhat(gaps)} : ${many ? 'ces profils ne comptent' : 'ce profil ne compte'} pas dans ${gapWhere(gaps)}. Partout ailleurs, ${many ? 'ils comptent' : 'il compte'} normalement.</p>`;
+    }).join('');
   }
 
   // Rend le test complet d'une personne dans la page de résultats (cachée), puis le recopie dans son volet
@@ -3471,9 +3540,19 @@
     head.innerHTML = `<h3 class="res-title">${$('res-title').innerHTML}</h3>`
       + ($('disc-chips').hidden ? '' : `<div class="disc-chips">${$('disc-chips').innerHTML}</div>`)
       + `<p class="res-headline">${esc($('res-headline').textContent)}</p>`
-      + `<p class="person-links"><a href="#p=${member.code}${nameParam(member.name)}">Ouvrir ce profil seul</a> · <button class="link-btn" type="button" data-remove="${member.code}">Retirer du cercle</button>`
+      + `<p class="person-links"><a href="#p=${member.code}${nameParam(member.name)}">Ouvrir ce profil seul</a> · <button class="link-btn" type="button" data-replace="${member.code}">Mettre à jour</button> · <button class="link-btn" type="button" data-remove="${member.code}">Retirer du cercle</button>`
       + (mine && mine !== member.code ? ` · <a href="#p=${mine}${nameParam(myName())}&vs=${member.code}${member.name ? '&vn=' + encodeURIComponent(member.name) : ''}">Me comparer à ${esc(name)}</a>` : '')
-      + '</p>';
+      + '</p>'
+      + gapNote(member, r, name)
+      + `<div class="person-swap" hidden>
+          <label class="maker-label">Colle la nouvelle URL de résultat de ${esc(name)}</label>
+          <div class="swap-row">
+            <input type="text" class="swap-url" spellcheck="false" autocomplete="off" placeholder="https://kevindsm.github.io/prisme/#p=…">
+            <button class="btn btn-primary btn-sm" type="button" data-swap-ok="${member.code}"><span>Remplacer</span></button>
+            <button class="link-btn" type="button" data-swap-cancel="1">Annuler</button>
+          </div>
+          <p class="swap-hint">Le nouveau profil prend la place de l'ancien, au même endroit dans le cercle, avec le même prénom. L'URL du cercle change : pense à la recopier.</p>
+        </div>`;
     body.appendChild(head);
 
     document.querySelectorAll('#screen-results .res-body > .res-section, #screen-results .res-body > .res-act').forEach(sec => {
@@ -3798,6 +3877,20 @@
     return members.map((m, i) => ({ code: m.code, name: m.name || `Personne ${i + 1}` }));
   }
 
+  /* Remplacer plutôt que retirer puis rajouter : la personne garde sa place et
+     sa couleur, et l'URL du cercle ne change qu'une fois. */
+  function swapMember(oldCode, input) {
+    const { members } = parseManyLinks(input.value);
+    if (!members.length) { toast('URL non reconnue : colle l\'URL de résultat de la personne'); return; }
+    const fresh = members[0];
+    if (fresh.code === oldCode) { toast('C\'est déjà ce profil : rien à remplacer'); return; }
+    if (groupMembers.some(x => x.code === fresh.code)) { toast('Ce profil est déjà dans le cercle'); return; }
+    const old = groupMembers.find(x => x.code === oldCode);
+    if (!old) return;
+    openCircle(groupMembers.map(x => x.code === oldCode ? { code: fresh.code, name: old.name || fresh.name } : x));
+    toast(`${old.name ? old.name + ' a un nouveau profil' : 'Profil mis à jour'}. L'URL du cercle a changé : copie-la de nouveau pour la partager.`);
+  }
+
   function openCircle(members) {
     location.hash = 'g=' + encodeGroup(withNames(members));
   }
@@ -3884,13 +3977,42 @@
     $('btn-group-add-ok').onclick = addOne;
     $('group-add-url').onkeydown = e => { if (e.key === 'Enter') addOne(); };
     $('group-add-name').onkeydown = e => { if (e.key === 'Enter') addOne(); };
-    $('group-list').addEventListener('click', e => {
-      const btn = e.target.closest('[data-remove]');
-      if (!btn) return;
-      const m = groupMembers.find(x => x.code === btn.dataset.remove);
-      if (groupMembers.length <= 2) { toast('Un cercle compte au moins deux personnes'); return; }
-      if (!confirm(`Retirer ${m && m.name ? m.name : 'cette personne'} de ce cercle ? L'URL du cercle changera.`)) return;
-      openCircle(groupMembers.filter(x => x.code !== btn.dataset.remove));
+    $('group-list').addEventListener('click', async e => {
+      const rm = e.target.closest('[data-remove]');
+      if (rm) {
+        const m = groupMembers.find(x => x.code === rm.dataset.remove);
+        if (groupMembers.length <= 2) { toast('Un cercle compte au moins deux personnes'); return; }
+        if (!confirm(`Retirer ${m && m.name ? m.name : 'cette personne'} de ce cercle ? L'URL du cercle changera.`)) return;
+        openCircle(groupMembers.filter(x => x.code !== rm.dataset.remove));
+        return;
+      }
+      const copy = e.target.closest('[data-copy-update]');
+      if (copy) {
+        const m = groupMembers.find(x => x.code === copy.dataset.copyUpdate);
+        const ok = await copyText(profileUrl(copy.dataset.copyUpdate, m && m.name));
+        toast(ok ? "Lien copié — en l'ouvrant, la personne pourra compléter son profil sans refaire le test"
+                 : "Impossible de copier : ouvre le profil seul et copie l'URL");
+        return;
+      }
+      const open = e.target.closest('[data-replace]');
+      if (open) {
+        const panel = open.closest('.person-body').querySelector('.person-swap');
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden) panel.querySelector('.swap-url').focus();
+        return;
+      }
+      if (e.target.closest('[data-swap-cancel]')) {
+        e.target.closest('.person-swap').hidden = true;
+        return;
+      }
+      const ok = e.target.closest('[data-swap-ok]');
+      if (ok) swapMember(ok.dataset.swapOk, ok.closest('.person-swap').querySelector('.swap-url'));
+    });
+    $('group-list').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target.classList.contains('swap-url')) {
+        e.preventDefault();
+        swapMember(e.target.closest('.person-swap').querySelector('[data-swap-ok]').dataset.swapOk, e.target);
+      }
     });
   }
 
@@ -3923,7 +4045,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 27;
+  const BUILD = 28;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
