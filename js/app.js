@@ -3512,7 +3512,17 @@
     const who = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`;
 
     $('group-title').innerHTML = `Le cercle, <em>${n} profils</em>`;
-    $('group-people').innerHTML = people.map(p => `<a class="medal" href="#person-${p.code}" data-jump="${p.code}">${who(p)}</a>`).join('');
+    $('group-people').innerHTML = people.map(p => {
+      const jump = `href="#person-${p.code}" data-jump="${p.code}"`;
+      if (!canUpgrade(p.r)) return `<a class="medal" ${jump}>${who(p)}</a>`;
+      /* Le bouton ne peut pas vivre à l'intérieur du lien : deux commandes dans un
+         seul élément cliquable, et plus personne ne sait laquelle se déclenche. */
+      return `<span class="medal is-stale">`
+        + `<a class="medal-link" ${jump}><span class="who"><span class="dot" style="background:${p.color}"></span>`
+        + `<span class="medal-name">${esc(p.name)}</span></span></a>`
+        + `<button type="button" class="medal-maj" data-upgrade-code="${p.code}" title="Compléter ce profil sans refaire le test">mise à jour</button>`
+        + `</span>`;
+    }).join('');
 
     // Cohésion : affinité moyenne entre toutes les paires
     let sum = 0, count = 0;
@@ -3696,6 +3706,8 @@
     };
     $('btn-people-close').onclick = () => document.querySelectorAll('#group-list details.person').forEach(d => { d.open = false; });
     $('group-people').addEventListener('click', e => {
+      const up = e.target.closest('[data-upgrade-code]');
+      if (up) { e.preventDefault(); askUpgrade(up.dataset.upgradeCode); return; }
       const a = e.target.closest('[data-jump]');
       if (!a) return;
       e.preventDefault();
@@ -4145,7 +4157,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 29;
+  const BUILD = 30;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

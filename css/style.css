@@ -1985,8 +1985,28 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   0%, 100% { color: var(--ink); text-shadow: none; }
   50% { color: var(--accent); text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.45); }
 }
+/* La même invite sur la pastille de prénom, en tête de cercle */
+.group-people .medal.is-stale {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  padding: 5px 5px 5px 12px; gap: 9px;
+}
+.group-people .medal.is-stale:hover { border-color: rgba(var(--accent-rgb), 0.85); background: rgba(var(--accent-rgb), 0.06); }
+.medal-link { display: inline-flex; align-items: center; color: var(--ink); text-decoration: none; }
+.medal-link:hover { text-decoration: none; }
+.medal-name { animation: name-glow 3s ease-in-out infinite; }
+.medal-maj {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--accent-rgb), 0.12); color: var(--accent);
+  font: inherit; font-size: 12px; font-weight: 800; white-space: nowrap;
+  transition: background 0.2s var(--ease);
+}
+.medal-maj:hover { background: rgba(var(--accent-rgb), 0.24); }
+.medal-maj:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 @media (prefers-reduced-motion: reduce) {
-  .person-name.is-stale { animation: none; color: var(--accent); }
+  .person-name.is-stale, .medal-name { animation: none; color: var(--accent); }
 }
 
 .group-gaps { display: grid; gap: 8px; margin-top: 16px; }
