@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=25">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=26">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=25">
+  <link rel="stylesheet" href="css/style.css?v=26">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -239,8 +239,6 @@
     <section class="res-section teaser-top" id="values-teaser-section" data-no-fold hidden>
       <div id="values-teaser" class="visitor teaser"></div>
     </section>
-
-    <!-- Comparaison détaillée -->
     <section id="compare-block" class="res-section compare-block" hidden>
       <div class="section-head">
         <h2><span id="cmp-me">Toi</span> <span class="vs">vs</span> <span id="cmp-name">ton ami</span></h2>
@@ -338,9 +336,11 @@
       <p class="cmp-psy" id="cmp-psy" hidden></p>
       <button id="btn-compare-close" class="link-btn" type="button">Fermer la comparaison</button>
     </section>
-
-    <!-- Famille + tempérament + archétype -->
-    <section class="res-section res-trio">
+    <div class="res-act res-act-plain" data-act="En bref">
+      <p class="act-t">En bref</p>
+      <p class="act-s">Tes trois portraits, ce qui te distingue, et ton résumé en cinq temps.</p>
+    </div>
+    <section class="res-section res-trio" id="trio-section">
       <article class="res-card family-card">
         <p class="card-kicker">Famille politique la plus proche</p>
         <h2 id="fam-name" data-nav="Famille politique"></h2>
@@ -367,8 +367,39 @@
         <ul class="fam-list" id="psy-list"></ul>
       </article>
     </section>
-
-    <!-- Hémicycle -->
+    <section class="res-section" id="signatures-section" hidden>
+      <div class="section-head">
+        <h2>Signatures</h2>
+        <p>Les combinaisons et les tensions que les réponses dessinent — ce qui distingue ce profil d'un profil moyen.</p>
+      </div>
+      <div id="signatures" class="signatures"></div>
+    </section>
+    <section class="res-section summary" id="summary-section">
+      <div class="section-head">
+        <h2>En résumé</h2>
+        <p>Un portrait en cinq temps, écrit à partir des réponses — et d'elles seules.</p>
+      </div>
+      <div class="summary-body" id="summary"></div>
+    </section>
+    <div class="res-act" data-act="Ce que tu penses">
+      <p class="act-n">I</p>
+      <p class="act-t">Ce que tu penses</p>
+      <p class="act-s">La politique : tes axes, ta place dans l’hémicycle, tes angles morts et tes curseurs les plus tranchés.</p>
+    </div>
+    <section class="res-section" id="axes-pol-section">
+      <div class="section-head">
+        <h2>Axes politiques</h2>
+        <p>Ce que tu penses : les grandes lignes de fracture du débat public.</p>
+      </div>
+      <div id="axes-politique" class="axes"></div>
+    </section>
+    <section class="res-section" id="axes-meta-section">
+      <div class="section-head">
+        <h2>Méta-politique</h2>
+        <p>Comment tu penses : ta manière d'aborder le pouvoir, le changement, l'adversaire.</p>
+      </div>
+      <div id="axes-meta" class="axes"></div>
+    </section>
     <section class="res-section" id="assembly-section">
       <div class="section-head">
         <h2 data-nav="Hémicycle">Ta place dans l'hémicycle</h2>
@@ -389,38 +420,55 @@
         </div>
       </div>
     </section>
-
-    <!-- Signatures -->
-    <section class="res-section" id="signatures-section" hidden>
+    <section class="res-section" id="blind-section" hidden>
       <div class="section-head">
-        <h2>Signatures</h2>
-        <p>Les combinaisons et les tensions que les réponses dessinent — ce qui distingue ce profil d'un profil moyen.</p>
+        <h2 data-nav="Angles morts">Tes angles morts</h2>
+        <p id="blind-intro"></p>
       </div>
-      <div id="signatures" class="signatures"></div>
+      <div id="blind-cards" class="blind-cards"></div>
+      <p id="blind-move" class="blind-move" hidden></p>
     </section>
-
-    <!-- Qualités -->
-    <section class="res-section" id="qualities-section" hidden>
+    <section class="res-section" id="extremes-section" hidden>
       <div class="section-head">
-        <h2>Tes qualités</h2>
-        <p>Seize qualités calculées en croisant tes axes, ta morale et ton comportement. Pour chacune, on te dit d'où elle vient.</p>
+        <h2 data-nav="Tes curseurs">Tes curseurs les plus tranchés</h2>
+        <p>Les affirmations que tu as poussées le plus loin, mot pour mot. C'est la partie la plus personnelle du rapport : deux personnes n'ont presque jamais les mêmes.</p>
       </div>
-      <h3 class="sub-head first">Tes cinq forces</h3>
-      <div id="qualities-top" class="quals"></div>
-      <div class="qual-split">
-        <div>
-          <h3 class="sub-head">Ce qui t'est moins naturel</h3>
-          <div id="qualities-low" class="quals two"></div>
-        </div>
-        <article class="res-card">
-          <p class="card-kicker">Vue d'ensemble</p>
-          <h2>Ton profil de qualités</h2>
-          <ul id="qualities-all" class="found-list qual-list"></ul>
-        </article>
-      </div>
+      <div id="extremes-cards" class="ext-cards"></div>
+      <p id="extremes-note" class="xs-note-txt"></p>
     </section>
-
-    <!-- Profil DISC -->
+    <section class="res-section" id="hearts-section" hidden>
+      <div class="section-head">
+        <h2>Sujets de cœur</h2>
+        <p>Les thèmes marqués comme tenant particulièrement à cœur.</p>
+      </div>
+      <div id="hearts" class="hearts"></div>
+    </section>
+    <div class="res-act" data-act="Qui tu es">
+      <p class="act-n">II</p>
+      <p class="act-t">Qui tu es</p>
+      <p class="act-s">Le caractère, sous la politique : personnalité, morale, couleurs DISC, valeurs et qualités.</p>
+    </div>
+    <section class="res-section" id="psyche-section">
+      <div class="section-head">
+        <h2>Personnalité</h2>
+        <p>Qui tu es sous la politique : ta façon de décider, de risquer, de regarder le monde et les autres.</p>
+      </div>
+      <div id="axes-psyche" class="axes"></div>
+    </section>
+    <section class="res-section res-duo psyche" id="psyche-duo-section">
+      <article class="res-card">
+        <p class="card-kicker">Fondements moraux</p>
+        <h2 data-nav="Fondements moraux">Ce qui te fait réagir</h2>
+        <div id="radar" class="radar"></div>
+        <ul id="found-list" class="found-list"></ul>
+      </article>
+      <article class="res-card">
+        <p class="card-kicker">Traits</p>
+        <h2 data-nav="Traits et style">Ta façon d'y aller</h2>
+        <div id="traits" class="traits"></div>
+        <div class="stats-grid" id="stats-grid"></div>
+      </article>
+    </section>
     <section class="res-section disc" id="disc-section" hidden>
       <div class="section-head">
         <h2>Profil DISC</h2>
@@ -439,8 +487,6 @@
       <div id="disc-cards" class="disc-cards"></div>
       <div id="disc-legend" class="disc-legend"></div>
     </section>
-
-    <!-- Valeurs -->
     <section class="res-section values" id="values-section" hidden>
       <div class="section-head">
         <h2>Tes valeurs</h2>
@@ -465,9 +511,25 @@
         <div id="values-cards" class="val-cards"></div>
       </div>
     </section>
-
-
-    <!-- Dans la vie -->
+    <section class="res-section" id="qualities-section" hidden>
+      <div class="section-head">
+        <h2>Tes qualités</h2>
+        <p>Seize qualités calculées en croisant tes axes, ta morale et ton comportement. Pour chacune, on te dit d'où elle vient.</p>
+      </div>
+      <h3 class="sub-head first">Tes cinq forces</h3>
+      <div id="qualities-top" class="quals"></div>
+      <div class="qual-split">
+        <div>
+          <h3 class="sub-head">Ce qui t'est moins naturel</h3>
+          <div id="qualities-low" class="quals two"></div>
+        </div>
+        <article class="res-card">
+          <p class="card-kicker">Vue d'ensemble</p>
+          <h2>Ton profil de qualités</h2>
+          <ul id="qualities-all" class="found-list qual-list"></ul>
+        </article>
+      </div>
+    </section>
     <section class="res-section" id="life-section" hidden>
       <div class="section-head">
         <h2>Dans la vie</h2>
@@ -475,26 +537,11 @@
       </div>
       <div id="life-cards" class="life-cards"></div>
     </section>
-
-    <!-- Quel personnage -->
-    <section class="res-section" id="blind-section" hidden>
-      <div class="section-head">
-        <h2 data-nav="Angles morts">Tes angles morts</h2>
-        <p id="blind-intro"></p>
-      </div>
-      <div id="blind-cards" class="blind-cards"></div>
-      <p id="blind-move" class="blind-move" hidden></p>
-    </section>
-
-    <section class="res-section" id="extremes-section" hidden>
-      <div class="section-head">
-        <h2 data-nav="Tes curseurs">Tes curseurs les plus tranchés</h2>
-        <p>Les affirmations que tu as poussées le plus loin, mot pour mot. C'est la partie la plus personnelle du rapport : deux personnes n'ont presque jamais les mêmes.</p>
-      </div>
-      <div id="extremes-cards" class="ext-cards"></div>
-      <p id="extremes-note" class="xs-note-txt"></p>
-    </section>
-
+    <div class="res-act" data-act="Pour le plaisir">
+      <p class="act-n">III</p>
+      <p class="act-t">Pour le plaisir</p>
+      <p class="act-s">Le même profil, comparé à autre chose que des idées : un personnage, un animal, un film, un morceau.</p>
+    </div>
     <section class="res-section" id="cast-section" hidden>
       <div class="section-head">
         <h2 data-nav="Personnages">Quel personnage serais-tu ?</h2>
@@ -502,7 +549,6 @@
       </div>
       <div id="cast" class="cast"></div>
     </section>
-
     <section class="res-section" id="animal-section" hidden>
       <div class="section-head">
         <h2 data-nav="Ton animal">Quel animal serais-tu ?</h2>
@@ -510,7 +556,6 @@
       </div>
       <div id="animal-card" class="animal-wrap"></div>
     </section>
-
     <section class="res-section" id="film-section" hidden>
       <div class="section-head">
         <h2 data-nav="Ton film">Si tu étais un film</h2>
@@ -518,74 +563,12 @@
       </div>
       <div id="film-card" class="animal-wrap"></div>
     </section>
-
     <section class="res-section" id="musique-section" hidden>
       <div class="section-head">
         <h2 data-nav="Ta musique">Si tu étais une musique</h2>
         <p>Un morceau, pas un genre. Là encore, c'est le caractère du titre qui est comparé au tien : son énergie, son rapport au temps, ce qu'il cherche à provoquer.</p>
       </div>
       <div id="musique-card" class="animal-wrap"></div>
-    </section>
-
-    <!-- Axes politiques -->
-    <section class="res-section">
-      <div class="section-head">
-        <h2>Axes politiques</h2>
-        <p>Ce que tu penses : les grandes lignes de fracture du débat public.</p>
-      </div>
-      <div id="axes-politique" class="axes"></div>
-    </section>
-
-    <!-- Axes méta -->
-    <section class="res-section">
-      <div class="section-head">
-        <h2>Méta-politique</h2>
-        <p>Comment tu penses : ta manière d'aborder le pouvoir, le changement, l'adversaire.</p>
-      </div>
-      <div id="axes-meta" class="axes"></div>
-    </section>
-
-    <!-- Axes personnalité -->
-    <section class="res-section" id="psyche-section">
-      <div class="section-head">
-        <h2>Personnalité</h2>
-        <p>Qui tu es sous la politique : ta façon de décider, de risquer, de regarder le monde et les autres.</p>
-      </div>
-      <div id="axes-psyche" class="axes"></div>
-    </section>
-
-    <!-- Psyché -->
-    <section class="res-section res-duo psyche">
-      <article class="res-card">
-        <p class="card-kicker">Fondements moraux</p>
-        <h2 data-nav="Fondements moraux">Ce qui te fait réagir</h2>
-        <div id="radar" class="radar"></div>
-        <ul id="found-list" class="found-list"></ul>
-      </article>
-      <article class="res-card">
-        <p class="card-kicker">Traits</p>
-        <h2 data-nav="Traits et style">Ta façon d'y aller</h2>
-        <div id="traits" class="traits"></div>
-        <div class="stats-grid" id="stats-grid"></div>
-      </article>
-    </section>
-
-    <!-- Sujets de cœur -->
-    <section class="res-section" id="hearts-section" hidden>
-      <div class="section-head">
-        <h2>Sujets de cœur</h2>
-        <p>Les thèmes marqués comme tenant particulièrement à cœur.</p>
-      </div>
-      <div id="hearts" class="hearts"></div>
-    </section>
-
-    <!-- Résumé -->
-    <section class="res-section summary">
-      <div class="section-head">
-        <h2>En résumé</h2>
-        <p>Un portrait en cinq temps, écrit à partir des réponses — et d'elles seules.</p>
-      </div>
-      <div class="summary-body" id="summary"></div>
     </section>
 
     <footer class="res-foot">
@@ -654,16 +637,11 @@
     <section class="res-section">
 
 
-      <article class="res-card group-card first robot" id="g-robot-card" hidden>
-        <p class="card-kicker">Le portrait-robot du cercle</p>
-        <h2 class="robot-title" id="g-robot-title"></h2>
-        <div id="g-robot-chips" class="disc-chips"></div>
-        <p id="g-robot-text" class="robot-text"></p>
-        <div id="g-robot-people" class="duo-cards"></div>
-        <p class="card-kicker robot-k">Qui ressemble le plus au groupe</p>
-        <ul id="g-robot-rank" class="found-list robot-rank"></ul>
-      </article>
-
+      <div class="res-act" data-act="Le cercle en politique">
+        <p class="act-n">I</p>
+        <p class="act-t">Le cercle en politique</p>
+        <p class="act-s">Où le groupe se situe, ce qui le divise et ce qui le rassemble.</p>
+      </div>
       <article class="res-card group-card" id="g-assembly-card" hidden>
         <p class="card-kicker">Le cercle à l'Assemblée</p>
         <h2>Qui siège où</h2>
@@ -679,75 +657,6 @@
           </div>
         </div>
       </article>
-
-
-      <article class="res-card group-card" id="g-gov-card" hidden>
-        <p class="card-kicker">Le gouvernement du cercle</p>
-        <h2>Qui aurait quel ministère</h2>
-        <p id="g-gov-note" class="group-intro"></p>
-        <div id="g-gov" class="awards govs"></div>
-      </article>
-
-      <article class="res-card group-card" id="g-cast-card" hidden>
-        <p class="card-kicker">Le casting du cercle</p>
-        <h2 data-nav="Casting du cercle">Qui serait quel personnage</h2>
-        <p class="group-intro">D'après le profil psychologique de chacun : qualités, DISC, valeurs, caractère. Dans chaque univers, chacun reçoit un personnage différent — le plus ressemblant est servi en premier. Clique sur une licence pour voir le casting.</p>
-        <div id="g-cast" class="cast"></div>
-      </article>
-
-      <article class="res-card group-card" id="g-animal-card-group" hidden>
-        <p class="card-kicker">La ménagerie du cercle</p>
-        <h2 data-nav="Ménagerie">Qui serait quel animal</h2>
-        <p class="group-intro">Chacun son animal, et un animal différent pour chacun : le plus ressemblant est servi en premier, les suivants prennent l'animal restant qui leur va le mieux.</p>
-        <div id="g-animals"></div>
-      </article>
-
-      <article class="res-card group-card" id="g-film-card-group" hidden>
-        <p class="card-kicker">La filmothèque du cercle</p>
-        <h2 data-nav="Films du cercle">Qui serait quel film</h2>
-        <p class="group-intro">Un film par personne, et un film différent pour chacun.</p>
-        <div id="g-films"></div>
-      </article>
-
-      <article class="res-card group-card" id="g-musique-card-group" hidden>
-        <p class="card-kicker">La playlist du cercle</p>
-        <h2 data-nav="Playlist">Qui serait quel morceau</h2>
-        <p class="group-intro">Un morceau par personne, et un morceau différent pour chacun : de quoi faire une vraie playlist du cercle.</p>
-        <div id="g-musiques"></div>
-      </article>
-
-      <article class="res-card group-card" id="g-awards-card" hidden>
-        <p class="card-kicker">Palmarès</p>
-        <h2>Qui est qui dans le cercle</h2>
-        <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses.</p>
-        <div id="g-awards-medals" class="medals"></div>
-        <div id="g-awards" class="awards"></div>
-      </article>
-
-      <article class="res-card group-card" id="g-strips-card" hidden>
-        <p class="card-kicker">Tout le monde, ligne par ligne</p>
-        <h2>Où chacun se situe</h2>
-        <p class="group-intro">Une ligne par dimension. Chaque personne a un repère à sa position exacte, et sa pastille juste en dessous — reliée par un trait quand il a fallu l'écarter. À chaque bout : qui va le plus loin de ce côté. Le petit triangle marque la moyenne. Survole une pastille pour lire le détail.</p>
-        <div id="g-strips-legend" class="xs-legend"></div>
-        <div id="g-strips" class="xs"></div>
-      </article>
-
-
-      <article class="res-card group-card" id="g-clans-card" hidden>
-        <p class="card-kicker">Alliances et clans</p>
-        <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
-        <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
-        <div id="g-clans" class="clans"></div>
-        <p id="g-clans-notes" class="circle-disc-notes"></p>
-      </article>
-
-      <article class="res-card group-card" id="g-matrix-card" hidden>
-        <p class="card-kicker">Affinités croisées</p>
-        <h2 data-nav="Affinités">Qui est proche de qui</h2>
-        <div id="g-matrix-duos" class="duo-cards"></div>
-        <div id="g-matrix" class="matrix-wrap"></div>
-      </article>
-
       <article class="res-card group-card" id="g-topics-card" hidden>
         <p class="card-kicker">Les sujets du groupe</p>
         <h2 data-nav="Sujets du groupe">Ce qui vous rassemble, ce qui vous fâche</h2>
@@ -757,28 +666,106 @@
         </div>
         <p id="g-topics-values" class="circle-disc-notes" hidden></p>
       </article>
-
-      <div class="circle-grid group-duo">
-        <article class="res-card">
-          <p class="card-kicker">Carte du cercle</p>
-          <h2>Où chacun se place</h2>
-          <div class="map-controls">
-            <label>Horizontal<select id="g-map-x"></select></label>
-            <label>Vertical<select id="g-map-y"></select></label>
-          </div>
-          <div id="g-circle-map" class="circle-map"></div>
-          <p id="g-map-note" class="map-note"></p>
-        </article>
-        <article class="res-card" id="g-circle-disc-card" hidden>
-          <p class="card-kicker">Profils DISC</p>
-          <h2>Les couleurs du cercle</h2>
-          <div id="g-circle-disc-wheel" class="disc-wheel"></div>
-          <ul id="g-circle-disc-list" class="circle-disc-list"></ul>
-          <p id="g-circle-disc-notes" class="circle-disc-notes"></p>
-        </article>
+      <article class="res-card group-card" id="g-clans-card" hidden>
+        <p class="card-kicker">Alliances et clans</p>
+        <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
+        <p class="group-intro">Ceux qui pensent plus comme leurs voisins que comme le reste du cercle, regroupés automatiquement d'après leurs idées et leur façon d'aborder la politique (pas leur caractère).</p>
+        <div id="g-clans" class="clans"></div>
+        <p id="g-clans-notes" class="circle-disc-notes"></p>
+      </article>
+      <article class="res-card" id="g-map-card">
+        <p class="card-kicker">Carte du cercle</p>
+        <h2>Où chacun se place</h2>
+        <div class="map-controls">
+          <label>Horizontal<select id="g-map-x"></select></label>
+          <label>Vertical<select id="g-map-y"></select></label>
+        </div>
+        <div id="g-circle-map" class="circle-map"></div>
+        <p id="g-map-note" class="map-note"></p>
+      </article>
+      <article class="res-card group-card" id="g-gov-card" hidden>
+        <p class="card-kicker">Le gouvernement du cercle</p>
+        <h2>Qui aurait quel ministère</h2>
+        <p id="g-gov-note" class="group-intro"></p>
+        <div id="g-gov" class="awards govs"></div>
+      </article>
+      <div class="res-act" data-act="Le cercle en caractère">
+        <p class="act-n">II</p>
+        <p class="act-t">Le cercle en caractère</p>
+        <p class="act-s">Le groupe vu par le tempérament : son portrait-robot, ses couleurs, ses affinités.</p>
       </div>
+      <article class="res-card group-card first robot" id="g-robot-card" hidden>
+        <p class="card-kicker">Le portrait-robot du cercle</p>
+        <h2 class="robot-title" id="g-robot-title"></h2>
+        <div id="g-robot-chips" class="disc-chips"></div>
+        <p id="g-robot-text" class="robot-text"></p>
+        <div id="g-robot-people" class="duo-cards"></div>
+        <p class="card-kicker robot-k">Qui ressemble le plus au groupe</p>
+        <ul id="g-robot-rank" class="found-list robot-rank"></ul>
+      </article>
+      <article class="res-card" id="g-circle-disc-card" data-no-fold hidden>
+        <p class="card-kicker">Profils DISC</p>
+        <h2>Les couleurs du cercle</h2>
+        <div id="g-circle-disc-wheel" class="disc-wheel"></div>
+        <ul id="g-circle-disc-list" class="circle-disc-list"></ul>
+        <p id="g-circle-disc-notes" class="circle-disc-notes"></p>
+      </article>
+      <article class="res-card group-card" id="g-strips-card" hidden>
+        <p class="card-kicker">Tout le monde, ligne par ligne</p>
+        <h2>Où chacun se situe</h2>
+        <p class="group-intro">Une ligne par dimension. Chaque personne a un repère à sa position exacte, et sa pastille juste en dessous — reliée par un trait quand il a fallu l'écarter. À chaque bout : qui va le plus loin de ce côté. Le petit triangle marque la moyenne. Survole une pastille pour lire le détail.</p>
+        <div id="g-strips-legend" class="xs-legend"></div>
+        <div id="g-strips" class="xs"></div>
+      </article>
+      <article class="res-card group-card" id="g-matrix-card" hidden>
+        <p class="card-kicker">Affinités croisées</p>
+        <h2 data-nav="Affinités">Qui est proche de qui</h2>
+        <div id="g-matrix-duos" class="duo-cards"></div>
+        <div id="g-matrix" class="matrix-wrap"></div>
+      </article>
+      <article class="res-card group-card" id="g-awards-card" hidden>
+        <p class="card-kicker">Palmarès</p>
+        <h2>Qui est qui dans le cercle</h2>
+        <p class="group-intro">Un titre par qualité, décerné à la personne qui a le score le plus haut — avec la raison, tirée de ses réponses.</p>
+        <div id="g-awards-medals" class="medals"></div>
+        <div id="g-awards" class="awards"></div>
+      </article>
+      <div class="res-act" data-act="Pour le plaisir">
+        <p class="act-n">III</p>
+        <p class="act-t">Pour le plaisir</p>
+        <p class="act-s">Un personnage, un animal, un film et un morceau par personne — tous différents.</p>
+      </div>
+      <article class="res-card group-card" id="g-cast-card" hidden>
+        <p class="card-kicker">Le casting du cercle</p>
+        <h2 data-nav="Casting du cercle">Qui serait quel personnage</h2>
+        <p class="group-intro">D'après le profil psychologique de chacun : qualités, DISC, valeurs, caractère. Dans chaque univers, chacun reçoit un personnage différent — le plus ressemblant est servi en premier. Clique sur une licence pour voir le casting.</p>
+        <div id="g-cast" class="cast"></div>
+      </article>
+      <article class="res-card group-card" id="g-animal-card-group" hidden>
+        <p class="card-kicker">La ménagerie du cercle</p>
+        <h2 data-nav="Ménagerie">Qui serait quel animal</h2>
+        <p class="group-intro">Chacun son animal, et un animal différent pour chacun : le plus ressemblant est servi en premier, les suivants prennent l'animal restant qui leur va le mieux.</p>
+        <div id="g-animals"></div>
+      </article>
+      <article class="res-card group-card" id="g-film-card-group" hidden>
+        <p class="card-kicker">La filmothèque du cercle</p>
+        <h2 data-nav="Films du cercle">Qui serait quel film</h2>
+        <p class="group-intro">Un film par personne, et un film différent pour chacun.</p>
+        <div id="g-films"></div>
+      </article>
+      <article class="res-card group-card" id="g-musique-card-group" hidden>
+        <p class="card-kicker">La playlist du cercle</p>
+        <h2 data-nav="Playlist">Qui serait quel morceau</h2>
+        <p class="group-intro">Un morceau par personne, et un morceau différent pour chacun : de quoi faire une vraie playlist du cercle.</p>
+        <div id="g-musiques"></div>
+      </article>
     </section>
 
+    <div class="res-act" data-act="Un par un">
+      <p class="act-n">IV</p>
+      <p class="act-t">Un par un</p>
+      <p class="act-s">Le test complet de chaque personne, à déplier.</p>
+    </div>
     <section class="res-section" id="group-profiles">
       <div class="section-head">
         <h2>Les profils, un par un</h2>
@@ -817,12 +804,12 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=25"></script>
-  <script src="js/profiles.js?v=25"></script>
-  <script src="js/characters.js?v=25"></script>
-  <script src="js/animals.js?v=25"></script>
-  <script src="js/films.js?v=25"></script>
-  <script src="js/musics.js?v=25"></script>
-  <script src="js/app.js?v=25"></script>
+  <script src="js/questions.js?v=26"></script>
+  <script src="js/profiles.js?v=26"></script>
+  <script src="js/characters.js?v=26"></script>
+  <script src="js/animals.js?v=26"></script>
+  <script src="js/films.js?v=26"></script>
+  <script src="js/musics.js?v=26"></script>
+  <script src="js/app.js?v=26"></script>
 </body>
 </html>

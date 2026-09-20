@@ -78,6 +78,10 @@
         <h4>7 · Une page pliée</h4>
         <p>Le rapport complet fait plusieurs mètres : la page arrive donc <b>pliée</b>. Chaque bloc est un titre qu'on ouvre d'un clic, et l'ensemble se lit d'abord comme un sommaire — on va voir ce qui intéresse, dans l'ordre qu'on veut. « Tout déplier » ouvre tout d'un coup, et le sommaire de gauche ouvre le bloc qu'on vise. Seuls les portraits (et « le cercle en bref » sur la page de groupe) sont ouverts au départ.</p>
       </article>
+      <article class="gcard">
+        <h4>8 · Trois temps</h4>
+        <p>Le rapport est rangé en trois actes, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits, les signatures, le résumé. <b>I · Ce que tu penses</b> : la politique — axes, méta-politique, hémicycle, angles morts, curseurs tranchés, sujets de cœur. <b>II · Qui tu es</b> : le caractère — personnalité, fondements moraux, traits, DISC, valeurs, qualités. <b>III · Pour le plaisir</b> : le personnage, l'animal, le film et le morceau. La page de cercle suit les mêmes trois temps, puis les profils un par un.</p>
+      </article>
     </div>`);
 
   /* ---------------------------------------------------------

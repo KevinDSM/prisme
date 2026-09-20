@@ -146,35 +146,62 @@
     return el.querySelector(':scope > .fold > summary > .section-head, :scope > .section-head');
   }
 
+  /* Les blocs de la page, dans l'ordre de lecture : un acte, puis les titres
+     qu'il annonce. Un bloc sans titre propre (les grilles, le gros bloc du
+     cercle) laisse la place aux cartes qu'il contient. */
+  function navItems(screen) {
+    const out = [];
+    const walk = parent => {
+      [...parent.children].forEach(el => {
+        if (el.hidden) return;
+        if (el.classList.contains('res-act')) { out.push({ act: el.dataset.act || '' }); return; }
+        if (!el.matches('.res-section, .res-card') || el.offsetParent === null) return;
+        const hd = headOf(el);
+        const h = hd ? hd.querySelector('h2') : el.querySelector(':scope > h2');
+        if (h && h.offsetParent !== null) out.push({ h, el });
+        else walk(el);
+      });
+    };
+    const body = screen.querySelector('.res-body');
+    if (body) walk(body);
+    return out;
+  }
+
+  /* Un acte dont tout le contenu est masqué (un vieux lien sans DISC, par
+     exemple) ne doit pas rester en l'air. */
+  function syncActs(root) {
+    root.querySelectorAll('.res-act').forEach(a => {
+      let has = false;
+      for (let el = a.nextElementSibling; el && !el.classList.contains('res-act'); el = el.nextElementSibling) {
+        if (el.matches('.res-section, .res-card') && !el.hidden) { has = true; break; }
+      }
+      a.hidden = !has;
+    });
+  }
+
   function buildNav(screenId, navId) {
     const screen = $(screenId), nav = $(navId);
     if (!screen || !nav) return;
-    // Une entrée par section. Une section sans titre propre (le cercle) donne une entrée par carte.
-    const heads = [];
-    screen.querySelectorAll('.res-body > .res-section').forEach(sec => {
-      if (sec.hidden || sec.offsetParent === null) return;
-      const own = headOf(sec);
-      if (own) { const h = own.querySelector('h2'); if (h) heads.push(h); return; }
-      sec.querySelectorAll(':scope > .res-card, :scope > div > .res-card').forEach(card => {
-        if (card.offsetParent === null) return;
-        const hd = headOf(card);
-        const h = hd ? hd.querySelector('h2') : card.querySelector(':scope > h2');
-        if (h && h.offsetParent !== null) heads.push(h);
-      });
-    });
-    if (heads.length < 4) { nav.hidden = true; nav.innerHTML = ''; return; }
+    syncActs(screen);
 
-    const targets = heads.map((h, i) => {
+    const targets = [];
+    navItems(screen).forEach((it, i) => {
+      if (it.act) { targets.push({ act: it.act }); return; }
+      const h = it.h;
       const anchor = h.closest('.res-section, .res-card') || h;
       if (!anchor.id) anchor.id = navId + '-s' + i;
       // Le titre d'une carte est souvent une valeur (« Le Gardien ») : le chapô décrit mieux la section
       const hd = h.closest('.section-head');
       const kicker = (hd && hd.querySelector('.card-kicker')) || anchor.querySelector(':scope > .card-kicker');
       const label = h.dataset.nav || (kicker ? kicker.textContent : h.textContent);
-      return { id: anchor.id, label: label.replace(/\s+/g, ' ').trim(), el: anchor };
+      targets.push({ id: anchor.id, label: label.replace(/\s+/g, ' ').trim(), el: anchor });
     });
-    nav.innerHTML = `<p class="nav-title">Sommaire</p><ol>${targets
-      .map(t => `<li><a href="#${t.id}" data-nav-to="${t.id}">${esc(t.label)}</a></li>`).join('')}</ol>`;
+    const links = targets.filter(t => t.id);
+    if (links.length < 4) { nav.hidden = true; nav.innerHTML = ''; return; }
+
+    nav.innerHTML = `<p class="nav-title">Sommaire</p><ol>${targets.map(t => t.act
+      ? `<li class="nav-act">${esc(t.act)}</li>`
+      : `<li><a href="#${t.id}" data-nav-to="${t.id}">${esc(t.label)}</a></li>`).join('')}</ol>`;
     nav.hidden = false;
 
     nav.onclick = e => {
@@ -189,18 +216,18 @@
 
     // Surligne la section en cours de lecture
     if (navObserver) navObserver.disconnect();
-    const links = new Map(targets.map(t => [t.id, nav.querySelector(`[data-nav-to="${t.id}"]`)]));
+    const byId = new Map(links.map(t => [t.id, nav.querySelector(`[data-nav-to="${t.id}"]`)]));
     const seen = new Set();
     navObserver = new IntersectionObserver(entries => {
       entries.forEach(en => (en.isIntersecting ? seen.add(en.target.id) : seen.delete(en.target.id)));
-      const first = targets.find(t => seen.has(t.id));
-      links.forEach(l => l.classList.remove('is-on'));
+      const first = links.find(t => seen.has(t.id));
+      byId.forEach(l => l.classList.remove('is-on'));
       if (!first) return;
-      const link = links.get(first.id);
+      const link = byId.get(first.id);
       link.classList.add('is-on');
       if (nav.scrollWidth > nav.clientWidth + 4) link.scrollIntoView({ block: 'nearest', inline: 'center' });
     }, { rootMargin: '-72px 0px -62% 0px' });
-    targets.forEach(t => navObserver.observe(t.el));
+    links.forEach(t => navObserver.observe(t.el));
   }
 
   /* ---------------------------------------------------------
@@ -268,10 +295,9 @@
         sec.classList.add('fold-grid');
         return;
       }
-      const cards = sec.querySelectorAll(':scope > .res-card, :scope > .circle-grid > .res-card');
+      const cards = sec.querySelectorAll(':scope > .res-card');
       if (!sec.querySelector(':scope > .section-head') && cards.length) {
-        cards.forEach(card => foldPanel(card, {}));
-        sec.querySelectorAll(':scope > .circle-grid').forEach(g => g.classList.add('fold-grid'));
+        cards.forEach(card => { if (!card.hasAttribute('data-no-fold')) foldPanel(card, {}); });
         return;
       }
       foldPanel(sec, { open: sec.id === 'compare-block' });
@@ -3449,7 +3475,7 @@
       + '</p>';
     body.appendChild(head);
 
-    document.querySelectorAll('#screen-results .res-body > .res-section').forEach(sec => {
+    document.querySelectorAll('#screen-results .res-body > .res-section, #screen-results .res-body > .res-act').forEach(sec => {
       if (sec.hidden || skip.has(sec.id)) return;
       const clone = sec.cloneNode(true);
       clone.removeAttribute('id');
@@ -3459,6 +3485,8 @@
       clone.querySelectorAll('[data-arc]').forEach(el => { el.style.strokeDashoffset = el.dataset.arc; });
       body.appendChild(clone);
     });
+    syncActs(body);
+    body.querySelectorAll('.res-act[hidden]').forEach(a => a.remove());
     body.dataset.done = '1';
   }
 
@@ -3894,7 +3922,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 25;
+  const BUILD = 26;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
