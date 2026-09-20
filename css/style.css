@@ -1813,3 +1813,71 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .animal-by { margin: 2px 0 0; font-size: 15px; font-weight: 700; letter-spacing: 0.02em; color: var(--ink-3); }
 .animal-sub { font-size: 13px; font-weight: 700; color: var(--ink-3); }
 .casting .role-by { display: block; font-size: 13px; font-weight: 700; color: var(--ink-3); }
+
+
+/* ============================================================
+   VOLETS
+   Le rapport complet fait plusieurs mètres. Tomber dessus d'un bloc
+   décourage avant d'avoir commencé : la page arrive donc pliée, et
+   se lit d'abord comme un sommaire de titres qu'on ouvre un à un.
+   ============================================================ */
+.fold-tools {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-top: 52px; padding-bottom: 14px;
+}
+.fold-hint { flex: 1 1 260px; margin: 0; font-size: 15px; color: var(--ink-3); }
+
+.res-section.is-folded { margin-top: 0; scroll-margin-top: 66px; }
+.res-card.is-folded { scroll-margin-top: 66px; }
+.fold { border-top: 1px solid var(--line); }
+.res-body > .res-section.is-folded:last-of-type > .fold { border-bottom: 1px solid var(--line); }
+
+.fold > summary {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; gap: 18px;
+  margin: 0 -14px; padding: 21px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer; list-style: none;
+  transition: background 0.2s var(--ease);
+}
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::marker { content: ''; }
+.fold > summary:hover { background: rgba(var(--ink-rgb), 0.04); }
+.fold > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fold > summary .section-head { margin: 0; }
+/* Replié, on ne garde que le titre : c'est ce qui rend la liste lisible d'un œil. */
+.fold:not([open]) > summary .section-head p:not(.card-kicker) { display: none; }
+.fold[open] > summary { padding-bottom: 6px; }
+
+.fold-chev {
+  width: 11px; height: 11px; margin-top: -3px;
+  border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+  transform: rotate(45deg); transition: transform 0.25s var(--ease);
+}
+.fold[open] > summary .fold-chev { transform: rotate(-135deg); margin-top: 3px; }
+.fold > summary:hover .fold-chev { border-color: var(--ink); }
+
+.fold-body { padding: 16px 0 40px; animation: fold-open 0.35s var(--ease) both; }
+@keyframes fold-open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* Dans une carte, le cadre fait déjà la séparation */
+.res-card.is-folded { padding: 4px 26px; }
+.res-card.is-folded > .fold { border-top: 0; }
+.res-card.is-folded > .fold > summary { margin: 0 -10px; padding: 20px 10px; align-items: start; }
+/* Dans une carte, le titre peut tenir sur deux lignes : le chevron s'aligne sur le chapeau */
+.res-card.is-folded > .fold > summary .fold-chev { margin-top: 5px; }
+.res-card.is-folded > .fold[open] > summary .fold-chev { margin-top: 11px; }
+.res-card.is-folded > .fold > .fold-body { padding: 12px 0 24px; }
+.group-card.is-folded { margin-top: 12px; }
+
+/* Une grille de volets : chaque carte garde sa hauteur propre */
+.fold-grid { align-items: start; }
+
+@media (max-width: 560px) {
+  .fold > summary { margin: 0 -10px; padding: 18px 10px; gap: 12px; }
+  .res-card.is-folded { padding: 2px 18px; }
+  .fold-body { padding: 14px 0 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold-body { animation: none; }
+}

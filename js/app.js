@@ -141,6 +141,11 @@
      --------------------------------------------------------- */
   let navObserver = null;
 
+  // Le titre d'un bloc, qu'il soit replié (dans la poignée) ou non
+  function headOf(el) {
+    return el.querySelector(':scope > .fold > summary > .section-head, :scope > .section-head');
+  }
+
   function buildNav(screenId, navId) {
     const screen = $(screenId), nav = $(navId);
     if (!screen || !nav) return;
@@ -148,10 +153,13 @@
     const heads = [];
     screen.querySelectorAll('.res-body > .res-section').forEach(sec => {
       if (sec.hidden || sec.offsetParent === null) return;
-      const own = sec.querySelector(':scope > .section-head > h2');
-      if (own) { heads.push(own); return; }
-      sec.querySelectorAll(':scope > .res-card > h2, :scope > div > .res-card > h2').forEach(h => {
-        if (h.offsetParent !== null) heads.push(h);
+      const own = headOf(sec);
+      if (own) { const h = own.querySelector('h2'); if (h) heads.push(h); return; }
+      sec.querySelectorAll(':scope > .res-card, :scope > div > .res-card').forEach(card => {
+        if (card.offsetParent === null) return;
+        const hd = headOf(card);
+        const h = hd ? hd.querySelector('h2') : card.querySelector(':scope > h2');
+        if (h && h.offsetParent !== null) heads.push(h);
       });
     });
     if (heads.length < 4) { nav.hidden = true; nav.innerHTML = ''; return; }
@@ -160,7 +168,8 @@
       const anchor = h.closest('.res-section, .res-card') || h;
       if (!anchor.id) anchor.id = navId + '-s' + i;
       // Le titre d'une carte est souvent une valeur (« Le Gardien ») : le chapô décrit mieux la section
-      const kicker = anchor.querySelector(':scope > .card-kicker');
+      const hd = h.closest('.section-head');
+      const kicker = (hd && hd.querySelector('.card-kicker')) || anchor.querySelector(':scope > .card-kicker');
       const label = h.dataset.nav || (kicker ? kicker.textContent : h.textContent);
       return { id: anchor.id, label: label.replace(/\s+/g, ' ').trim(), el: anchor };
     });
@@ -173,7 +182,9 @@
       if (!a) return;
       e.preventDefault();
       const el = $(a.dataset.navTo);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!el) return;
+      revealFold(el);
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     // Surligne la section en cours de lecture
@@ -191,6 +202,122 @@
     }, { rootMargin: '-72px 0px -62% 0px' });
     targets.forEach(t => navObserver.observe(t.el));
   }
+
+  /* ---------------------------------------------------------
+     Volets
+     Un rapport complet fait plusieurs mètres de long : tomber dessus
+     d'un bloc décourage avant même d'avoir commencé. La page arrive
+     donc pliée — chaque bloc devient une poignée qu'on ouvre d'un clic,
+     et l'ensemble se lit d'abord comme un sommaire.
+     La structure des blocs est écrite dans le HTML et ne bouge plus :
+     on ne replie qu'une seule fois, au démarrage.
+     --------------------------------------------------------- */
+  function foldPanel(panel, opt) {
+    opt = opt || {};
+    if (panel.dataset.fold) return;
+
+    const det = document.createElement('details');
+    det.className = 'fold';
+    const sum = document.createElement('summary');
+    const body = document.createElement('div');
+    body.className = 'fold-body' + (opt.bodyClass ? ' ' + opt.bodyClass : '');
+
+    // L'en-tête existant devient la poignée ; tout le reste passe dans le corps.
+    let head = panel.querySelector(':scope > .section-head');
+    if (!head) {
+      head = document.createElement('div');
+      head.className = 'section-head';
+      const kicker = panel.querySelector(':scope > .card-kicker');
+      const title = panel.querySelector(':scope > h2');
+      if (kicker) head.appendChild(kicker);
+      if (title) head.appendChild(title);
+    }
+    if (!head.querySelector('h2')) return;
+    panel.dataset.fold = '1';
+    sum.appendChild(head);
+    sum.insertAdjacentHTML('beforeend', '<span class="fold-chev" aria-hidden="true"></span>');
+
+    while (panel.firstChild) body.appendChild(panel.firstChild);
+    det.appendChild(sum);
+    det.appendChild(body);
+    panel.appendChild(det);
+    if (opt.open) det.open = true;
+    panel.classList.add('is-folded');
+  }
+
+  // Les sections en grille (trio de portraits, duo psyché, carte + DISC)
+  // replient chaque carte séparément : la grille reste une grille.
+  const FOLD_GRID = '.res-trio, .res-duo, .circle-grid';
+
+  function collapsify(screenId) {
+    const screen = $(screenId);
+    if (!screen) return;
+    const body = screen.querySelector('.res-body');
+    if (!body) return;
+    let first = null;
+    screen.querySelectorAll('.res-body > .res-section').forEach(sec => {
+      if (sec.hasAttribute('data-no-fold')) return;
+      if (!first) first = sec;
+      if (sec.matches(FOLD_GRID)) {
+        /* Le trio de portraits est la réponse du test : il reste ouvert.
+           Sur un téléphone, les trois cartes s'empilent et refont trois
+           écrans — on n'y laisse ouverte que la famille politique. */
+        const trio = sec.classList.contains('res-trio');
+        const wide = window.innerWidth >= 900;
+        sec.querySelectorAll(':scope > .res-card').forEach((card, i) => foldPanel(card, { open: trio && (wide || i === 0) }));
+        sec.classList.add('fold-grid');
+        return;
+      }
+      const cards = sec.querySelectorAll(':scope > .res-card, :scope > .circle-grid > .res-card');
+      if (!sec.querySelector(':scope > .section-head') && cards.length) {
+        cards.forEach(card => foldPanel(card, {}));
+        sec.querySelectorAll(':scope > .circle-grid').forEach(g => g.classList.add('fold-grid'));
+        return;
+      }
+      foldPanel(sec, { open: sec.id === 'compare-block' });
+    });
+    if (!first || body.querySelector(':scope > .fold-tools')) return;
+
+    const tools = document.createElement('div');
+    tools.className = 'fold-tools';
+    tools.innerHTML = '<p class="fold-hint">La page arrive pliée : clique sur un titre pour l\'ouvrir.</p>'
+      + '<button class="btn btn-ghost btn-sm" type="button" data-fold-all="1">Tout déplier</button>'
+      + '<button class="btn btn-ghost btn-sm" type="button" data-fold-all="0">Tout replier</button>';
+    body.insertBefore(tools, first);
+    tools.onclick = e => {
+      const b = e.target.closest('[data-fold-all]');
+      if (!b) return;
+      const on = b.dataset.foldAll === '1';
+      topFolds(screen).forEach(d => { d.open = on; });
+      if (on) layoutStrips(body);
+    };
+  }
+
+  // Les volets de premier niveau : pas ceux que contient le profil déplié d'un cercle
+  function topFolds(screen) {
+    return [...screen.querySelectorAll('.res-body details.fold')].filter(d => !d.closest('.fold-body'));
+  }
+
+  // Ouvre ce qu'il faut pour qu'un bloc soit lisible : son volet, et tous ceux qui l'englobent
+  function revealFold(el) {
+    if (!el || !el.querySelector) return;
+    const own = el.matches('details') ? el : el.querySelector(':scope > .fold');
+    if (own) own.open = true;
+    let p = el.parentElement && el.parentElement.closest('details');
+    while (p) {
+      p.open = true;
+      if (p.classList.contains('person')) fillPerson(p);
+      p = p.parentElement && p.parentElement.closest('details');
+    }
+    layoutStrips(el);
+  }
+
+  /* Les mises en page calculées en pixels (les lignes du cercle) ne valent rien
+     tant que le bloc est replié : on les refait à l'ouverture. */
+  document.addEventListener('toggle', e => {
+    const d = e.target;
+    if (d && d.classList && d.classList.contains('fold') && d.open) layoutStrips(d);
+  }, true);
 
   let toastTimer = null;
   function toast(msg) {
@@ -2741,7 +2868,12 @@
     if (scrollTarget) {
       const target = scrollTarget;
       scrollTarget = null;
-      setTimeout(() => { const el = $(target); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: target === 'values-teaser-section' ? 'center' : 'start' }); }, 120);
+      setTimeout(() => {
+        const el = $(target);
+        if (!el || el.hidden) return;
+        revealFold(el);
+        el.scrollIntoView({ behavior: 'smooth', block: target === 'values-teaser-section' ? 'center' : 'start' });
+      }, 120);
     }
   }
 
@@ -3333,7 +3465,7 @@
   function openPerson(code, scroll) {
     const d = document.getElementById('person-' + code);
     if (!d) return;
-    d.open = true;
+    revealFold(d);
     fillPerson(d);
     if (scroll) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -3357,7 +3489,10 @@
     $('group-list').addEventListener('toggle', e => {
       if (e.target.matches && e.target.matches('details.person') && e.target.open) fillPerson(e.target);
     }, true);
-    $('btn-people-open').onclick = () => document.querySelectorAll('#group-list details.person').forEach(d => { d.open = true; fillPerson(d); });
+    $('btn-people-open').onclick = () => {
+      revealFold($('group-profiles'));
+      document.querySelectorAll('#group-list details.person').forEach(d => { d.open = true; fillPerson(d); });
+    };
     $('btn-people-close').onclick = () => document.querySelectorAll('#group-list details.person').forEach(d => { d.open = false; });
     $('group-people').addEventListener('click', e => {
       const a = e.target.closest('[data-jump]');
@@ -3759,7 +3894,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 24;
+  const BUILD = 25;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -3781,6 +3916,8 @@
      Démarrage
      --------------------------------------------------------- */
   initTheme();
+  collapsify('screen-results');
+  collapsify('screen-group');
   initQuiz();
   initResults();
   initGroup();

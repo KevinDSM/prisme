@@ -74,6 +74,10 @@
         <h4>6 · Rien n'est envoyé</h4>
         <p>Le calcul se fait dans ton navigateur. Le résultat est encodé dans le lien que tu copies : <b>le lien est le résultat</b>. Sans lien, personne ne peut le voir — pas même l'auteur du site.</p>
       </article>
+      <article class="gcard">
+        <h4>7 · Une page pliée</h4>
+        <p>Le rapport complet fait plusieurs mètres : la page arrive donc <b>pliée</b>. Chaque bloc est un titre qu'on ouvre d'un clic, et l'ensemble se lit d'abord comme un sommaire — on va voir ce qui intéresse, dans l'ordre qu'on veut. « Tout déplier » ouvre tout d'un coup, et le sommaire de gauche ouvre le bloc qu'on vise. Seuls les portraits (et « le cercle en bref » sur la page de groupe) sont ouverts au départ.</p>
+      </article>
     </div>`);
 
   /* ---------------------------------------------------------
