@@ -3899,18 +3899,76 @@
     film: {
       items: (window.PRISME_FILMS || { FILMS: [] }).FILMS,
       kicker: 'Ton film', like: 'comme ce film', next: 'Ta séance de rattrapage',
-      section: 'film-section', card: 'film-card', group: 'film', list: 'films',
+      section: 'film-section', card: 'film-card', group: 'film', list: 'films', art: true,
     },
     musique: {
       items: (window.PRISME_MUSICS || { MUSICS: [] }).MUSICS,
       kicker: 'Ton morceau', like: 'comme ce morceau', next: 'La suite de la playlist',
-      section: 'musique-section', card: 'musique-card', group: 'musique', list: 'musiques',
+      section: 'musique-section', card: 'musique-card', group: 'musique', list: 'musiques', play: true,
     },
   };
 
   function pickFor(r, key) {
     return PICK_LISTS[key].items.map(a => matchCharacter(r, a)).filter(Boolean).sort((x, y) => y.score - x.score);
   }
+
+  /* Affiches et extraits
+     Les URL sont résolues une fois pour toutes dans js/films.js et js/musics.js :
+     le site ne lance aucune recherche. Il ne charge qu'une image (Wikipédia), et
+     un extrait (Apple) seulement si on clique. Si l'un ou l'autre échoue, la carte
+     reste entièrement lisible — c'est un ornement, pas le contenu. */
+  function posterHtml(ch, cls) {
+    if (!ch || !ch.poster) return '';
+    return `<img class="${cls}" src="${esc(ch.poster)}" alt="Affiche de ${esc(ch.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+  }
+
+  function playHtml(ch, small) {
+    if (!ch || !ch.preview) return '';
+    return `<button type="button" class="play${small ? ' play-sm' : ''}" data-preview="${esc(ch.preview)}"`
+      + ` aria-label="Écouter un extrait de ${esc(ch.name)}" title="Extrait de 30 secondes, servi par Apple">`
+      + `<span class="play-ico" aria-hidden="true"></span>${small ? '' : '<span class="play-txt">Écouter 30 s</span>'}</button>`;
+  }
+
+  /* Un seul lecteur pour toute la page : deux extraits ne doivent jamais se
+     superposer, et rien n'est chargé tant que personne n'a cliqué. */
+  let audioEl = null, playingBtn = null;
+
+  function stopPreview() {
+    if (audioEl) audioEl.pause();
+    if (playingBtn) playingBtn.classList.remove('is-playing');
+    playingBtn = null;
+  }
+
+  function togglePreview(btn) {
+    if (playingBtn === btn) { stopPreview(); return; }
+    stopPreview();
+    if (!audioEl) {
+      audioEl = new Audio();
+      audioEl.preload = 'none';
+      audioEl.addEventListener('ended', stopPreview);
+      audioEl.addEventListener('error', () => { if (playingBtn) playingBtn.classList.add('is-ko'); stopPreview(); });
+    }
+    playingBtn = btn;
+    btn.classList.remove('is-ko');
+    btn.classList.add('is-playing');
+    audioEl.src = btn.dataset.preview;
+    const p = audioEl.play();
+    if (p && p.catch) p.catch(() => { btn.classList.add('is-ko'); stopPreview(); });
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-preview]');
+    if (!b) return;
+    e.preventDefault();
+    e.stopPropagation();
+    togglePreview(b);
+  });
+
+  // Une affiche qui ne se charge pas s'efface : l'événement ne remonte pas, on écoute à la capture
+  document.addEventListener('error', e => {
+    const t = e.target;
+    if (t && t.tagName === 'IMG' && t.className.indexOf('pick-art') === 0) t.classList.add('is-ko');
+  }, true);
 
   function renderPick(cur, key) {
     const cfg = PICK_LISTS[key];
@@ -3921,18 +3979,26 @@
     const why = matchWhy(best, 4), gap = matchGap(best);
     const others = ranked.slice(1, 4);
     const sub = s => (s ? `<span class="animal-sub">${esc(s)}</span>` : '');
+    const art = posterHtml(best.ch, 'pick-art');
+    const play = playHtml(best.ch, false);
+    const mini = x => posterHtml(x.ch, 'pick-art-mini') || playHtml(x.ch, true) || '<span class="dot"></span>';
+    const nextCls = cfg.art ? ' with-art' : cfg.play ? ' with-play' : '';
     $(cfg.card).innerHTML = `
-      <article class="animal" style="--c:${best.ch.color}">
-        <p class="animal-k">${esc(cfg.kicker)}</p>
-        <h3 class="animal-name">${esc(best.ch.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
-        ${best.ch.by ? `<p class="animal-by">${esc(best.ch.by)}</p>` : ''}
-        <p class="animal-tag">${esc(best.ch.tag)}</p>
-        <p class="animal-desc">${esc(best.ch.desc)}</p>
-        <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? cfg.like + ', tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+      <article class="animal${art ? ' has-art' : ''}" style="--c:${best.ch.color}">
+        ${art}
+        <div class="pick-body">
+          <p class="animal-k">${esc(cfg.kicker)}</p>
+          <h3 class="animal-name">${esc(best.ch.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
+          ${best.ch.by ? `<p class="animal-by">${esc(best.ch.by)}</p>` : ''}
+          ${play}
+          <p class="animal-tag">${esc(best.ch.tag)}</p>
+          <p class="animal-desc">${esc(best.ch.desc)}</p>
+          <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? cfg.like + ', tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+        </div>
       </article>
-      <div class="animal-next">
+      <div class="animal-next${nextCls}">
         <p class="animal-next-k">${esc(cfg.next)}</p>
-        <ul>${others.map(x => `<li style="--c:${x.ch.color}"><span class="dot"></span><span class="an-id"><b>${esc(x.ch.name)}</b>${sub(x.ch.by)}<small>${esc(x.ch.tag)}</small></span><span class="pct">${pct(x.score)}\u00a0%</span></li>`).join('')}</ul>
+        <ul>${others.map(x => `<li style="--c:${x.ch.color}">${mini(x)}<span class="an-id"><b>${esc(x.ch.name)}</b>${sub(x.ch.by)}<small>${esc(x.ch.tag)}</small></span><span class="pct">${pct(x.score)}\u00a0%</span></li>`).join('')}</ul>
       </div>`;
   }
 
@@ -3957,9 +4023,11 @@
       freeP.delete(best.i);
     }
     picks.sort((a, b) => a.i - b.i);
-    $(pre + cfg.list).innerHTML = `<ul class="casting menagerie">${picks.map(x => {
+    const cls = cfg.art ? ' with-art' : cfg.play ? ' with-play' : '';
+    $(pre + cfg.list).innerHTML = `<ul class="casting menagerie${cls}">${picks.map(x => {
       const why = matchWhy(x.m, 2);
-      return `<li style="--c:${x.m.ch.color}">${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)}\u00a0%</small>${x.m.ch.by ? `<span class="role-by">${esc(x.m.ch.by)}</span>` : ''}<em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+      const head = posterHtml(x.m.ch, 'pick-art-mini') || playHtml(x.m.ch, true);
+      return `<li style="--c:${x.m.ch.color}">${head}${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)}\u00a0%</small>${x.m.ch.by ? `<span class="role-by">${esc(x.m.ch.by)}</span>` : ''}<em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
     }).join('')}</ul>`;
   }
 
@@ -4157,7 +4225,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 30;
+  const BUILD = 31;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

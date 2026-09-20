@@ -2036,3 +2036,75 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 }
 .swap-url:focus { outline: none; border-color: var(--accent); }
 .swap-hint { margin: 10px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-3); }
+
+
+/* ============================================================
+   AFFICHES ET EXTRAITS
+   L'affiche vient de Wikipédia, l'extrait d'Apple, et les deux
+   sont facultatifs : si rien ne se charge, la carte reste entière.
+   ============================================================ */
+.pick-note { margin: 8px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-3); }
+
+.animal.has-art {
+  display: grid; grid-template-columns: 172px minmax(0, 1fr);
+  column-gap: 26px; align-items: start;
+}
+.pick-art {
+  display: block; width: 100%; height: auto; border-radius: 10px;
+  border: 1px solid var(--line); background: rgba(var(--ink-rgb), 0.05);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.18);
+}
+.pick-art.is-ko, .pick-art-mini.is-ko { display: none; }
+.pick-art-mini {
+  display: block; width: 100%; height: auto; border-radius: 4px;
+  border: 1px solid var(--line); background: rgba(var(--ink-rgb), 0.05);
+}
+
+/* Le bouton d'écoute : un triangle qui devient deux barres */
+.play {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 9px;
+  margin: 12px 0 0; padding: 8px 16px 8px 13px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: rgba(var(--panel-rgb), 0.9);
+  font: inherit; font-size: 14px; font-weight: 700; color: var(--ink);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.play:hover { border-color: var(--ink); background: rgba(var(--ink-rgb), 0.05); }
+.play:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.play-ico {
+  flex: none; width: 0; height: 0; margin-left: 2px;
+  border-left: 11px solid var(--c, var(--ink));
+  border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+}
+.play.is-playing { border-color: var(--c, var(--accent)); background: rgba(var(--accent-rgb), 0.1); }
+.play.is-playing .play-ico {
+  width: 11px; height: 13px; margin-left: 0; border: 0;
+  background: linear-gradient(to right, var(--c, var(--ink)) 0 4px, transparent 4px 7px, var(--c, var(--ink)) 7px 11px);
+}
+.play.is-ko { opacity: 0.45; }
+.play.is-ko::after { content: ' indisponible'; font-weight: 500; color: var(--ink-3); }
+.play-sm { margin: 0; padding: 0; width: 30px; height: 30px; justify-content: center; border-radius: 50%; }
+.play-sm .play-ico { margin-left: 3px; border-left-width: 9px; border-top-width: 6px; border-bottom-width: 6px; }
+.play-sm.is-playing .play-ico { width: 9px; height: 11px; margin-left: 0; }
+
+/* Les trois suivants : vignette ou bouton à la place de la pastille */
+.animal-next.with-art li { grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; }
+.animal-next.with-play li { grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; }
+
+/* Le cercle : une colonne de plus, devant le prénom */
+.casting.with-art li { grid-template-columns: 44px minmax(90px, 140px) 18px minmax(0, 1fr); align-items: start; }
+.casting.with-play li { grid-template-columns: 30px minmax(90px, 140px) 18px minmax(0, 1fr); align-items: center; }
+.casting.with-art .who, .casting.with-play .who { align-self: center; }
+
+/* Sur téléphone, une affiche à côté du texte laisse une colonne illisible :
+   elle passe au-dessus, en petit format. */
+@media (max-width: 620px) {
+  .animal.has-art { grid-template-columns: minmax(0, 1fr); row-gap: 16px; }
+  .animal.has-art > .pick-art { width: 132px; }
+}
+@media (max-width: 560px) {
+  .casting.with-art li, .casting.with-play li { grid-template-columns: 44px minmax(0, 1fr); gap: 4px 12px; }
+  .casting.with-art li > .pick-art-mini, .casting.with-play li > .play { grid-row: 1 / 3; align-self: start; }
+  .casting.with-art .who, .casting.with-play .who,
+  .casting.with-art .role, .casting.with-play .role { grid-column: 2; }
+}

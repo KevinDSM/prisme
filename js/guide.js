@@ -422,6 +422,8 @@
   section('filmusique', 'Le sur-mesure', 'Ton film et ta musique', `
     <p class="gtext">Même méthode encore, sur deux listes plates : <b>${FILMS.length} films</b> et <b>${MUSICS.length} morceaux</b>. Ce n'est pas une question de goût — Prisme ne sait pas ce que tu aimes. Ce qui est décrit, c'est le <b>tempérament</b> de l'œuvre : son énergie, son rapport au temps, sa façon de traiter les gens, ce qu'elle cherche à provoquer. Un film lent et patient tombera sur quelqu'un de patient, pas sur quelqu'un qui l'a aimé.</p>
     <p class="gtext">Comme pour les animaux, la liste est assez longue pour qu'un cercle entier reçoive une entrée différente par personne : la page de cercle en tire une <b>filmothèque</b> et une <b>playlist</b>.</p>
+    <h3 class="gsub">L'affiche et l'extrait</h3>
+    <p class="gtext">Chaque film porte son <b>affiche</b>, et chaque morceau un bouton qui joue un <b>extrait de 30 secondes</b>. Les affiches viennent de Wikipédia, les extraits d'Apple. Les adresses sont résolues une fois pour toutes quand le site est construit : Prisme ne lance <b>aucune recherche</b> pendant que tu lis, et n'envoie rien qui vienne de tes réponses. Ton navigateur va simplement chercher une image, comme il va chercher les polices du site — et l'extrait seulement si tu cliques. Si une affiche ou un extrait ne répond pas, il disparaît sans rien casser : deux morceaux sur ${MUSICS.length} n'ont d'ailleurs pas d'extrait, faute d'être au catalogue.</p>
     <h3 class="gsub">Les films</h3>
     <div class="gchips">${FILMS.map(f => `<span class="gchip">${esc(f.name)}</span>`).join('')}</div>
     <h3 class="gsub">Les morceaux</h3>
