@@ -76,7 +76,7 @@
       </article>
       <article class="gcard">
         <h4>7 · Une page pliée</h4>
-        <p>Le rapport complet fait plusieurs mètres : la page arrive donc <b>pliée</b>. Chaque bloc est un titre qu'on ouvre d'un clic, et l'ensemble se lit d'abord comme un sommaire — on va voir ce qui intéresse, dans l'ordre qu'on veut. « Tout déplier » ouvre tout d'un coup, et le sommaire de gauche ouvre le bloc qu'on vise. Seuls les portraits (et « le cercle en bref » sur la page de groupe) sont ouverts au départ.</p>
+        <p>Le rapport complet fait plusieurs mètres : la page arrive donc <b>pliée</b>. Chaque bloc est un titre qu'on ouvre d'un clic, et l'ensemble se lit d'abord comme un sommaire — on va voir ce qui intéresse, dans l'ordre qu'on veut. « Tout déplier » ouvre tout d'un coup, et le sommaire de gauche ouvre le bloc qu'on vise. Seuls les portraits restent ouverts au départ — et, sur la page de cercle, « le cercle en bref » et la liste des profils, pour qu'on voie tout de suite qui en fait partie.</p>
       </article>
       <article class="gcard">
         <h4>8 · Trois temps</h4>

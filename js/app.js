@@ -321,7 +321,8 @@
 
   // Les volets de premier niveau : pas ceux que contient le profil déplié d'un cercle
   function topFolds(screen) {
-    return [...screen.querySelectorAll('.res-body details.fold')].filter(d => !d.closest('.fold-body'));
+    return [...screen.querySelectorAll('.res-body details.fold')]
+      .filter(d => !d.closest('.fold-body, .person-body'));
   }
 
   // Ouvre ce qu'il faut pour qu'un bloc soit lisible : son volet, et tous ceux qui l'englobent
@@ -3922,7 +3923,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 26;
+  const BUILD = 27;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
