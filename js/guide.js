@@ -379,6 +379,7 @@
      10 ter. Quel personnage
      --------------------------------------------------------- */
   const LICENSES = (window.PRISME_CHARACTERS || { LICENSES: [] }).LICENSES;
+  const WOW = (window.PRISME_WOW || { WOW: [] }).WOW;
   const CAST_TOTAL = LICENSES.reduce((n, l) => n + l.cast.length, 0);
   const LIC_GROUPS = LICENSES.reduce((acc, l) => {
     const g = l.group || 'Univers';
@@ -388,6 +389,8 @@
   section('personnages', 'Le sur-mesure', 'Quel personnage serais-tu ?', `
     <p class="gtext">Prisme connaît <b>${LICENSES.length} univers</b> et <b>${CAST_TOTAL} personnages</b>, rangés par famille (jeux vidéo, cinéma, séries, animation et manga, et le monde réel). La famille « le monde réel » contient des personnes réelles : seul leur tempérament public est comparé, jamais leurs idées, leur vie privée ou leur bilan — on peut être « Simone Veil » et penser tout autre chose qu'elle. Dans chaque univers, tu es comparé à quinze ou vingt personnages. Chaque personnage a son <b>profil psychologique</b>, écrit avec les mêmes dimensions que le test : qualités, couleurs DISC, valeurs, morale, traits et axes de caractère. Tes opinions politiques ne comptent pas : on peut être Link de gauche ou de droite.</p>
     <p class="gtext">Pour chaque personnage, on mesure l'écart entre ton score et le sien sur chacun de ses traits ; un trait très marqué chez lui (par exemple « détermination 95 ») pèse plus lourd qu'un trait moyen. Le personnage le plus proche l'emporte. La fiche donne le pourcentage de ressemblance, sa description, <b>pourquoi toi</b> (les traits que vous avez vraiment en commun, avec tes scores), <b>là où tu t'en écartes</b>, et les deux suivants du classement.</p>
+    <h3 class="gsub">Le supplément World of Warcraft</h3>
+    <p class="gtext">Dans la licence <b>World of Warcraft</b>, la question « quel personnage » en appelle une autre : et je jouerais quoi ? Le test ajoute donc la <b>combinaison race / classe / spécialisation</b> la plus proche de toi, parmi <b>${WOW.length} combinaisons</b> couvrant les treize classes et une vingtaine de races. Chacune est notée exactement comme un personnage, sur le tempérament qu'il faut avoir pour s'y plaire : la patience du chasseur Précision, l'improvisation du Hors-la-loi, le dévouement invisible de l'Évocateur Augmentation. Ce ne sont pas des conseils de jeu — personne ne dira qu'un orc ne peut pas être prêtre. Deux ou trois phrases expliquent ce que la combinaison demande, et pourquoi tes réponses y mènent. Dans un cercle, chacun reçoit une combinaison différente, comme pour les personnages.</p>
     <p class="gtext">Dans un cercle, chacun reçoit un personnage <b>différent</b> par univers : la personne la plus ressemblante est servie en premier, puis la suivante parmi les personnages restants. Certains personnages sont des antagonistes : c'est le tempérament qui est comparé, pas les actes.</p>
     ${Object.entries(LIC_GROUPS).map(([g, list]) => `
       <h3 class="gsub">${esc(g)}</h3>

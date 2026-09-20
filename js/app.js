@@ -3823,6 +3823,63 @@
     }).join('');
   }
 
+  /* Le supplément World of Warcraft
+     « Quel personnage » appelle immédiatement « et je jouerais quoi ». Chaque
+     combinaison race / classe / spécialisation est notée comme un personnage,
+     sur le tempérament qu'il faut avoir pour s'y plaire — ce ne sont pas des
+     conseils de jeu : personne ne dira qu'un orc ne peut pas être prêtre. */
+  const WOW = (window.PRISME_WOW || { WOW: [] }).WOW;
+  WOW.forEach(w => { w.name = w.race + ' · ' + w.classe + ' · ' + w.spec; });
+
+  function wowFor(r) {
+    return WOW.map(w => matchCharacter(r, w)).filter(Boolean).sort((a, b) => b.score - a.score);
+  }
+
+  function wowCombo(w, score) {
+    return `<div class="wow-combo" style="--w:${w.color}">`
+      + `<span class="wow-part"><small>Race</small><b>${esc(w.race)}</b></span>`
+      + `<span class="wow-part"><small>Classe</small><b>${esc(w.classe)}</b></span>`
+      + `<span class="wow-part"><small>Spécialisation</small><b>${esc(w.spec)}</b></span>`
+      + `<span class="wow-pct">${pct(score)} %</span></div>`;
+  }
+
+  function wowHtml(r) {
+    const ranked = wowFor(r);
+    if (!ranked.length) return '';
+    const best = ranked[0], w = best.ch;
+    const why = matchWhy(best, 3), gap = matchGap(best);
+    const others = ranked.slice(1, 3).map(x => `${esc(x.ch.name)} (${pct(x.score)} %)`);
+    return `
+      <div class="wow-build" style="--w:${w.color}">
+        <p class="wow-k">Et tu jouerais</p>
+        ${wowCombo(w, best.score)}
+        <p class="wow-meta">${esc(w.faction)} · ${esc(w.role)} · <i>${esc(w.tag)}</i></p>
+        <p class="wow-desc">${esc(w.desc)}</p>
+        <p class="lic-why"><b>Pourquoi cette combinaison :</b> ${why.length
+          ? 'elle demande ' + esc(joinFr(why)) + ", et c'est ce que tes réponses dessinent."
+          : "c'est le tempérament d'ensemble le plus proche du tien, sans trait dominant."}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+        ${others.length ? `<p class="lic-others">Les deux suivantes : ${others.join(' · ')}.</p>` : ''}
+      </div>`;
+  }
+
+  // Dans un cercle, une combinaison différente pour chacun : même attribution gloutonne qu'ailleurs
+  function wowPicks(people) {
+    const table = people.map(p => wowFor(p.r));
+    const free = new Set(people.map((p, i) => i).filter(i => table[i].length));
+    const taken = new Set(), out = new Map();
+    while (free.size) {
+      let best = null;
+      free.forEach(i => {
+        const m = table[i].find(x => !taken.has(x.ch.name)) || table[i][0];
+        if (!best || m.score > best.m.score) best = { i, m };
+      });
+      out.set(best.i, best.m);
+      taken.add(best.m.ch.name);
+      free.delete(best.i);
+    }
+    return out;
+  }
+
   function renderCast(cur) {
     const r = cur.r;
     const html = castHtml(lic => {
@@ -3841,6 +3898,7 @@
           <p>${esc(best.ch.desc)}</p>
           <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'comme ce personnage, tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
           ${others.length ? `<p class="lic-others">Tu n'étais pas loin non plus de : ${others.join(' · ')}.</p>` : ''}
+          ${lic.id === 'wow' ? wowHtml(r) : ''}
         </div>
       </details>`;
     });
@@ -3870,13 +3928,16 @@
       }
       picks.sort((a, b) => a.i - b.i);
       if (!picks.length) return '';
+      const builds = lic.id === 'wow' ? wowPicks(people) : null;
       return `
       <details class="lic" style="--c:${lic.color}">
         <summary><span class="lic-kind">${esc(lic.kind)}</span><span class="lic-name">${esc(lic.name)}</span><span class="lic-cta">Voir le casting</span><span class="chev" aria-hidden="true"></span></summary>
         <div class="lic-body">
+          ${builds ? '<p class="group-intro">Et pour chacun, la combinaison race / classe / spécialisation qui lui irait le mieux — différente pour chaque personne.</p>' : ''}
           <ul class="casting">${picks.map(x => {
             const why = matchWhy(x.m, 2);
-            return `<li>${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)} %</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+            const b = builds && builds.get(x.i);
+            return `<li>${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)} %</small><em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}${b ? `<span class="wow-line" style="--w:${b.ch.color}">${esc(b.ch.name)} <small>${pct(b.score)} %</small></span>` : ''}</span></li>`;
           }).join('')}</ul>
         </div>
       </details>`;
@@ -4225,7 +4286,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 31;
+  const BUILD = 32;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

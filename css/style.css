@@ -2108,3 +2108,56 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   .casting.with-art .who, .casting.with-play .who,
   .casting.with-art .role, .casting.with-play .role { grid-column: 2; }
 }
+
+
+/* ============================================================
+   LA COMBINAISON WORLD OF WARCRAFT
+   Un supplément dans la licence WoW : race, classe et spé.
+   La couleur --w est celle de la classe.
+   ============================================================ */
+.wow-build {
+  margin-top: 24px; padding: 20px 22px 22px; border-radius: var(--radius);
+  border: 1px solid var(--line); border-left: 4px solid var(--w, var(--accent));
+  background: rgba(var(--ink-rgb), 0.04);
+}
+.wow-k {
+  margin: 0 0 12px; font-size: 12.5px; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+}
+.wow-combo {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 22px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.wow-part { display: grid; gap: 2px; }
+.wow-part small {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.wow-part b {
+  font-family: var(--font-display); font-weight: 500; font-size: 26px; line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: color-mix(in srgb, var(--w) var(--label-mix), var(--label-toward));
+}
+.wow-pct {
+  margin-left: auto; align-self: center;
+  font-family: var(--font-display); font-size: 22px;
+  font-variant-numeric: tabular-nums; color: var(--ink-2);
+}
+.wow-meta { margin: 12px 0 0; font-size: 14px; font-weight: 700; color: var(--ink-3); }
+.wow-meta i { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px; color: var(--ink-2); }
+.wow-desc { margin: 10px 0 0; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); }
+.wow-build .lic-why { margin-top: 14px; }
+
+/* Dans le casting du cercle, une ligne de plus sous le personnage */
+.wow-line {
+  display: block; margin-top: 4px; font-size: 14px; font-weight: 700;
+  color: color-mix(in srgb, var(--w) var(--label-mix), var(--label-toward));
+}
+.wow-line small { color: var(--ink-3); font-weight: 700; }
+
+@media (max-width: 560px) {
+  .wow-build { padding: 16px 16px 18px; }
+  .wow-combo { gap: 6px 16px; }
+  .wow-part b { font-size: 22px; }
+  .wow-pct { margin-left: 0; }
+}
