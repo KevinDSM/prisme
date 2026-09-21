@@ -175,6 +175,182 @@ const MUSICS = [
   { name: 'Thriller', by: 'Michael Jackson · 1982', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/58/8c/cb/588ccb9a-ab79-4a38-43b5-d4c24ea42859/mzaf_2083607504726567992.plus.aac.p.m4a', apple: 'https://music.apple.com/us/album/thriller/269572838?i=269573303', tag: 'Le spectacle total', color: '#b3001b',
     desc: 'Un morceau conçu comme un film, avec une introduction, une narration et une chorégraphie que le monde entier connaît. L\'ambition de la production dépasse largement la chanson.',
     t: { inf: 0.95, vac: 0.95, soc: 0.9, ord: 0.9, rig: 0.9, aud: 0.9, vst: 0.85, dom: 0.8, ste: 0.15, vco: 0.2 } },
+  { name: 'Like a Rolling Stone', by: 'Bob Dylan · 1965', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d9/45/a4/d945a459-e968-0c29-d912-ed6d2df2afe8/mzaf_10205117971317827111.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/like-a-rolling-stone/834450798?i=834450817', tag: 'La question qui humilie', color: '#9a6a3a',
+    desc: 'Six minutes de reproches adressés à quelqu\'un qui est tombé de haut, avec un orgue qui n\'arrête jamais. Le morceau a fait scandale par sa longueur et son électricité. Le ton est celui d\'un règlement de comptes assumé.',
+    t: { com: 0.9, ind: 0.9, chg: 0.95, aud: 0.9, vsd: 0.9, cfl: 0.9, vco: 0.05, dip: 0.15, vis: 0.7, ouv: 0.85 } },
+
+  { name: 'Respect', by: 'Aretha Franklin · 1967', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/db/e2/93/dbe2937a-f85b-ee1d-9a29-db95be5498f3/mzaf_13347005897562275360.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/respect/878000342?i=878000348', tag: 'Une exigence, pas une demande', color: '#c4622a',
+    desc: 'La reprise a retourné le sens de la chanson : ce n\'est plus un homme qui réclame, c\'est une femme qui pose ses conditions. La voix ne laisse aucune place à la négociation. Le morceau est devenu un hymne bien au-delà de son sujet.',
+    t: { dom: 0.9, ind: 0.95, com: 0.85, fair: 0.9, vsd: 0.95, inf: 0.9, det: 0.95, soc: 0.8, dip: 0.25, vpo: 0.8 } },
+
+  { name: 'Purple Rain', by: 'Prince · 1984', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/76/17/ba/7617bae9-013f-3e37-cd89-41998f6ed902/mzaf_15080256781020707908.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/purple-rain/322848495?i=322848569', tag: 'Tout donner sur un solo', color: '#7a4fa8',
+    desc: 'Le morceau monte pendant huit minutes vers un solo qui ressemble à une confession. C\'est théâtral, excessif, et complètement sincère. La virtuosité y sert l\'émotion plutôt que l\'inverse.',
+    t: { inf: 0.95, ide: 0.9, aud: 0.9, emp: 0.85, vsd: 0.9, ouv: 0.9, vac: 0.85, att: 0.8, vhe: 0.8, san: 0.4 } },
+
+  { name: 'Hotel California', by: 'Eagles · 1976', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/17/30/06/1730066d-13fb-6803-0e52-46d4762b94e0/mzaf_8068080726527063383.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/hotel-california/635770200?i=635770202', tag: 'On peut partir, jamais s\'en aller', color: '#8a6a4a',
+    desc: 'Une ambiance de fin de fête où quelque chose cloche sans qu\'on sache quoi. Le morceau avance tranquillement vers un double solo de guitare resté célèbre. L\'inquiétude y est douce et persistante.',
+    t: { nat: 0.85, vis: 0.8, ouv: 0.8, san: 0.8, thr: 0.75, vhe: 0.6, tmp: 0.6, inc: 0.8, soc: 0.55, opt: 0.25 } },
+
+  { name: 'Let It Be', by: 'The Beatles · 1970', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/60/76/fd/6076fd8f-422a-d5e3-7b02-5953bc93cfbd/mzaf_3945462995290301839.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/let-it-be/1441164495?i=1441164738', tag: 'Arrêter de forcer', color: '#6a8ab0',
+    desc: 'Un morceau d\'apaisement écrit au moment où le groupe se séparait. Il ne propose pas de solution, juste de lâcher prise. Le piano et le chœur en font quelque chose de presque liturgique.',
+    t: { san: 0.95, loc: 0.85, vbe: 0.85, care: 0.85, opt: 0.7, cfl: 0.05, sanc: 0.7, ste: 0.9, emp: 0.85, vac: 0.15 } },
+
+  { name: 'Here Comes the Sun', by: 'The Beatles · 1969', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/51/3a/96/513a96da-2f80-c181-a880-753756076b7b/mzaf_13974734574602798517.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/here-comes-the-sun/1441133100?i=1441133289', tag: 'Après l\'hiver, quand même', color: '#e0b43c',
+    desc: 'Écrit dans un jardin par quelqu\'un qui séchait une réunion, le morceau respire le soulagement. Rien d\'ambitieux, juste une guitare et une bonne nouvelle. C\'est l\'optimisme à sa plus simple expression.',
+    t: { opt: 0.95, san: 0.9, vbe: 0.85, vhe: 0.8, ste: 0.85, care: 0.8, cfl: 0.05, vac: 0.2, soc: 0.7, vis: 0.05 } },
+
+  { name: 'Heroes', by: 'David Bowie · 1977', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/77/bb/03/77bb03b5-6dce-687e-f35a-b1c585bb6199/mzaf_15764101786703400927.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/heroes/929304258?i=929304293', tag: 'Rois et reines, pour un jour', color: '#5a7a9a',
+    desc: 'Une chanson d\'amour au pied d\'un mur, qui ne promet rien au-delà d\'une journée. La voix monte par paliers jusqu\'à saturer. Le désespoir et l\'exaltation y sont exactement la même chose.',
+    t: { ide: 0.9, att: 0.9, aud: 0.9, vis: 0.7, eng: 0.85, com: 0.7, vsd: 0.85, emp: 0.85, det: 0.9, tmp: 0.2 } },
+
+  { name: 'Space Oddity', by: 'David Bowie · 1969', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/da/d1/ee/dad1eeb5-7678-c349-9a14-9811495cb4d2/mzaf_10140316768785473353.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/space-oddity/1090470635?i=1090471540', tag: 'Lâcher la corde', color: '#6f7a9a',
+    desc: 'Un astronaute coupe le contact et décide de dériver, calmement. Le morceau est tendre et glaçant à la fois. Il raconte moins un accident qu\'un choix.',
+    t: { ind: 0.95, vsd: 0.9, vis: 0.8, san: 0.85, soc: 0.1, ouv: 0.85, att: 0.3, loc: 0.6, inc: 0.85, opt: 0.25 } },
+
+  { name: 'Zombie', by: 'The Cranberries · 1994', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3a/d2/1f/3ad21f53-f1ed-dc2b-23b8-5d12a32c9c74/mzaf_6958812122059230382.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/zombie/1452857905?i=1452858190', tag: 'La colère qui refuse de s\'expliquer', color: '#5a7a5a',
+    desc: 'Un morceau écrit après un attentat, porté par une voix qui passe du murmure au cri. Il ne prend pas de camp : il constate que ça dure depuis 1916. La rage y est frontale et sans argument.',
+    t: { com: 0.95, ide: 0.9, eng: 0.9, vis: 0.85, care: 0.85, cfl: 0.85, dog: 0.4, fair: 0.9, san: 0.2, vpo: 0.15 } },
+
+  { name: 'Karma Police', by: 'Radiohead · 1997', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/46/21/35/46213520-da4a-1806-0c59-5ca6ad008b4e/mzaf_5277404092043261430.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/karma-police/1097861387?i=1097861836', tag: 'Le calme avant que ça parte', color: '#6a6f7a',
+    desc: 'Le morceau avance posément puis se désintègre complètement dans les deux dernières minutes. Les paroles sont menaçantes sur un ton presque poli. Le malaise y est méthodiquement construit.',
+    t: { nat: 0.9, aff: 0.8, vis: 0.85, ouv: 0.9, thr: 0.85, com: 0.7, san: 0.55, chg: 0.8, ind: 0.85, opt: 0.1 } },
+
+  { name: 'Enter Sandman', by: 'Metallica · 1991', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/69/0d/54/690d54ca-def2-65b3-7ca1-5fed8f7a5188/mzaf_5625822267190589148.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/enter-sandman/1571968136?i=1571968519', tag: 'Le riff qui prévient', color: '#4a4a52',
+    desc: 'Une montée lente, puis un riff que tout le monde reconnaît en trois notes. Le morceau parle de cauchemars d\'enfant sur une puissance d\'adulte. Il ne laisse aucune place au doute.',
+    t: { com: 0.9, dom: 0.9, det: 0.95, thr: 0.85, aud: 0.9, rig: 0.85, ord: 0.7, vis: 0.7, san: 0.4, vst: 0.85 } },
+
+  { name: 'Back in Black', by: 'AC/DC · 1980', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/08/2e/ac/082eac8c-1d0e-f72f-7b37-b8e037ff1579/mzaf_7587164327744022409.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/back-in-black/574050396?i=574050602', tag: 'Revenir après l\'enterrement', color: '#3f3f42',
+    desc: 'Le groupe a perdu son chanteur et a sorti le disque le plus vendeur de son histoire quelques mois plus tard. Le morceau est un pied de nez énergique au deuil. Il avance sans se retourner.',
+    t: { det: 0.95, aud: 0.95, opt: 0.85, com: 0.85, vst: 0.9, ind: 0.9, dom: 0.85, vis: 0.15, san: 0.45, vhe: 0.9 } },
+
+  { name: 'Killing in the Name', by: 'Rage Against the Machine · 1992', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c6/85/60/c6856003-2927-215d-a9dd-e890581e4df5/mzaf_18409875746036415891.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/killing-in-the-name-live-in-mexico-city-mx-10-28-99/1536376019?i=1536376399', tag: 'Le refus répété seize fois', color: '#a83232',
+    desc: 'Le morceau se termine par une seule phrase criée en boucle, jusqu\'à l\'épuisement. Il n\'argumente pas, il refuse. C\'est la désobéissance sous sa forme la plus brute.',
+    t: { com: 0.98, lib: 0.98, cfl: 0.98, auth: 0.02, eng: 0.95, vco: 0.02, aud: 0.95, dip: 0.02, chg: 0.95, dog: 0.8 } },
+
+  { name: 'I Will Survive', by: 'Gloria Gaynor · 1978', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e7/40/66/e74066a0-d000-1896-cd2e-7b2bc97393ad/mzaf_6935563640938257821.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/i-will-survive/1443818103?i=1443818368', tag: 'D\'abord effondrée, puis non', color: '#c4457a',
+    desc: 'La chanson commence par un aveu de faiblesse et bascule en hymne au bout de trente secondes. Elle a été reprise par toutes les causes possibles. La résilience y est dansante.',
+    t: { det: 0.98, opt: 0.9, ind: 0.95, soc: 0.85, vsd: 0.9, inf: 0.9, vhe: 0.85, att: 0.3, com: 0.7, vis: 0.15 } },
+
+  { name: 'Dancing Queen', by: 'ABBA · 1976', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ec/b1/63/ecb163bc-aff2-4dd2-d40b-c044f0b9fa4d/mzaf_4358783485405794088.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/dancing-queen/1422648512?i=1422648513', tag: 'Dix-sept ans, une piste, rien d\'autre', color: '#e0a83c',
+    desc: 'Une mélodie parfaitement calibrée pour une joie sans arrière-pensée. Le morceau ne cherche rien d\'autre que le plaisir immédiat. Sa mélancolie discrète ne se remarque qu\'à la vingtième écoute.',
+    t: { vhe: 0.95, soc: 0.95, opt: 0.9, inf: 0.9, vst: 0.85, tmp: 0.1, rig: 0.8, care: 0.7, cmp: 0.15, san: 0.6 } },
+
+  { name: 'Stayin\' Alive', by: 'Bee Gees · 1977', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/36/ed/d6/36edd6a5-2093-3aea-43f3-318f2b75373b/mzaf_14646237435212422067.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/stayin-alive/1445668810?i=1445669633', tag: 'Marcher comme si de rien n\'était', color: '#d9862a',
+    desc: 'Sous la fête, un texte sur la survie en ville et la difficulté à tenir. Le rythme est si efficace qu\'il sert d\'aide-mémoire pour les massages cardiaques. L\'énergie y masque l\'inquiétude.',
+    t: { det: 0.9, opt: 0.75, soc: 0.9, vst: 0.9, inf: 0.9, vis: 0.6, ind: 0.85, vhe: 0.9, thr: 0.6, cmp: 0.7 } },
+
+  { name: 'September', by: 'Earth, Wind & Fire · 1978', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/78/d4/95/78d49529-bd72-c490-5392-3a7f3d24755b/mzaf_6924139238970009441.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/september/1456445670?i=1456446747', tag: 'La joie sans raison particulière', color: '#e0a02a',
+    desc: 'Des cuivres, un refrain sans queue ni tête, et une bonne humeur inattaquable. Le morceau ne raconte rien et c\'est très bien ainsi. Personne n\'a jamais su quel 21 septembre.',
+    t: { soc: 0.98, opt: 0.98, vhe: 0.95, inf: 0.95, col: 0.9, vst: 0.9, vis: 0.02, cfl: 0.05, tmp: 0.1, care: 0.8 } },
+
+  { name: 'Superstition', by: 'Stevie Wonder · 1972', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/59/4b/88/594b880c-4744-0510-775c-73d8b06567e8/mzaf_14855748840810986812.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/superstition/1440808973?i=1440808985', tag: 'Le groove qui se moque des croyances', color: '#b8792a',
+    desc: 'Un clavier qui mord, des cuivres tranchants, et un texte qui dit qu\'y croire, c\'est déjà souffrir. La rigueur rythmique y est impressionnante. C\'est du scepticisme qui fait danser.',
+    t: { epi: 0.1, ouv: 0.9, rig: 0.9, soc: 0.9, sanc: 0.05, vst: 0.9, inf: 0.9, aff: 0.75, vhe: 0.85, dog: 0.15 } },
+
+  { name: 'Redemption Song', by: 'Bob Marley · 1980', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/99/8d/0c/998d0c9c-8173-4a63-98f9-c94139666fec/mzaf_13892952128020236769.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/redemption-song/1740845714?i=1740845963', tag: 'Une guitare, et rien à cacher', color: '#4f8c5a',
+    desc: 'Enregistré seul avec une guitare sèche alors qu\'il était déjà malade, c\'est son testament. Le texte appelle à s\'émanciper mentalement avant tout. La simplicité y est totale et voulue.',
+    t: { ide: 0.98, lib: 0.95, vun: 0.95, san: 0.9, ind: 0.9, eng: 0.9, vpo: 0.05, care: 0.9, vhe: 0.2, tmp: 0.85 } },
+
+  { name: 'Crazy in Love', by: 'Beyoncé · 2003', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/89/08/f7/8908f7f9-4910-22a8-a324-418ea5207f2f/mzaf_12806910320643098277.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/crazy-in-love/250776822?i=250776858', tag: 'Entrer en scène', color: '#c43f5a',
+    desc: 'Des cuivres empruntés aux années soixante-dix et une assurance qui ne laisse aucune place au doute. Le morceau annonce une carrière solo comme une prise de pouvoir. Tout y est calibré au millimètre.',
+    t: { dom: 0.95, inf: 0.95, vac: 0.95, cmp: 0.9, rig: 0.9, aud: 0.9, soc: 0.85, vpo: 0.9, vst: 0.9, san: 0.7 } },
+
+  { name: 'Bad Guy', by: 'Billie Eilish · 2019', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/87/1f/c3871f7e-3260-d615-1c66-5fdca2c3a48f/mzaf_10721331211699880949.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/bad-guy/1450695723?i=1450695739', tag: 'Chuchoter plus fort que crier', color: '#7a9a4a',
+    desc: 'Une production minimale, une voix à peine audible, et une ironie permanente. Le morceau désamorce sa propre menace par un rire. C\'est de la provocation tranquille.',
+    t: { ouv: 0.9, ind: 0.9, inf: 0.85, vsd: 0.9, vhe: 0.8, com: 0.6, aud: 0.85, san: 0.85, vco: 0.05, soc: 0.5 } },
+
+  { name: 'Somebody That I Used to Know', by: 'Gotye · 2011', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/31/5b/1f/315b1f83-77b5-9e43-e00e-8c5601abb59f/mzaf_3167206633193589804.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/somebody-that-i-used-to-know-feat-kimbra/1440764665?i=1440764677', tag: 'Deux versions de la même rupture', color: '#6f8a8c',
+    desc: 'Le morceau donne la parole aux deux côtés et laisse l\'auditeur trancher — ce qu\'il ne fait pas. Il monte progressivement jusqu\'à un cri contenu. L\'amertume y est partagée.',
+    t: { att: 0.85, com: 0.75, emp: 0.7, vis: 0.75, ouv: 0.8, aff: 0.55, ind: 0.8, cfl: 0.75, nat: 0.7, san: 0.5 } },
+
+  { name: 'Chandelier', by: 'Sia · 2014', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/94/1e/e6/941ee6d4-f96e-1e66-e35c-44867a95da4b/mzaf_10752318948667553924.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/chandelier/930070229?i=930070274', tag: 'La fête qui fait mal', color: '#c4a03c',
+    desc: 'Un refrain euphorique sur un texte qui décrit une fuite en avant. Le contraste entre les deux est tout le morceau. La voix se met en danger à chaque montée.',
+    t: { vhe: 0.9, vis: 0.85, ind: 0.85, aud: 0.9, thr: 0.8, emp: 0.8, san: 0.2, vst: 0.9, care: 0.7, tmp: 0.1 } },
+
+  { name: 'Viva la Vida', by: 'Coldplay · 2008', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b0/19/60/b0196060-7786-24c0-8c56-8f628fe89f52/mzaf_12479456646715449366.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/viva-la-vida/1122773394?i=1122773680', tag: 'Le roi déchu qui raconte', color: '#b8452a',
+    desc: 'Des cordes, une cloche, et un souverain qui se souvient du temps où il décidait. Le morceau est grandiose et mélancolique dans la même mesure. La chute y est racontée sans amertume.',
+    t: { vis: 0.7, ide: 0.85, vpo: 0.6, tmp: 0.8, emp: 0.8, ouv: 0.8, att: 0.8, san: 0.75, inf: 0.9, chg: 0.7 } },
+
+  { name: 'Mr. Brightside', by: 'The Killers · 2003', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b2/1a/e8/b21ae8eb-9d11-2aaf-cc48-0e8ca210c485/mzaf_18420207698003017244.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/mr-brightside/1440717563?i=1440717826', tag: 'La jalousie en boucle', color: '#c45a3c',
+    desc: 'Le morceau tourne sur lui-même comme une pensée obsessionnelle qui ne se calme pas. L\'énergie est constante et un peu désespérée. Vingt ans plus tard, tout le monde le hurle encore.',
+    t: { thr: 0.95, att: 0.9, com: 0.8, vst: 0.9, nat: 0.85, san: 0.2, ind: 0.75, cfl: 0.7, vis: 0.7, aud: 0.85 } },
+
+  { name: 'Wake Me Up', by: 'Avicii · 2013', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/68/1e/60/681e601f-e1f2-4ebb-37de-adf00bdf57b6/mzaf_8266263075137964740.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/wake-me-up/1440872730?i=1440872929', tag: 'Avancer sans savoir où',
+    color: '#c4903c',
+    desc: 'Une guitare folk sur une production électronique, et un texte sur le fait d\'être perdu mais en mouvement. Le mélange a surpris tout le monde et fonctionné partout. L\'incertitude y est chantée joyeusement.',
+    t: { inc: 0.9, vst: 0.9, opt: 0.85, ouv: 0.9, vsd: 0.9, ord: 0.2, soc: 0.85, chg: 0.8, tmp: 0.3, aud: 0.85 } },
+
+  { name: 'Les Champs-Élysées', by: 'Joe Dassin · 1969', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/00/e4/32/00e4326a-a3d6-4c85-b7be-8a123f04f6cb/mzaf_10395904914225014080.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/les-champs-%C3%A9lys%C3%A9es/311331439?i=311331447', tag: 'La rencontre au coin de la rue', color: '#d9a04a',
+    desc: 'Une histoire minuscule racontée avec une bonne humeur imparable. Le morceau ne prétend à rien d\'autre qu\'à faire sourire. Il a survécu à toutes les modes.',
+    t: { soc: 0.95, opt: 0.95, vhe: 0.9, inf: 0.9, care: 0.8, att: 0.75, tmp: 0.15, cfl: 0.05, vco: 0.6, vis: 0.05 } },
+
+  { name: 'Belle-Île-en-Mer', by: 'Laurent Voulzy · 1985', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/5a/f6/5d/5af65d62-5ee7-fb4c-b5c5-813f6dca652e/mzaf_15622223558445897113.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/belle-%C3%AEle-en-mer-marie-galante/1540550210?i=1540550629', tag: 'Deux îles, deux origines', color: '#5a8aa8',
+    desc: 'Une chanson sur le métissage et le sentiment de venir d\'ailleurs, portée par des harmonies très douces. Rien n\'y est revendicatif, tout y est dit. La mélancolie y est lumineuse.',
+    t: { att: 0.9, vun: 0.9, emp: 0.85, ide: 0.8, san: 0.85, opn: 0.6, care: 0.85, cfl: 0.05, vbe: 0.85, soc: 0.6 } },
+
+  { name: 'La Javanaise', by: 'Serge Gainsbourg · 1963', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9f/12/ee/9f12ee88-1860-fe2f-7063-b8233f990218/mzaf_3399724262759064359.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/la-javanaise/1391621152?i=1391621783', tag: 'Un jeu de mots qui devient une valse', color: '#8a7a9a',
+    desc: 'Le texte joue sur les sonorités avec une virtuosité qui ne se remarque pas immédiatement. La mélodie est d\'une élégance désarmante. Le morceau dit adieu sans jamais hausser le ton.',
+    t: { ouv: 0.9, aff: 0.75, rig: 0.9, att: 0.8, san: 0.9, dip: 0.8, vhe: 0.7, emp: 0.8, soc: 0.6, vis: 0.5 } },
+
+  { name: 'Foule sentimentale', by: 'Alain Souchon · 1993', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7c/fb/0c/7cfb0c06-2fb1-53fd-f051-8a7c93c31fad/mzaf_15416257667834200748.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/foule-sentimentale/697388450?i=697389444', tag: 'On nous prend pour des clients', color: '#7a8a9a',
+    desc: 'Une critique douce de la publicité et du désir fabriqué, chantée sans agressivité. Le morceau constate plus qu\'il n\'accuse. Sa tristesse est très polie.',
+    t: { ide: 0.9, vun: 0.85, vis: 0.8, care: 0.85, epi: 0.7, com: 0.4, emp: 0.85, cfl: 0.2, vac: 0.1, ouv: 0.85 } },
+
+  { name: 'Je l\'aime à mourir', by: 'Francis Cabrel · 1979', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/17/69/c7/1769c7ee-19b7-7c91-83f3-8b61c3daa771/mzaf_10546935431127237633.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/je-laime-%C3%A0-mourir/270148936?i=270148950', tag: 'L\'hyperbole tranquille', color: '#9a7a4a',
+    desc: 'Une déclaration démesurée livrée d\'une voix parfaitement calme. Le morceau construit des images entières autour d\'une seule personne. L\'attachement y est total et sans drame.',
+    t: { att: 0.98, emp: 0.9, ide: 0.85, san: 0.9, care: 0.9, vbe: 0.9, ste: 0.9, cmp: 0.05, soc: 0.4, opn: 0.8 } },
+
+  { name: 'Basique', by: 'Orelsan · 2017', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/af/25/93/af2593fa-f4ca-73d5-bc0a-b36c36719497/mzaf_5677389276593843455.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/basique/1788305428?i=1788305433', tag: 'Des constats, un par ligne', color: '#6a7a8a',
+    desc: 'Le morceau énumère des évidences jusqu\'à ce qu\'elles deviennent inconfortables. Le débit est régulier, presque scolaire, et c\'est l\'effet recherché. La lucidité y remplace la démonstration.',
+    t: { aff: 0.9, ouv: 0.85, vis: 0.7, rig: 0.85, epi: 0.3, com: 0.6, ind: 0.85, dog: 0.15, san: 0.8, soc: 0.5 } },
+
+  { name: 'Dommage', by: 'Bigflo & Oli · 2017', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9b/e0/1c/9be01c2c-48f2-9cb9-76c3-41c2f5af5a76/mzaf_18265930056871702942.plus.aac.p.m4a', apple: 'https://music.apple.com/us/album/dommage/1440884398?i=1440884774', tag: 'Ceux qui n\'ont pas osé', color: '#8a9a5a',
+    desc: 'Quatre histoires de gens qui ne font pas le pas, et un refrain qui dit simplement que c\'est dommage. Le morceau ne juge personne. Il fonctionne comme un rappel discret.',
+    t: { emp: 0.9, care: 0.85, vis: 0.6, aud: 0.6, ide: 0.8, soc: 0.8, vbe: 0.85, opt: 0.6, chg: 0.7, dip: 0.8 } },
+
+  { name: 'Les Lacs du Connemara', by: 'Michel Sardou · 1981', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4a/b6/04/4ab6046c-2b7b-d21d-011c-c29d2502af07/mzaf_14513821206575509039.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/les-lacs-du-connemara/1444059173?i=1444059299', tag: 'Le crescendo de fin de soirée', color: '#5a8a6a',
+    desc: 'Une montée en puissance conçue pour être reprise à plusieurs, de plus en plus fort. Le morceau raconte une terre et une obstination. Il est devenu un rituel collectif malgré lui.',
+    t: { soc: 0.95, att: 0.9, vtr: 0.9, det: 0.9, opn: 0.9, inf: 0.9, col: 0.9, vhe: 0.85, com: 0.6, chg: 0.15 } },
+
+  { name: 'La Mer', by: 'Charles Trenet · 1946', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f4/d0/f5/f4d0f5ef-8daf-e4ab-f6d9-e05710c194f1/mzaf_17618360063068674787.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/la-mer/479525065?i=479525109', tag: 'La légèreté d\'après-guerre', color: '#4f9ab0',
+    desc: 'Écrite en quelques minutes dans un train, elle est devenue l\'une des chansons françaises les plus reprises au monde. Rien n\'y pèse. C\'est de l\'insouciance parfaitement construite.',
+    t: { opt: 0.95, san: 0.9, vhe: 0.85, ouv: 0.8, soc: 0.8, vun: 0.8, tmp: 0.2, vis: 0.05, care: 0.75, rig: 0.8 } },
+
+  { name: 'Les Copains d\'abord', by: 'Georges Brassens · 1964', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/61/95/c8/6195c818-8e9b-60ca-5a15-fabf21b1d274/mzaf_14273420549176116181.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/les-copains-dabord/1442280345?i=1442280369', tag: 'L\'amitié comme seule institution', color: '#8a7a5a',
+    desc: 'Une chanson qui place les amis au-dessus de tout le reste, avec des mots choisis au millimètre. L\'humour y est constant et le fond très sérieux. La fidélité y est la seule valeur revendiquée.',
+    t: { loy: 0.98, att: 0.95, soc: 0.9, col: 0.9, vbe: 0.9, auth: 0.15, vhe: 0.85, ind: 0.7, sanc: 0.2, vpo: 0.05 } },
+
+  { name: 'La Chanson des vieux amants', by: 'Jacques Brel · 1967', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ff/26/f6/ff26f623-625b-a8ba-e9b1-76e99a3c99a2/mzaf_12882558672999800642.plus.aac.p.m4a', apple: 'https://music.apple.com/us/album/la-chanson-des-vieux-amants/1440651709?i=1440651830', tag: 'Rester, malgré tout', color: '#7a6a7a',
+    desc: 'Un couple qui s\'est déchiré mille fois et qui est encore là, sans illusion et sans départ. Le morceau ne romantise rien. La tendresse y est faite de fatigue partagée.',
+    t: { att: 0.98, emp: 0.9, vis: 0.6, san: 0.8, ste: 0.9, care: 0.85, opn: 0.85, vhe: 0.4, chg: 0.1, fia: 0.9 } },
+
+  { name: 'Ella, elle l\'a', by: 'France Gall · 1987', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/4c/0f/d54c0f45-f182-a322-9a08-8eff289909b0/mzaf_4468798740839411047.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/ella-elle-la/543060730?i=543060736', tag: 'Ce truc qu\'on ne peut pas apprendre', color: '#d9863c',
+    desc: 'Un hommage à Ella Fitzgerald sur une production pop imparable. Le morceau célèbre un talent sans chercher à l\'expliquer. Il est joyeux de bout en bout.',
+    t: { opt: 0.9, soc: 0.9, inf: 0.9, vhe: 0.85, vbe: 0.85, ide: 0.7, care: 0.8, cmp: 0.15, vst: 0.85, san: 0.7 } },
+
+  { name: 'Pour que tu m\'aimes encore', by: 'Céline Dion · 1995', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/da/f2/d0/daf2d015-b867-b415-4e6f-e40194c60c26/mzaf_286533020212951886.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/pour-que-tu-maimes-encore/338620107?i=338620261', tag: 'Tout tenter, sans fierté', color: '#a85a7a',
+    desc: 'Le texte énumère tout ce qu\'elle est prête à faire pour retenir quelqu\'un, sans aucune retenue. La voix monte jusqu\'à saturer. La démesure y est entièrement assumée.',
+    t: { att: 0.98, det: 0.95, emp: 0.9, ind: 0.15, vpo: 0.1, inf: 0.9, ide: 0.8, san: 0.2, aud: 0.85, cmp: 0.2 } },
+
+  { name: 'Le Sud', by: 'Nino Ferrer · 1975', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/17/9b/83/179b83a8-3d1c-4ced-9969-5475b8ab0361/mzaf_2355081490019274065.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/le-sud/1440761880?i=1440762083', tag: 'Un éden qui n\'existe nulle part', color: '#9a9a5a',
+    desc: 'Une chanson lente sur un endroit parfait dont on comprend peu à peu qu\'il est perdu. La douceur y cache une tristesse installée. Le morceau prend son temps et ne va nulle part, exprès.',
+    t: { san: 0.9, vis: 0.7, opn: 0.9, tmp: 0.7, att: 0.85, vhe: 0.7, ide: 0.75, soc: 0.4, chg: 0.1, care: 0.8 } },
+
+  { name: 'Boléro', by: 'Maurice Ravel · 1928', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/00/49/2e/00492eb1-88a8-0a57-d68d-5ece16c75376/mzaf_9433495876198719121.plus.aac.p.m4a', apple: 'https://music.apple.com/us/album/bolero/386366948?i=386367039', tag: 'La même phrase, dix-sept fois', color: '#b8663c',
+    desc: 'Un seul thème répété sans variation pendant un quart d\'heure, avec pour seule évolution l\'orchestration qui grossit. Ravel lui-même le trouvait sans musique. C\'est la patience et l\'accumulation à l\'état pur.',
+    t: { rig: 0.98, det: 0.98, ord: 0.98, tmp: 0.9, san: 0.85, vst: 0.3, ste: 0.95, chg: 0.1, vco: 0.8, aud: 0.6 } },
+
+  { name: 'Gymnopédie n° 1', by: 'Erik Satie · 1888', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ef/2d/24/ef2d2467-fe05-c154-086f-eb788ec7646e/mzaf_12909404951293067433.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/3-gymnop%C3%A9dies-no-1/1440721118?i=1440721398', tag: 'Trois notes et beaucoup d\'espace', color: '#8a9aa8',
+    desc: 'Un piano qui avance lentement, sans jamais forcer ni résoudre. Satie voulait une musique qu\'on n\'écoute pas vraiment. Le vide y fait autant que les notes.',
+    t: { san: 0.98, tmp: 0.85, ind: 0.85, vhe: 0.5, soc: 0.15, thr: 0.1, rig: 0.85, cmp: 0.02, vis: 0.4, ouv: 0.8 } },
+
+  { name: 'O Fortuna', by: 'Carl Orff · 1936', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/7d/c2/b4/7dc2b461-52a2-ce99-29fc-d1c09021e2b7/mzaf_4900988731167134594.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/carmina-burana-o-fortuna/306270884?i=306270891', tag: 'Le destin qui écrase', color: '#7a3f3f',
+    desc: 'Un chœur immense qui invoque la roue de la fortune, utilisé partout dès qu\'il faut annoncer une catastrophe. Le morceau ne laisse aucune place à l\'individu. C\'est la fatalité mise en musique.',
+    t: { vis: 0.95, loc: 0.9, dom: 0.9, sanc: 0.85, com: 0.85, col: 0.85, opt: 0.05, vsd: 0.1, thr: 0.9, aud: 0.85 } },
+
+  { name: 'Nessun Dorma', by: 'Giacomo Puccini · 1926', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c7/73/4c/c7734cc3-042b-e96f-f0c6-b676f4de54f8/mzaf_8512936017635076352.plus.aac.p.m4a', apple: 'https://music.apple.com/fr/album/turandot-nessun-dorma/1440491516?i=1440492092', tag: 'Je vaincrai, à l\'aube', color: '#a8763c',
+    desc: 'Un air qui monte vers trois notes tenues où tout se joue. Le personnage annonce sa victoire avant de l\'avoir obtenue. La confiance y est absolue et magnifiquement déraisonnable.',
+    t: { det: 0.98, aud: 0.95, vac: 0.9, opt: 0.9, ide: 0.9, dom: 0.85, inf: 0.95, cmp: 0.85, vis: 0.1, san: 0.6 } },
 ];
 
 window.PRISME_MUSICS = { MUSICS };

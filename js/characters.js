@@ -72,6 +72,69 @@ const LICENSES = [
       { name: 'Le Roi Hyrule', tag: 'Le devoir avant sa fille',
         desc: 'Il exige de sa fille un rôle qu\'elle n\'arrive pas à tenir et confond la fermeté avec l\'absence de tendresse. Il porte un royaume sur les épaules et n\'a jamais appris à dire les choses autrement qu\'en donnant des ordres.',
         t: { auth: 0.95, vtr: 0.9, dom: 0.85, rig: 0.85, att: 0.8, dog: 0.8, emp: 0.25, dip: 0.3, ouv: 0.2, care: 0.7 } },
+      { name: 'Fi', tag: 'L\'esprit de l\'épée',
+        desc: 'Elle annonce des probabilités au lieu de rassurer, et dit exactement ce qu\'elle sait — ni plus, ni moins. Son dévouement est total mais jamais chaleureux : elle sert une mission, pas une personne. Quand elle finit par exprimer un sentiment, à la toute fin, c\'est d\'autant plus fort qu\'elle ne l\'avait jamais fait.',
+        t: { aff: 0.98, rig: 0.95, fia: 0.95, ord: 0.9, san: 0.95, con: 0.9, emp: 0.2, soc: 0.15, vco: 0.85, vhe: 0.05 } },
+
+      { name: 'Groose', tag: 'L\'arrogant qui trouve sa place',
+        desc: 'Il commence en brute imbue d\'elle-même, persuadée que le monde lui doit la vedette. Puis il se retrouve inutile face à un problème trop grand, et au lieu de s\'effondrer il invente une catapulte. Il finit par accepter de ne pas être le héros, et devient indispensable exactement à ce moment-là.',
+        t: { inf: 0.9, soc: 0.85, aud: 0.85, opt: 0.85, ouv: 0.8, vac: 0.8, chg: 0.7, dom: 0.7, vhe: 0.75, rig: 0.3 } },
+
+      { name: 'Riju', tag: 'Trop jeune pour ce fauteuil',
+        desc: 'Cheffe d\'un peuple entier à un âge où l\'on devrait encore jouer, elle compense par une rigueur qui ne laisse rien passer. Elle sait qu\'on la juge sur sa taille et son âge, alors elle ne se permet aucune erreur visible. Sa gravité cache une peur qu\'elle n\'avouera qu\'à ceux qui l\'ont méritée.',
+        t: { lea: 0.85, rig: 0.85, det: 0.85, vac: 0.8, thr: 0.8, fia: 0.9, vse: 0.8, auth: 0.75, ord: 0.85, vhe: 0.2 } },
+
+      { name: 'Teba', tag: 'Pas le temps pour les sentiments',
+        desc: 'Guerrier piaf sec et direct, il évalue les gens sur ce qu\'ils savent faire et rien d\'autre. Il ne félicite pas, il constate. Sous cette froideur il y a un père inquiet et un sens du devoir qui ne se discute pas — mais il ne vous le dira jamais en face.',
+        t: { aff: 0.85, det: 0.9, fia: 0.9, rig: 0.85, cmp: 0.75, soc: 0.2, dip: 0.25, san: 0.85, att: 0.8, ind: 0.8 } },
+
+      { name: 'Tulin', tag: 'Le jeune qui veut prouver',
+        desc: 'Fils d\'un guerrier respecté, il passe son temps à montrer qu\'il vaut mieux qu\'un enfant qu\'on protège. Il en fait trop, se met en danger, et progresse exactement pour cette raison. Son énergie est communicative et sa confiance, au fond, mieux placée qu\'il n\'y paraît.',
+        t: { aud: 0.9, opt: 0.85, det: 0.85, vst: 0.85, vac: 0.8, soc: 0.8, eng: 0.85, rsk: 0.85, loc: 0.15, san: 0.35 } },
+
+      { name: 'Yunobo', tag: 'Le trouillard qui y va quand même',
+        desc: 'Il a peur de presque tout et le dit sans honte, ce qui rend son courage d\'autant plus réel quand il finit par avancer. Descendant d\'un héros, il vit avec une réputation qu\'il n\'a pas demandée. Il préfère mille fois aider quelqu\'un que commander qui que ce soit.',
+        t: { emp: 0.85, vbe: 0.85, care: 0.85, thr: 0.85, dom: 0.15, soc: 0.8, col: 0.85, att: 0.85, vpo: 0.1, aud: 0.35 } },
+
+      { name: 'Zant', tag: 'La rancune qui se prend pour un destin',
+        desc: 'Persuadé qu\'un trône lui revenait, il a accepté n\'importe quel pacte pour l\'obtenir. Sous ses airs solennels affleure une instabilité totale : il passe du cérémonial à la crise de rage en une seconde. C\'est le portrait de quelqu\'un dont l\'ego n\'a jamais supporté le moindre refus.',
+        t: { dog: 0.9, vpo: 0.9, nat: 0.9, com: 0.85, chg: 0.9, san: 0.1, thr: 0.9, emp: 0.1, cfl: 0.95, dip: 0.05 } },
+
+      { name: 'Ravio', tag: 'Le commerçant qui loue tout',
+        desc: 'Il a la trouille en permanence et un sens des affaires redoutable : il vous prêtera l\'objet qui sauve le monde, contre caution. Derrière le marchandage il y a quelqu\'un de lucide, qui a choisi la survie plutôt que l\'héroïsme. Et qui, le moment venu, se révèle plus brave que prévu.',
+        t: { epi: 0.1, vac: 0.8, ind: 0.85, soc: 0.8, thr: 0.8, inf: 0.8, vhe: 0.7, cmp: 0.8, aud: 0.35, dip: 0.75 } },
+
+      { name: 'Hestu', tag: 'La générosité maladroite',
+        desc: 'Immense, timide, et incapable de refuser un service, il danse de joie pour la moindre graine qu\'on lui rapporte. Il n\'a aucun agenda : il aide parce que ça lui fait plaisir d\'aider. Sa bonne humeur ne dépend de rien ni de personne.',
+        t: { vbe: 0.95, care: 0.9, opt: 0.95, soc: 0.85, emp: 0.9, vpo: 0.05, cmp: 0.05, vhe: 0.85, dom: 0.1, san: 0.6 } },
+
+      { name: 'Kass', tag: 'Le barde qui porte un héritage',
+        desc: 'Il parcourt un monde en ruine avec un accordéon et des chansons qu\'il n\'a pas écrites, pour terminer le travail d\'un maître disparu. Sa mélancolie n\'a rien de triste : c\'est de la fidélité mise en musique. Il transmet plutôt qu\'il ne crée, et l\'assume parfaitement.',
+        t: { att: 0.9, vtr: 0.9, loy: 0.9, tmp: 0.85, soc: 0.75, emp: 0.8, ide: 0.8, opn: 0.7, vbe: 0.8, vpo: 0.1 } },
+
+      { name: 'Nabooru', tag: 'La voleuse qui refuse son chef',
+        desc: 'Seule Gerudo à tenir tête au roi de son propre peuple, elle préfère le désert et sa liberté à une loyauté qu\'elle juge indigne. Elle vole, elle nargue, elle négocie — mais elle ne plie pas. Son indépendance est un choix politique autant qu\'un tempérament.',
+        t: { ind: 0.95, lib: 0.95, aud: 0.9, com: 0.85, vsd: 0.95, dog: 0.3, vco: 0.1, auth: 0.15, cfl: 0.8, det: 0.85 } },
+
+      { name: 'Darunia', tag: 'Le chef qui t\'appelle frère',
+        desc: 'Il règle les tensions par une grande tape dans le dos et une danse improvisée, et ça marche mieux qu\'un discours. Chaleureux jusqu\'à l\'excès, il décide vite et se range derrière ceux qu\'il a adoptés. Le clan, pour lui, se construit par l\'affection avant les liens du sang.',
+        t: { soc: 0.95, loy: 0.95, inf: 0.9, opt: 0.85, col: 0.9, lea: 0.8, vbe: 0.85, att: 0.85, aff: 0.15, rig: 0.25 } },
+
+      { name: 'Saria', tag: 'L\'amie qui reste en arrière',
+        desc: 'Elle sait très tôt que son ami d\'enfance partira sans elle, et elle l\'y encourage quand même. Son attachement ne cherche pas à retenir : il accompagne. Elle transforme la mélancolie en une présence calme, celle sur laquelle on revient toujours.',
+        t: { emp: 0.95, vbe: 0.9, care: 0.9, att: 0.9, san: 0.85, ste: 0.9, cmp: 0.05, vun: 0.85, opn: 0.8, vpo: 0.05 } },
+
+      { name: 'Malon', tag: 'La douceur qui tient la ferme',
+        desc: 'Elle chante en travaillant, s\'occupe des chevaux mieux que son père ne tient les comptes, et garde le ranch debout pendant que le monde s\'écroule. Rien de spectaculaire, tout de constant. Le genre de personne dont on mesure la valeur seulement quand elle n\'est plus là.',
+        t: { fia: 0.9, ste: 0.95, care: 0.85, att: 0.9, opt: 0.8, vbe: 0.85, opn: 0.85, vtr: 0.8, soc: 0.7, vac: 0.25 } },
+
+      { name: 'Rauru', tag: 'Le roi qui prépare l\'après',
+        desc: 'Il fonde un royaume en sachant qu\'il ne verra pas ce qu\'il devient, et organise sa propre disparition pour laisser un outil à ceux qui viendront. Sa bienveillance est vraie, mais elle sert un plan qui s\'étend sur des siècles. Il demande beaucoup, et se l\'applique d\'abord à lui-même.',
+        t: { tmp: 0.98, lea: 0.9, fia: 0.95, ide: 0.9, sanc: 0.85, care: 0.8, auth: 0.8, det: 0.9, vpo: 0.6, rsk: 0.35 } },
+
+      { name: 'Mineru', tag: 'La technicienne qui a tout prévu',
+        desc: 'Elle a transféré son esprit dans une pierre pour pouvoir continuer à travailler après sa mort : voilà le niveau de préparation. Sèche, précise, allergique au sentimentalisme, elle règle les problèmes par la construction plutôt que par le discours. Elle a toujours une solution, et rarement une consolation.',
+        t: { aff: 0.95, rig: 0.95, tmp: 0.95, ord: 0.9, ouv: 0.85, ind: 0.85, emp: 0.25, san: 0.9, epi: 0.5, soc: 0.2 } },
     ],
   },
   {
@@ -131,6 +194,85 @@ const LICENSES = [
       { name: 'Alexstrasza', tag: 'La vie, même pour ceux qui ne le méritent pas',
         desc: 'Gardienne de la vie, elle soigne y compris ceux qui l\'ont réduite en esclavage, parce que c\'est sa nature et non une faveur. Majestueuse, chaleureuse, elle porte une douleur ancienne sans jamais s\'en servir comme d\'une excuse.',
         t: { care: 0.98, vun: 0.95, emp: 0.9, tmp: 0.95, dip: 0.9, san: 0.9, ide: 0.9, com: 0.15, cmp: 0.05, nat: 0.2 } },
+      { name: 'Bolvar Fordragon', tag: 'Le sacrifice sans témoin',
+        desc: 'Il accepte de devenir ce qu\'il a combattu pour qu\'une menace reste endormie, en sachant que personne ne le remerciera et que beaucoup le prendront pour l\'ennemi. Il ne cherche ni reconnaissance ni absolution. C\'est le devoir poussé jusqu\'au point où il ne reste plus rien de la personne.',
+        t: { fia: 0.98, det: 0.95, care: 0.9, col: 0.9, vpo: 0.15, san: 0.9, vis: 0.8, ide: 0.85, eng: 0.9, vhe: 0.02 } },
+
+      { name: 'Genn Grisetête', tag: 'Le vieux roi qui n\'oublie rien',
+        desc: 'Il a perdu un royaume, un fils, et une bonne part de sa retenue, et il ne laisse personne l\'oublier. Sa loyauté envers ceux qu\'il a adoptés est totale, sa haine envers ceux qui l\'ont brisé aussi. Il a raison plus souvent qu\'il n\'est raisonnable.',
+        t: { loy: 0.95, com: 0.9, nat: 0.9, att: 0.9, dog: 0.85, vis: 0.85, thr: 0.9, cfl: 0.9, vtr: 0.85, dip: 0.2 } },
+
+      { name: 'Muradin Barbe-de-Bronze', tag: 'L\'ami qui ose dire non',
+        desc: 'Mentor bourru et franc, il dit à son élève exactement ce qu\'il pense quand celui-ci s\'engage sur une mauvaise route — et il le paie cher. Sa force n\'est pas dans les armes mais dans la capacité à contrarier quelqu\'un qu\'il aime. Il ne reviendra jamais complètement de ce jour-là.',
+        t: { fia: 0.9, com: 0.8, att: 0.85, det: 0.85, dip: 0.3, aff: 0.4, loy: 0.9, san: 0.75, soc: 0.7, epi: 0.25 } },
+
+      { name: 'Velen', tag: 'La patience de vingt-cinq mille ans',
+        desc: 'Il a fui pendant des millénaires plutôt que de livrer son peuple, en sachant qu\'on le traiterait de lâche. Sa foi n\'est pas une certitude mais une décision reprise chaque jour. Il voit loin au point que le présent lui semble toujours provisoire.',
+        t: { tmp: 0.98, sanc: 0.95, care: 0.9, san: 0.95, ide: 0.9, vbe: 0.9, vun: 0.9, cfl: 0.05, opt: 0.7, rsk: 0.2 } },
+
+      { name: 'Turalyon', tag: 'La foi devenue discipline militaire',
+        desc: 'Il a transformé un doute en méthode : une hiérarchie claire, une mission claire, et aucune place pour l\'hésitation. Mille ans de guerre l\'ont rendu inflexible, parfois jusqu\'à l\'injustice. Il croit sincèrement que la fermeté est une forme de soin.',
+        t: { auth: 0.9, rig: 0.9, det: 0.95, dog: 0.8, fia: 0.9, sanc: 0.8, ord: 0.9, lea: 0.85, epi: 0.8, emp: 0.4 } },
+
+      { name: 'Alleria Coursevent', tag: 'Celle qui a regardé dans le Vide',
+        desc: 'Elle a accepté un pouvoir que tout le monde lui déconseillait, parce qu\'elle refusait d\'être désarmée face à ce qui venait. Elle entend des voix qu\'elle ne peut pas partager et vit avec, seule. Sa témérité est calculée : elle sait exactement ce qu\'elle risque.',
+        t: { aud: 0.95, ind: 0.95, inc: 0.9, vsd: 0.9, nat: 0.8, det: 0.9, ouv: 0.85, att: 0.8, col: 0.3, san: 0.75 } },
+
+      { name: 'Lor\'themar Theron', tag: 'Le régent qui n\'a rien demandé',
+        desc: 'On lui a laissé un peuple en ruine et un titre provisoire dont il ne s\'est jamais débarrassé. Il gouverne par prudence, change d\'alliance quand il le faut, et supporte mal qu\'on le prenne pour un héros. Son cynisme est une armure, pas une nature.',
+        t: { epi: 0.15, dip: 0.9, san: 0.85, nat: 0.8, fia: 0.85, loc: 0.6, vis: 0.7, lea: 0.7, vpo: 0.4, aff: 0.75 } },
+
+      { name: 'Rexxar', tag: 'Plus à l\'aise avec les bêtes',
+        desc: 'Il vit seul avec ses compagnons animaux, évite les villes, et parle à peine. Quand on lui confie une mission il l\'exécute sans discours et repart. Son attachement est profond mais s\'exprime uniquement par la présence et l\'action.',
+        t: { ind: 0.95, soc: 0.1, att: 0.85, loy: 0.9, fia: 0.9, det: 0.85, aff: 0.3, col: 0.35, vsd: 0.9, dip: 0.25 } },
+
+      { name: 'Chen Coups-de-Foudre', tag: 'Le voyage vaut le voyage',
+        desc: 'Il parcourt le monde en cherchant de nouveaux ingrédients, se lie d\'amitié avec à peu près tout le monde, et règle les conflits en proposant à boire. Sous la bonhomie, un combattant redoutable et un sens de la famille très sérieux. Il refuse simplement de se presser.',
+        t: { soc: 0.95, opt: 0.9, ouv: 0.95, vst: 0.9, vhe: 0.9, dip: 0.85, cfl: 0.1, care: 0.8, san: 0.85, ord: 0.25 } },
+
+      { name: 'Wrathion', tag: 'Le jeune qui se croit seul lucide',
+        desc: 'Persuadé d\'être le seul à voir la menace qui vient, il manipule, ment et sacrifie pour préparer un monde qu\'il juge mal préparé. Il a souvent raison sur le fond et presque toujours tort sur la méthode. Son arrogance est sincère : il se croit vraiment le seul adulte de la pièce.',
+        t: { aff: 0.9, tmp: 0.9, nat: 0.85, dog: 0.85, vpo: 0.85, ind: 0.9, cmp: 0.9, vis: 0.85, care: 0.3, dip: 0.6 } },
+
+      { name: 'Maiev Chantelame', tag: 'La geôlière devenue prisonnière',
+        desc: 'Elle a consacré dix mille ans à surveiller un seul homme, et quand il a disparu elle n\'a plus su qui elle était. Sa détermination est admirable et son obsession, destructrice. Elle confond justice et vengeance depuis si longtemps qu\'elle ne fait plus la différence.',
+        t: { det: 0.98, dog: 0.95, com: 0.9, ind: 0.9, thr: 0.9, emp: 0.15, cfl: 0.95, vis: 0.85, san: 0.4, dip: 0.05 } },
+
+      { name: 'Tirion Fordring', tag: 'Celui qui a choisi contre les siens',
+        desc: 'Il a tout perdu pour avoir défendu quelqu\'un que son ordre voulait exécuter, et il a recommencé à zéro sans amertume. Sa foi a survécu au bannissement parce qu\'elle ne dépendait pas de l\'institution. Il pardonne beaucoup, sauf la lâcheté.',
+        t: { ide: 0.9, fair: 0.95, care: 0.85, det: 0.9, ind: 0.8, sanc: 0.8, vun: 0.8, auth: 0.35, dog: 0.4, fia: 0.9 } },
+
+      { name: 'Medivh', tag: 'Le gardien qui a ouvert la porte',
+        desc: 'Il a laissé entrer la catastrophe sans jamais savoir tout à fait quelle part venait de lui. Revenu ensuite pour réparer, il agit par énigmes et manipule ses alliés pour leur bien. Personne n\'est aussi brillant, ni aussi incapable de faire simple.',
+        t: { ouv: 0.95, aff: 0.85, ind: 0.9, tmp: 0.85, nat: 0.7, vsd: 0.9, dip: 0.6, inc: 0.9, rig: 0.4, soc: 0.35 } },
+
+      { name: 'Aegwynn', tag: 'L\'orgueil qui refuse de rendre les clés',
+        desc: 'Elle a gardé un pouvoir qu\'elle devait transmettre, parce qu\'elle se jugeait plus compétente que le conseil qui le réclamait — et elle avait probablement raison. Les conséquences ont duré des siècles. Elle vieillit sans regretter grand-chose, avec une ironie mordante.',
+        t: { ind: 0.95, dog: 0.85, vpo: 0.8, aud: 0.9, auth: 0.2, vsd: 0.95, com: 0.85, vac: 0.85, emp: 0.35, dip: 0.2 } },
+
+      { name: 'Moira Thaurissan', tag: 'L\'héritière qu\'on n\'a jamais écoutée',
+        desc: 'On l\'a crue enlevée alors qu\'elle avait choisi, et son propre père a envoyé une armée plutôt que de lui poser la question. Devenue régente, elle défend un peuple méprisé avec une dureté qu\'on lui reproche. Elle a appris que demander poliment ne donne rien.',
+        t: { det: 0.9, com: 0.85, att: 0.85, dom: 0.85, nat: 0.85, care: 0.75, vpo: 0.8, cfl: 0.85, dip: 0.35, loy: 0.85 } },
+
+      { name: 'Gelbin Mekkatorque', tag: 'Le roi bricoleur',
+        desc: 'Il dirige un peuple d\'inventeurs en inventant lui-même, ce qui provoque autant de catastrophes que de miracles. Trahi par son plus proche conseiller, il a gardé sa confiance dans les gens malgré tout. L\'optimisme technique, chez lui, est une position morale.',
+        t: { ouv: 0.95, opt: 0.9, vsd: 0.85, lea: 0.8, rsk: 0.8, soc: 0.8, ide: 0.8, epi: 0.4, nat: 0.25, vst: 0.85 } },
+
+      { name: 'Grommash Hurlenfer', tag: 'Celui qui brise la chaîne',
+        desc: 'Il a bu le premier et entraîné tout un peuple dans la servitude ; il est aussi celui qui a payé pour l\'en sortir. Entre les deux, une violence et une fierté qui n\'ont jamais faibli. Sa rédemption ne passe pas par des excuses mais par un acte irréversible.',
+        t: { com: 0.98, det: 0.95, aud: 0.95, dom: 0.9, loy: 0.9, ide: 0.8, san: 0.2, dip: 0.05, cfl: 0.95, rsk: 0.95 } },
+
+      { name: 'Yrel', tag: 'La novice devenue guide',
+        desc: 'Sortie d\'un camp de prisonniers, elle prend des responsabilités qu\'elle ne se croyait pas capable d\'assumer, et découvre qu\'elle y excelle. Sa foi est douce au début, puis de plus en plus ferme — peut-être trop. Elle apprend vite, y compris les mauvaises habitudes du pouvoir.',
+        t: { ide: 0.9, care: 0.85, det: 0.85, lea: 0.8, sanc: 0.85, opt: 0.8, chg: 0.7, vac: 0.7, fia: 0.85, dog: 0.6 } },
+
+      { name: 'Ysera', tag: 'Celle qui rêve les choses avant qu\'elles arrivent',
+        desc: 'Elle vit à moitié ailleurs, parle par images, et met du temps à revenir dans une conversation. Sa bienveillance est immense mais distante, comme celle de quelqu\'un qui voit des cycles là où les autres voient des urgences. Quand elle agit, c\'est sans hésitation.',
+        t: { vun: 0.95, care: 0.9, tmp: 0.95, san: 0.9, ide: 0.85, ouv: 0.85, soc: 0.4, cmp: 0.05, loc: 0.6, vbe: 0.9 } },
+
+      { name: 'Nozdormu', tag: 'Celui qui connaît déjà la fin',
+        desc: 'Il sait comment tout se termine, y compris pour lui, et continue quand même à faire son travail. Sa sérénité ressemble à du fatalisme mais n\'en est pas : il tient la ligne parce que c\'est la sienne. Il supporte mal qu\'on veuille tricher avec le temps.',
+        t: { tmp: 0.98, san: 0.95, fia: 0.95, ord: 0.9, rig: 0.9, vco: 0.75, aff: 0.8, chg: 0.1, vis: 0.6, thr: 0.4 } },
     ],
   },
   {
@@ -1356,6 +1498,97 @@ const LICENSES = [
       { name: 'Sett', tag: 'Le patron du ring',
         desc: 'Fils de deux mondes qui ne voulaient de lui ni l\'un ni l\'autre, il s\'est fait une place en cognant et dirige aujourd\'hui son propre établissement. Bruyant, tactile, il respecte le courage et méprise la lâcheté.',
         t: { dom: 0.9, com: 0.9, soc: 0.85, cmp: 0.9, att: 0.9, det: 0.9, care: 0.75, aud: 0.9, dip: 0.2, rig: 0.3 } },
+      { name: 'Vander', tag: 'Celui qui a rangé ses poings',
+        desc: 'Ancien meneur d\'émeute devenu tenancier de bar, il a choisi la paix parce qu\'il a vu ce que coûtait l\'autre option. Il élève des enfants qui ne sont pas les siens et absorbe les coups pour eux. Sa retenue n\'est pas de la faiblesse : c\'est la chose la plus difficile qu\'il ait jamais faite.',
+        t: { care: 0.95, fia: 0.95, att: 0.95, san: 0.85, dip: 0.85, col: 0.9, cfl: 0.2, det: 0.9, vbe: 0.9, vpo: 0.25 } },
+
+      { name: 'Singed', tag: 'La curiosité sans frein',
+        desc: 'Il fabrique des choses que personne ne devrait fabriquer, et regarde le résultat avec le détachement d\'un botaniste. La souffrance des autres n\'est pas un plaisir pour lui, c\'est une donnée. C\'est ce qui le rend plus glaçant qu\'un sadique.',
+        t: { ouv: 0.95, aff: 0.98, emp: 0.05, rig: 0.9, ind: 0.95, care: 0.05, san: 0.9, vsd: 0.9, sanc: 0.05, soc: 0.1 } },
+
+      { name: 'Ahri', tag: 'Apprendre à être quelqu\'un',
+        desc: 'Elle a pris des vies pour comprendre ce que c\'était que d\'en avoir une, et vit désormais avec ce souvenir. Charmeuse par nature, elle s\'en méfie plus que quiconque. Sa quête est simple et immense : devenir une personne plutôt qu\'un appétit.',
+        t: { inf: 0.9, ouv: 0.9, emp: 0.8, vsd: 0.85, soc: 0.85, ide: 0.75, aff: 0.4, vhe: 0.7, nat: 0.6, care: 0.7 } },
+
+      { name: 'Akali', tag: 'Celle qui claque la porte',
+        desc: 'Elle quitte l\'ordre qui l\'a formée parce qu\'elle refuse d\'attendre l\'autorisation d\'agir. Douée au point d\'être insupportable, elle travaille seule et frappe vite. Le respect des anciens lui semble surtout une excuse pour ne rien faire.',
+        t: { ind: 0.95, aud: 0.9, det: 0.9, vsd: 0.9, chg: 0.9, auth: 0.1, cmp: 0.85, com: 0.85, vco: 0.1, soc: 0.3 } },
+
+      { name: 'Leona', tag: 'Le devoir tenu comme un bouclier',
+        desc: 'Elle protège d\'abord, frappe ensuite, et ne recule jamais d\'un pas. Sa foi solaire n\'a rien de tiède : elle la porte comme une charge et pas comme un privilège. Elle pardonne la faiblesse et pas la trahison.',
+        t: { fia: 0.95, care: 0.9, auth: 0.85, ste: 0.9, det: 0.95, sanc: 0.85, san: 0.9, loy: 0.9, vco: 0.8, vhe: 0.15 } },
+
+      { name: 'Diana', tag: 'L\'exclue qui avait raison',
+        desc: 'Elle découvre une vérité que son ordre refuse d\'entendre, et le prix de l\'avoir dite est l\'exil. La solitude l\'a rendue dure, la certitude l\'a rendue dangereuse. Elle sait qu\'elle avait raison, ce qui ne l\'aide pas à vivre avec les conséquences.',
+        t: { ind: 0.95, dog: 0.85, det: 0.9, com: 0.85, nat: 0.85, vsd: 0.9, ide: 0.85, cfl: 0.85, soc: 0.15, vis: 0.8 } },
+
+      { name: 'Riven', tag: 'L\'épée qu\'elle a brisée elle-même',
+        desc: 'Elle a servi un empire jusqu\'au jour où celui-ci a massacré ses propres soldats pour gagner. Elle erre depuis, cherchant une manière de réparer quelque chose d\'irréparable. Sa force physique ne lui sert plus à rien, et elle le sait.',
+        t: { ide: 0.9, det: 0.9, ind: 0.9, vis: 0.85, care: 0.8, dog: 0.25, chg: 0.85, auth: 0.1, san: 0.7, att: 0.8 } },
+
+      { name: 'Katarina', tag: 'Jamais deux fois la même erreur',
+        desc: 'Fille d\'un père impossible à satisfaire, elle a fait de la perfection technique sa manière d\'exister. Elle ne rate pas, elle ne s\'excuse pas, et elle déteste dépendre de qui que ce soit. La compétition est sa langue maternelle.',
+        t: { cmp: 0.98, vac: 0.95, det: 0.95, rig: 0.85, ind: 0.9, aud: 0.85, dom: 0.85, emp: 0.3, att: 0.6, san: 0.8 } },
+
+      { name: 'Swain', tag: 'Tout a été payé d\'avance',
+        desc: 'Il a donné un bras, une réputation et sa tranquillité pour obtenir la vision qui lui manquait. Il gouverne en comptable de la douleur, sans jamais élever la voix. Ce qu\'il appelle le bien de la nation est une équation, pas un sentiment.',
+        t: { aff: 0.95, tmp: 0.95, dom: 0.9, auth: 0.9, rig: 0.9, det: 0.95, emp: 0.2, vpo: 0.9, san: 0.95, care: 0.35 } },
+
+      { name: 'LeBlanc', tag: 'On ne sait jamais qui parle',
+        desc: 'Elle peut être partout à la fois et n\'est jamais tout à fait là. Son pouvoir vient moins de la magie que de l\'incapacité des autres à savoir ce qu\'elle veut. Même ses alliés ignorent s\'ils servent son plan ou en font partie.',
+        t: { aff: 0.9, nat: 0.95, vpo: 0.9, ind: 0.9, dip: 0.8, cmp: 0.9, tmp: 0.85, fia: 0.05, emp: 0.25, san: 0.9 } },
+
+      { name: 'Nasus', tag: 'Le temps ne le presse pas',
+        desc: 'Bibliothécaire et gardien, il classe, conserve et attend. Les siècles lui ont donné une patience que rien n\'entame, et une tristesse tranquille. Il porte la faute de son frère sans jamais s\'en décharger.',
+        t: { tmp: 0.98, san: 0.95, rig: 0.9, ste: 0.95, att: 0.9, vtr: 0.9, ouv: 0.8, cfl: 0.15, opn: 0.8, vhe: 0.1 } },
+
+      { name: 'Renekton', tag: 'La rage qui a trop attendu',
+        desc: 'Enfermé des siècles avec sa propre colère, il en est sorti sans plus savoir qui il aimait. Il a été un protecteur avant d\'être une menace, et ça rend son cas pire. Ce qui reste de lui se bat contre ce qu\'il est devenu.',
+        t: { com: 0.98, thr: 0.95, nat: 0.9, det: 0.9, san: 0.05, dom: 0.85, cfl: 0.95, att: 0.7, dip: 0.05, rsk: 0.9 } },
+
+      { name: 'Illaoi', tag: 'Elle te met à l\'épreuve, pas au pas',
+        desc: 'Grande prêtresse d\'un dieu qui exige du mouvement, elle n\'impose rien : elle confronte les gens à ce qu\'ils évitent. Franche jusqu\'à la brutalité, elle rit fort et ne s\'excuse jamais. Elle respecte ceux qui tiennent debout après le test.',
+        t: { com: 0.9, ind: 0.9, sanc: 0.9, dom: 0.85, soc: 0.8, aud: 0.9, vsd: 0.9, dip: 0.3, chg: 0.8, opt: 0.7 } },
+
+      { name: 'Pyke', tag: 'La liste, et rien d\'autre',
+        desc: 'Il est revenu d\'entre les morts avec un carnet et des noms dedans, et il les raye un par un. Méthodique, patient, insensible à toute négociation. Ce qui l\'anime n\'est même plus de la colère : c\'est une comptabilité.',
+        t: { det: 0.98, san: 0.9, aff: 0.85, nat: 0.95, emp: 0.05, ind: 0.95, tmp: 0.8, vis: 0.9, cfl: 0.9, dip: 0.02 } },
+
+      { name: 'Kayn', tag: 'Qui tient qui, au juste',
+        desc: 'Il porte une arme vivante qui veut le dévorer, et il est persuadé que c\'est lui qui décide. Arrogant, doué, pressé d\'être reconnu, il joue avec quelque chose de bien plus vieux que lui. Le pari est peut-être gagnable — mais il ne le sait pas encore.',
+        t: { vac: 0.9, aud: 0.95, cmp: 0.9, ind: 0.85, rsk: 0.95, dom: 0.85, inc: 0.8, dog: 0.7, san: 0.4, vpo: 0.85 } },
+
+      { name: 'Lee Sin', tag: 'Il s\'est puni lui-même',
+        desc: 'Il a provoqué une catastrophe en voulant bien faire, et s\'est infligé une peine que personne ne lui demandait. Depuis, il enseigne, protège et n\'accepte aucune excuse — surtout pas les siennes. Sa discipline est une réparation quotidienne.',
+        t: { ide: 0.9, det: 0.95, rig: 0.9, care: 0.85, san: 0.85, dog: 0.6, col: 0.85, sanc: 0.8, vpo: 0.1, fia: 0.9 } },
+
+      { name: 'Jhin', tag: 'Quatre balles, pas cinq',
+        desc: 'Il considère le meurtre comme une discipline artistique et s\'agace qu\'on ne le comprenne pas. Sa maîtrise est totale, son obsession du nombre quatre absolue. C\'est l\'esthétique poussée jusqu\'à l\'endroit où elle remplace complètement la morale.',
+        t: { rig: 0.98, aff: 0.9, ouv: 0.8, emp: 0.02, care: 0.02, ord: 0.95, dog: 0.9, vac: 0.85, san: 0.9, sanc: 0.7 } },
+
+      { name: 'Vayne', tag: 'La chasse a remplacé le deuil',
+        desc: 'Elle traque seule, de nuit, ce qui a détruit sa famille, et refuse toute aide parce que l\'aide ralentit. Sa rigueur est impressionnante et son isolement, choisi. Elle sait qu\'elle y laissera tout, et considère que c\'est le prix.',
+        t: { ind: 0.98, det: 0.98, nat: 0.9, vig: 0.95, emp: 0.3, soc: 0.1, dog: 0.8, cfl: 0.85, att: 0.5, san: 0.85 } },
+
+      { name: 'Senna', tag: 'Revenue, et pas pour se venger',
+        desc: 'Enfermée des années dans une lanterne, elle en ressort sans amertume et avec une mission : libérer les autres. Sa douceur n\'a rien de naïf, elle a été gagnée. Elle choisit systématiquement de délivrer plutôt que de punir.',
+        t: { care: 0.95, ide: 0.9, det: 0.9, vun: 0.9, opt: 0.8, san: 0.9, vbe: 0.9, cfl: 0.2, att: 0.85, vis: 0.35 } },
+
+      { name: 'Lucian', tag: 'Avancer, parce que s\'arrêter tue',
+        desc: 'Il a perdu sa femme et a continué à tirer, parce que réfléchir aurait été insupportable. Quand elle revient, il doit réapprendre à faire autre chose que courir. Sa loyauté est absolue et sa capacité à lâcher prise, à peu près nulle.',
+        t: { att: 0.95, det: 0.95, com: 0.85, loy: 0.95, thr: 0.8, eng: 0.9, san: 0.5, cfl: 0.75, ind: 0.6, vis: 0.7 } },
+
+      { name: 'Shen', tag: 'L\'équilibre avant les gens',
+        desc: 'Il applique une doctrine de neutralité absolue, même quand elle exige de laisser mourir quelqu\'un qu\'il aime. Ce n\'est pas de la froideur mais une discipline choisie et douloureuse. Il sait ce qu\'elle coûte, et la maintient quand même.',
+        t: { san: 0.98, rig: 0.9, aff: 0.85, fia: 0.95, dog: 0.7, cfl: 0.1, dip: 0.85, emp: 0.5, vco: 0.8, vhe: 0.05 } },
+
+      { name: 'Jax', tag: 'L\'ennui du plus fort',
+        desc: 'Il se bat avec un réverbère parce que les vraies armes lui ont été interdites pour cause de déséquilibre. Fanfaron, moqueur, il cherche surtout quelqu\'un qui lui tienne enfin tête. Derrière la bravade, un survivant de quelque chose de très sérieux.',
+        t: { cmp: 0.9, inf: 0.85, aud: 0.9, vst: 0.85, vhe: 0.8, ind: 0.85, soc: 0.75, dog: 0.3, vis: 0.6, san: 0.7 } },
+
+      { name: 'Viego', tag: 'L\'amour transformé en ruine',
+        desc: 'Il a détruit un royaume et une région entière en refusant d\'accepter une mort. Son obsession est sincère, ce qui la rend pire : il n\'a jamais cru faire le mal. C\'est l\'attachement poussé jusqu\'au point où il ne reste plus personne à aimer.',
+        t: { att: 0.98, dog: 0.95, vpo: 0.85, emp: 0.1, chg: 0.9, san: 0.15, thr: 0.9, ide: 0.7, care: 0.15, cfl: 0.9 } },
     ],
   },
   {
@@ -1451,6 +1684,101 @@ const LICENSES = [
       { name: 'Feunard', tag: 'La rancune élégante',
         desc: 'Neuf queues, une allure impeccable, et une mémoire qui garde les affronts pendant des siècles. Elle est d\'une politesse froide avec ceux qu\'elle tolère et implacable avec ceux qui ont dépassé la ligne. On ne la manipule pas deux fois.',
         t: { rig: 0.9, nat: 0.9, ind: 0.9, det: 0.9, vac: 0.85, san: 0.85, tmp: 0.85, dip: 0.4, emp: 0.3, vhe: 0.4 } },
+      { name: 'Miaouss', tag: 'L\'opportuniste qui parle trop',
+        desc: 'Il a appris à parler tout seul, par ambition, et il ne s\'est plus jamais arrêté. Malin, intéressé, toujours du côté de celui qui gagne — mais il revient quand même quand ça tourne mal.',
+        t: { inf: 0.9, soc: 0.9, vac: 0.85, epi: 0.1, ind: 0.8, cmp: 0.8, vhe: 0.8, fia: 0.35, rig: 0.2, opt: 0.8 } },
+
+      { name: 'Ossatueur', tag: 'Le deuil porté sur la tête',
+        desc: 'Il se bat avec l\'os de sa mère et porte son crâne en guise de casque : difficile de faire plus explicite. Sa tristesse ne le paralyse pas, elle le rend coriace et solitaire.',
+        t: { att: 0.98, vis: 0.85, ind: 0.9, det: 0.9, thr: 0.8, soc: 0.15, emp: 0.7, san: 0.6, vtr: 0.85, opt: 0.15 } },
+
+      { name: 'Leveinard', tag: 'Soigner, encore, toujours',
+        desc: 'Il court vers les blessés avec un œuf et une détermination inépuisable, sans jamais demander ce qu\'on lui rendra. Frappe faiblement, encaisse éternellement : c\'est un choix de rôle, pas un défaut.',
+        t: { care: 0.98, emp: 0.95, vbe: 0.95, fia: 0.95, ste: 0.95, cmp: 0.02, com: 0.05, vpo: 0.02, col: 0.9, opt: 0.85 } },
+
+      { name: 'Kangourex', tag: 'On ne touche pas au petit',
+        desc: 'D\'ordinaire placide, elle devient absolument redoutable dès qu\'on s\'approche de sa poche. Toute son organisation tourne autour d\'une seule priorité, et elle n\'en a jamais honte.',
+        t: { care: 0.95, att: 0.98, det: 0.9, thr: 0.9, fia: 0.95, com: 0.75, col: 0.85, san: 0.6, vse: 0.9, vst: 0.15 } },
+
+      { name: 'Insécateur', tag: 'La lame qui s\'entraîne seule',
+        desc: 'Il affûte ses faux contre les arbres pendant des heures, sans public et sans adversaire. Rapide, silencieux, entièrement concentré sur la précision du geste.',
+        t: { rig: 0.95, det: 0.9, ind: 0.9, cmp: 0.8, san: 0.85, soc: 0.15, aud: 0.8, ord: 0.85, vac: 0.8, vhe: 0.1 } },
+
+      { name: 'Lokhlass', tag: 'Le passeur qui prend son temps',
+        desc: 'Il transporte ceux qui n\'ont pas de bateau, sans qu\'on le lui demande, et chante en traversant. Il reste peu de représentants de son espèce, et il continue quand même à faire confiance aux gens.',
+        t: { vbe: 0.95, care: 0.9, san: 0.95, ste: 0.9, vun: 0.9, tmp: 0.8, nat: 0.2, cmp: 0.05, opt: 0.75, soc: 0.7 } },
+
+      { name: 'Flagadoss', tag: 'Rien ne presse, vraiment rien',
+        desc: 'Il met plusieurs secondes à remarquer qu\'on lui mord la queue, et ça ne le dérange pas plus que ça. Sa lenteur n\'est pas de la bêtise : c\'est une forme d\'indifférence heureuse au tumulte général.',
+        t: { san: 0.98, thr: 0.05, vhe: 0.85, opt: 0.8, ste: 0.9, cfl: 0.05, vac: 0.1, cmp: 0.05, loc: 0.8, rsk: 0.35 } },
+
+      { name: 'Ptéra', tag: 'Ressuscité et pas content',
+        desc: 'Ramené d\'une époque où rien ne l\'égalait, il n\'a aucune intention de s\'adapter aux règles du présent. Agressif, territorial, magnifique — et totalement hors de son temps.',
+        t: { com: 0.95, aud: 0.9, dom: 0.9, opn: 0.9, vtr: 0.85, chg: 0.1, dip: 0.1, ind: 0.9, cfl: 0.9, san: 0.3 } },
+
+      { name: 'Porygon', tag: 'Fabriqué, et alors ?',
+        desc: 'Créature entièrement artificielle, il ne respire pas, ne dort pas et n\'a aucune idée de ce que ça devrait lui faire. Il exécute, il apprend, il n\'a pas d\'avis sur sa propre existence.',
+        t: { aff: 0.98, rig: 0.9, ord: 0.9, con: 0.9, emp: 0.1, soc: 0.2, vhe: 0.05, fia: 0.9, inc: 0.6, ouv: 0.7 } },
+
+      { name: 'Démolosse', tag: 'La meute a un ordre',
+        desc: 'Il chasse en groupe avec des rôles précis et des cris que les autres comprennent immédiatement. La hiérarchie n\'est pas négociable, et celui qui la conteste le découvre vite.',
+        t: { auth: 0.9, dom: 0.9, loy: 0.9, col: 0.85, com: 0.85, ord: 0.85, cmp: 0.85, vco: 0.8, care: 0.3, dip: 0.15 } },
+
+      { name: 'Milobellus', tag: 'Après la laideur, le calme',
+        desc: 'Né d\'un Pokémon qu\'on moque, il apaise les gens en colère par sa seule présence. Sa beauté n\'est pas un privilège de naissance mais quelque chose qui est arrivé après.',
+        t: { san: 0.95, dip: 0.95, care: 0.9, vbe: 0.9, emp: 0.9, cfl: 0.02, opt: 0.85, ste: 0.9, vun: 0.85, com: 0.05 } },
+
+      { name: 'Métalosse', tag: 'Quatre cerveaux, une décision',
+        desc: 'Il est la fusion de deux êtres qui réfléchissaient déjà ensemble, et il calcule plus vite qu\'un ordinateur. Rien ne se décide à l\'instinct : tout est pesé, puis exécuté avec une masse considérable.',
+        t: { aff: 0.95, rig: 0.9, det: 0.95, ord: 0.9, col: 0.85, san: 0.9, dom: 0.8, fia: 0.9, epi: 0.6, vhe: 0.05 } },
+
+      { name: 'Sulfura', tag: 'Ce qui brûle éclaire aussi',
+        desc: 'Son passage annonce le printemps et ses flammes soignent ses propres blessures. Il y a chez lui quelque chose d\'à la fois solaire et dangereux : on ne s\'approche pas impunément.',
+        t: { inf: 0.9, aud: 0.9, opt: 0.85, ide: 0.8, ind: 0.85, vst: 0.85, com: 0.75, vac: 0.8, san: 0.4, dom: 0.8 } },
+
+      { name: 'Artikodin', tag: 'Le froid qui arrête tout',
+        desc: 'Là où il passe, il neige — même en été, même quand personne ne l\'a demandé. Distant, silencieux, il ne se mêle de rien et n\'attend rien de personne.',
+        t: { san: 0.95, ind: 0.95, aff: 0.85, soc: 0.05, emp: 0.25, vig: 0.85, cfl: 0.3, thr: 0.7, rig: 0.85, vhe: 0.05 } },
+
+      { name: 'Électhor', tag: 'L\'orage qui n\'annonce rien',
+        desc: 'Il apparaît avec la tempête et disparaît avec elle, sans prévenir et sans raison apparente. L\'énergie pure, ingouvernable, qui traverse tout ce qui se trouve sur son passage.',
+        t: { vst: 0.95, aud: 0.95, rsk: 0.95, ord: 0.05, ind: 0.95, inc: 0.9, chg: 0.9, san: 0.2, soc: 0.3, vsd: 0.95 } },
+
+      { name: 'Lugia', tag: 'Le calme qui contient la tempête',
+        desc: 'Il vit au fond de la mer pour ne pas déclencher de catastrophe en battant des ailes. Son pouvoir est si grand qu\'il en a fait une raison de s\'effacer, et il ne remonte que pour arrêter quelque chose.',
+        t: { san: 0.98, care: 0.9, vun: 0.9, ind: 0.85, tmp: 0.9, cfl: 0.05, vpo: 0.1, sanc: 0.85, dip: 0.85, soc: 0.15 } },
+
+      { name: 'Suicune', tag: 'Il purifie et repart',
+        desc: 'Il traverse le monde en nettoyant les eaux souillées, puis s\'en va avant qu\'on puisse le remercier. Sa bienveillance ne cherche aucun lien : elle est en mouvement permanent.',
+        t: { vun: 0.95, care: 0.9, ind: 0.95, vsd: 0.9, san: 0.9, ide: 0.85, att: 0.2, soc: 0.1, opn: 0.15, vbe: 0.85 } },
+
+      { name: 'Celebi', tag: 'Le voyageur qui vérifie que ça va',
+        desc: 'Il se déplace dans le temps et n\'apparaît que là où les forêts se portent bien. Curieux, joueur, profondément attaché au vivant : sa présence est un bulletin de santé.',
+        t: { vun: 0.95, ouv: 0.9, opt: 0.9, care: 0.9, vst: 0.85, tmp: 0.85, soc: 0.7, vhe: 0.8, cfl: 0.05, nat: 0.3 } },
+
+      { name: 'Jirachi', tag: 'Il dort mille ans entre deux vœux',
+        desc: 'Il ne se réveille qu\'une semaine tous les mille ans, et passe le reste du temps hors du monde. Quand il est là, il exauce — sans distinguer les bons souhaits des mauvais.',
+        t: { vbe: 0.9, care: 0.85, loc: 0.85, san: 0.9, ide: 0.85, emp: 0.8, aff: 0.2, vhe: 0.7, epi: 0.25, dom: 0.1 } },
+
+      { name: 'Darkrai', tag: 'Il fait du mal sans le vouloir',
+        desc: 'Sa seule présence provoque des cauchemars, alors il s\'éloigne, et tout le monde le croit malveillant. Il subit une réputation qu\'il n\'a pas choisie et n\'essaie même plus de la corriger.',
+        t: { ind: 0.98, soc: 0.02, vis: 0.85, emp: 0.8, care: 0.7, nat: 0.8, thr: 0.85, san: 0.8, dip: 0.2, att: 0.3 } },
+
+      { name: 'Giratina', tag: 'Banni pour excès de violence',
+        desc: 'Renvoyé dans un monde inversé par ceux qui l\'avaient créé, il y règne sur le revers des choses. Il n\'a pas demandé pardon et ne compte pas le faire.',
+        t: { ind: 0.95, com: 0.9, dog: 0.85, nat: 0.9, dom: 0.9, vis: 0.85, cfl: 0.9, auth: 0.2, soc: 0.05, chg: 0.85 } },
+
+      { name: 'Mentali', tag: 'Il sait avant que tu parles',
+        desc: 'Il anticipe les intentions de son dresseur et agit une seconde avant qu\'on lui demande quoi que ce soit. Cette fidélité paisible est née d\'une confiance construite au grand jour.',
+        t: { fia: 0.95, emp: 0.9, att: 0.9, san: 0.9, aff: 0.8, loy: 0.95, ste: 0.9, vig: 0.85, cfl: 0.1, ouv: 0.75 } },
+
+      { name: 'Aquali', tag: 'Il se fond et il attend',
+        desc: 'Ses cellules se confondent avec l\'eau au point qu\'on ne le voit plus. Rien ne l\'agite, rien ne le presse, et il règle la plupart des problèmes en ne bougeant pas.',
+        t: { san: 0.95, ste: 0.95, thr: 0.15, opn: 0.8, vhe: 0.7, cfl: 0.1, cmp: 0.15, fia: 0.85, vse: 0.8, soc: 0.5 } },
+
+      { name: 'Nymphali', tag: 'Personne ne résiste longtemps',
+        desc: 'Il enroule ses rubans autour de ceux qu\'il apprécie et désamorce les conflits par pure affection. Son arme est la gentillesse, et elle fonctionne même sur les plus butés.',
+        t: { emp: 0.95, vbe: 0.95, soc: 0.9, dip: 0.95, care: 0.9, att: 0.9, cfl: 0.02, com: 0.05, inf: 0.85, opt: 0.9 } },
     ],
   },
   {
@@ -1625,7 +1953,7 @@ const LICENSES = [
     ],
   },
   {
-    id: 'youtube', name: 'Créateurs et créatrices', group: 'Le monde réel', kind: 'YouTube · personnes réelles', color: '#e0202e',
+    id: 'youtube', name: 'Créateurs, acteurs et chanteurs', group: 'Le monde réel', kind: 'Écrans et scènes · personnes réelles', color: '#e0202e',
     cast: [
       { name: 'Squeezie', tag: 'Le format toujours plus grand',
         desc: 'Il a commencé seul devant une webcam et il remplit aujourd\'hui des circuits automobiles. Ce qui frappe dans son parcours, c\'est la capacité à se réinventer avant l\'usure : quand un format fonctionne, il en lance un autre, plus ambitieux, quitte à tout risquer. Il parle volontiers de la pression et de l\'anxiété que ça représente, ce qui est rare à ce niveau.',
@@ -1681,12 +2009,135 @@ const LICENSES = [
       { name: 'Domingo', tag: 'L\'improvisation en direct',
         desc: 'Il anime des formats entiers sans filet, rebondit sur tout, et transforme un incident technique en séquence. Rapide, bon public, il met ses invités à l\'aise en trois minutes.',
         t: { inf: 0.95, soc: 0.95, ouv: 0.9, vst: 0.85, opt: 0.9, dip: 0.85, aud: 0.8, ord: 0.2, rig: 0.4, thr: 0.15 } },
-      { name: 'Squeezie en documentaire', tag: 'Changer de registre',
+      { name: 'Squeezie, le documentariste', tag: 'Changer de registre',
         desc: 'Le même créateur qui pose une caméra sur un sujet grave et laisse parler les gens, sans musique ni effet. C\'est la démonstration qu\'un format installé peut être abandonné volontairement.',
         t: { rig: 0.9, emp: 0.9, ouv: 0.85, care: 0.85, tmp: 0.8, ide: 0.8, aff: 0.7, vhe: 0.2, inf: 0.5, com: 0.2 } },
       { name: 'Seb la Frite', tag: 'L\'autodérision permanente',
         desc: 'Il se met en scène dans ses propres échecs, refuse de se prendre au sérieux, et reste d\'une honnêteté rafraîchissante sur ses doutes. Son humour repose sur le fait de ne jamais se donner le beau rôle.',
         t: { inf: 0.9, soc: 0.85, vhe: 0.9, emp: 0.8, ouv: 0.8, ide: 0.7, vac: 0.35, com: 0.3, thr: 0.6, dip: 0.6 } },
+      { name: 'Jean Dujardin', tag: 'L\'autodérision comme politesse',
+        desc: 'Il a construit une carrière sur le refus de se prendre au sérieux, y compris au sommet. En public, il désamorce systématiquement les compliments par une blague et renvoie l\'attention ailleurs. La légèreté, chez lui, ressemble à une discipline.',
+        t: { inf: 0.9, soc: 0.9, vhe: 0.85, dip: 0.85, opt: 0.85, vpo: 0.25, dom: 0.5, ouv: 0.8, san: 0.75, vac: 0.6 } },
+
+      { name: 'Omar Sy', tag: 'Il met tout le monde à l\'aise',
+        desc: 'Sa présence publique repose sur une chaleur qui ne s\'éteint pas, même quand la question est désagréable. Il parle de ses origines et de sa famille sans emphase, comme d\'une évidence. On a l\'impression de le connaître avant de l\'avoir rencontré.',
+        t: { soc: 0.95, emp: 0.9, vbe: 0.9, att: 0.9, opt: 0.9, dip: 0.9, care: 0.85, cfl: 0.15, col: 0.85, inf: 0.9 } },
+
+      { name: 'Marion Cotillard', tag: 'L\'intensité tenue à l\'intérieur',
+        desc: 'Elle parle peu de son travail et beaucoup de ce qui l\'inquiète, notamment le vivant. Son jeu passe par des choses minuscules plutôt que par des éclats. Il y a chez elle une gravité qui ne cherche pas à plaire.',
+        t: { emp: 0.9, ide: 0.9, vun: 0.9, aff: 0.25, thr: 0.8, eng: 0.85, soc: 0.4, san: 0.6, vis: 0.7, care: 0.9 } },
+
+      { name: 'Isabelle Huppert', tag: 'Le sang-froid qui met mal à l\'aise',
+        desc: 'Elle choisit systématiquement les rôles que personne ne veut, et les joue sans jamais chercher l\'adhésion du spectateur. En entretien, elle répond avec une précision qui laisse peu de place à la connivence. Le confort ne fait pas partie de ses objectifs.',
+        t: { aff: 0.95, san: 0.95, ind: 0.95, ouv: 0.9, rig: 0.9, soc: 0.2, dip: 0.3, emp: 0.4, aud: 0.85, vhe: 0.3 } },
+
+      { name: 'Louis de Funès', tag: 'L\'énergie qui déborde du cadre',
+        desc: 'Il a travaillé des années dans l\'ombre avant d\'exploser, puis n\'a plus jamais relâché le rythme. Son jeu est une dépense physique permanente, au bord de la rupture. Maniaque du détail en coulisses, incontrôlable à l\'écran.',
+        t: { vst: 0.95, det: 0.95, rig: 0.9, com: 0.85, inf: 0.9, thr: 0.85, san: 0.1, vac: 0.9, dom: 0.85, ord: 0.7 } },
+
+      { name: 'Jean Reno', tag: 'Il n\'a pas besoin de parler',
+        desc: 'Ses meilleurs rôles reposent sur des silences et un regard qui suffit. En public, il en dit le minimum, sans froideur. Une présence massive et discrète à la fois.',
+        t: { san: 0.95, ind: 0.85, soc: 0.3, aff: 0.6, fia: 0.85, att: 0.8, dip: 0.6, vhe: 0.5, com: 0.35, ste: 0.85 } },
+
+      { name: 'Pierre Niney', tag: 'Le travail qu\'on ne voit pas',
+        desc: 'Il prépare ses rôles jusqu\'à l\'obsession et parle volontiers de méthode plutôt que d\'inspiration. Jeune formé au classique, il aborde la comédie avec la même rigueur que le drame. Il donne l\'impression d\'avoir tout répété cent fois.',
+        t: { rig: 0.95, det: 0.9, ord: 0.9, vac: 0.85, ouv: 0.8, aff: 0.75, san: 0.8, cmp: 0.75, soc: 0.6, vhe: 0.4 } },
+
+      { name: 'Jamel Debbouze', tag: 'Tout se décide sur le moment',
+        desc: 'Il improvise plus qu\'il ne récite, coupe la parole, rebondit, et emmène la scène là où personne ne l\'attendait. Il a aussi bâti des structures durables pour ouvrir la porte à d\'autres. L\'énergie du tchatcheur au service de quelque chose de sérieux.',
+        t: { inf: 0.95, soc: 0.95, ord: 0.1, vst: 0.9, aud: 0.9, opt: 0.9, care: 0.8, dom: 0.8, inc: 0.85, vhe: 0.85 } },
+
+      { name: 'Florence Foresti', tag: 'Elle se moque d\'elle en premier',
+        desc: 'Son humour part systématiquement de ses propres travers, ce qui lui donne le droit de viser tout le reste. Elle n\'épargne personne et surtout pas elle-même. Derrière la démesure, un contrôle de scène millimétré.',
+        t: { com: 0.9, inf: 0.9, soc: 0.9, ouv: 0.85, rig: 0.8, aud: 0.9, vhe: 0.85, dip: 0.3, ind: 0.85, cfl: 0.75 } },
+
+      { name: 'Keanu Reeves', tag: 'La discrétion comme principe',
+        desc: 'Il fuit les honneurs, rend l\'argent, prend le métro, et refuse obstinément d\'être traité différemment. Son rapport public à la célébrité tient de l\'indifférence sincère. Ce qui frappe, c\'est la constance : c\'est pareil depuis trente ans.',
+        t: { vbe: 0.95, care: 0.9, vpo: 0.02, san: 0.9, ind: 0.85, soc: 0.5, emp: 0.9, vhe: 0.3, vun: 0.9, dom: 0.15 } },
+
+      { name: 'Tom Hanks', tag: 'La fiabilité faite personne',
+        desc: 'Il incarne depuis quarante ans le type honnête sur qui on peut compter, et sa vie publique n\'a jamais contredit ce rôle. Il parle avec bienveillance de presque tout le monde. Une forme de solidité rassurante qui ne s\'est jamais démentie.',
+        t: { fia: 0.98, vbe: 0.9, care: 0.85, opt: 0.9, soc: 0.85, ste: 0.9, dip: 0.9, cfl: 0.1, vtr: 0.8, san: 0.85 } },
+
+      { name: 'Meryl Streep', tag: 'La métamorphose par la méthode',
+        desc: 'Elle change d\'accent, de démarche et de siècle avec une précision qui relève de l\'artisanat. Elle attribue tout au travail plutôt qu\'au don, ce qui est probablement faux et très bien élevé. Sa longévité tient à cette discipline.',
+        t: { rig: 0.95, det: 0.95, ouv: 0.9, vac: 0.85, aff: 0.7, fia: 0.9, ord: 0.85, emp: 0.85, soc: 0.6, dog: 0.2 } },
+
+      { name: 'Anthony Hopkins', tag: 'Le calme qui inquiète',
+        desc: 'Il joue les plus grandes menaces du cinéma en baissant la voix, sans jamais forcer. Il raconte volontiers ses échecs et son alcoolisme passé, sans dramatiser. À quatre-vingts ans passés, il peint et publie ses morceaux de piano comme si de rien n\'était.',
+        t: { san: 0.98, aff: 0.85, ind: 0.9, ouv: 0.85, rig: 0.85, vhe: 0.6, emp: 0.6, vis: 0.5, soc: 0.4, opt: 0.7 } },
+
+      { name: 'Denzel Washington', tag: 'L\'autorité sans hausser le ton',
+        desc: 'Il impose le respect par la posture plutôt que par le volume, et tient un discours exigeant sur la discipline personnelle. Peu de confidences, beaucoup de convictions assumées. Il a une idée très nette de ce qui se fait et ne se fait pas.',
+        t: { lea: 0.9, dom: 0.85, fia: 0.9, auth: 0.8, det: 0.9, rig: 0.85, sanc: 0.8, san: 0.9, dog: 0.7, vtr: 0.8 } },
+
+      { name: 'Zendaya', tag: 'La maîtrise très tôt',
+        desc: 'Arrivée enfant dans le métier, elle donne l\'impression de ne jamais avoir eu de phase maladroite. Elle contrôle son image avec une précision rare et parle peu de sa vie privée. Le calme d\'une personne qui a vu les pièges avant d\'y tomber.',
+        t: { san: 0.9, rig: 0.9, ind: 0.85, vac: 0.85, ord: 0.85, dip: 0.85, aff: 0.7, soc: 0.6, vig: 0.85, vhe: 0.4 } },
+
+      { name: 'Jackie Chan', tag: 'Le travail qui a l\'air facile',
+        desc: 'Il a cassé à peu près tous ses os pour que des cascades paraissent drôles et légères. Sa méthode est une obsession du détail déguisée en amusement. L\'effort disparaît complètement dans le résultat, ce qui est le but.',
+        t: { det: 0.98, rig: 0.9, opt: 0.9, aud: 0.95, soc: 0.85, vac: 0.85, vhe: 0.8, san: 0.6, dom: 0.7, inf: 0.85 } },
+
+      { name: 'Jacques Brel', tag: 'Tout donner jusqu\'à l\'épuisement',
+        desc: 'Il sortait de scène vidé, trempé, incapable de parler, et recommençait le lendemain. Il a tout arrêté au sommet parce qu\'il refusait de se répéter. La sincérité, chez lui, allait jusqu\'à la brutalité envers lui-même.',
+        t: { eng: 0.98, ide: 0.95, com: 0.9, aud: 0.9, vsd: 0.9, det: 0.95, san: 0.15, vhe: 0.6, dip: 0.2, chg: 0.9 } },
+
+      { name: 'Serge Gainsbourg', tag: 'La provocation comme technique',
+        desc: 'Il a passé sa carrière à tester les limites du dicible, avec une maîtrise formelle que la provocation masquait. Élégant et saboteur, il détruisait volontiers ce qu\'il venait de construire. Le jeu de mots était pour lui un travail sérieux.',
+        t: { ouv: 0.95, aud: 0.95, com: 0.9, ind: 0.9, vsd: 0.95, vhe: 0.85, sanc: 0.05, vco: 0.05, dip: 0.15, cfl: 0.9 } },
+
+      { name: 'Mylène Farmer', tag: 'Le silence entretenu',
+        desc: 'Elle n\'accorde presque aucun entretien depuis des décennies et laisse les images parler à sa place. Ce retrait est une construction rigoureuse, pas une timidité. Elle contrôle tout, précisément en ne disant rien.',
+        t: { ind: 0.95, rig: 0.95, ord: 0.9, soc: 0.05, nat: 0.8, aff: 0.7, vpo: 0.7, vsd: 0.9, san: 0.9, dip: 0.4 } },
+
+      { name: 'Jean-Jacques Goldman', tag: 'Parti au sommet, sans bruit',
+        desc: 'Il a été pendant vingt ans la personnalité préférée des Français, puis a simplement cessé de paraître. Il continue d\'écrire pour d\'autres sans réclamer la lumière. Le retrait volontaire poussé jusqu\'au bout, sans rupture ni règlement de comptes.',
+        t: { vpo: 0.02, ind: 0.9, vbe: 0.9, fia: 0.95, care: 0.85, soc: 0.2, san: 0.9, vhe: 0.3, col: 0.8, dip: 0.85 } },
+
+      { name: 'Francis Cabrel', tag: 'Rester là où on est né',
+        desc: 'Il vit toujours dans le même village, sort un disque quand il a quelque chose à dire, et disparaît entre-temps. Son écriture est patiente et sans effet de manche. La constance a remplacé chez lui toute stratégie de carrière.',
+        t: { opn: 0.95, att: 0.9, ste: 0.95, san: 0.9, vtr: 0.85, tmp: 0.85, vac: 0.2, soc: 0.4, vst: 0.15, fia: 0.9 } },
+
+      { name: 'Orelsan', tag: 'Il raconte ses propres défauts',
+        desc: 'Il fait des morceaux entiers sur sa médiocrité supposée, ses échecs et ses contradictions, avec une précision presque clinique. Cette lucidité est devenue sa marque de fabrique. Il se met en cause avant qu\'on ait le temps de le faire.',
+        t: { ouv: 0.9, aff: 0.8, vsd: 0.85, com: 0.7, vis: 0.7, ide: 0.6, soc: 0.6, dog: 0.15, vhe: 0.7, emp: 0.8 } },
+
+      { name: 'Clara Luciani', tag: 'La franchise sans agressivité',
+        desc: 'Elle dit ce qu\'elle pense avec une assurance tranquille et sans chercher le clash. Son élégance scénique n\'empêche pas une parole directe. Elle donne l\'impression de savoir exactement ce qu\'elle vaut.',
+        t: { ind: 0.85, inf: 0.85, aud: 0.8, san: 0.85, soc: 0.8, vsd: 0.85, dip: 0.7, vac: 0.75, dog: 0.35, com: 0.6 } },
+
+      { name: 'Angèle', tag: 'L\'ironie qui ne blesse pas',
+        desc: 'Elle aborde des sujets lourds sur des mélodies légères, et fait passer des choses très nettes sans jamais lever le ton. Sa pudeur publique contraste avec la franchise de ses textes. La douceur y est une manière d\'être ferme.',
+        t: { dip: 0.9, ouv: 0.9, emp: 0.85, ide: 0.8, soc: 0.7, vbe: 0.85, com: 0.55, cfl: 0.3, vsd: 0.85, san: 0.75 } },
+
+      { name: 'Céline Dion', tag: 'Rien n\'est retenu',
+        desc: 'Elle chante, parle et rit à pleine puissance, sans filtre et sans calcul d\'image. Sa générosité est encombrante au bon sens du terme : elle donne plus que ce qu\'on demandait. Elle n\'a jamais essayé d\'être cool, et c\'est précisément ce qui la rend attachante.',
+        t: { emp: 0.95, soc: 0.95, opt: 0.9, inf: 0.9, vbe: 0.95, att: 0.95, det: 0.95, vhe: 0.85, san: 0.3, dip: 0.6 } },
+
+      { name: 'David Bowie', tag: 'Se réinventer avant de s\'ennuyer',
+        desc: 'Il changeait de personnage dès que le précédent commençait à fonctionner, quitte à perdre son public. Cette fuite en avant était une méthode de travail parfaitement assumée. Jusqu\'à son dernier disque, publié en sachant ce qui arrivait.',
+        t: { ouv: 0.98, vst: 0.95, chg: 0.95, ind: 0.95, aud: 0.95, vsd: 0.95, opn: 0.05, rig: 0.7, vco: 0.05, san: 0.75 } },
+
+      { name: 'Freddie Mercury', tag: 'L\'excès assumé jusqu\'au bout',
+        desc: 'Sur scène il occupait tout l\'espace disponible et un peu plus, avec une confiance totale dans le fait que ça passerait. En privé, il était décrit comme timide et attentif. Le contraste entre les deux est peut-être ce qu\'il y a de plus frappant.',
+        t: { inf: 0.98, aud: 0.95, vst: 0.9, vhe: 0.9, dom: 0.85, soc: 0.85, det: 0.9, vac: 0.85, ouv: 0.85, san: 0.4 } },
+
+      { name: 'Beyoncé', tag: 'La discipline avant le talent',
+        desc: 'Elle répète, contrôle, recommence, et ne laisse rien au hasard, y compris ce qui doit paraître spontané. Elle parle très peu publiquement, ce qui renforce l\'effet de maîtrise. Le travail est la partie visible de son propos.',
+        t: { rig: 0.98, det: 0.98, vac: 0.95, ord: 0.95, dom: 0.9, ind: 0.9, soc: 0.3, cmp: 0.9, san: 0.9, vpo: 0.85 } },
+
+      { name: 'Bob Marley', tag: 'Le message porté calmement',
+        desc: 'Il a transformé une musique locale en langage mondial sans jamais hausser le ton ni renier d\'où il venait. Sa foi et ses convictions politiques étaient inséparables de ses chansons. Il est remonté sur scène deux jours après avoir reçu une balle.',
+        t: { ide: 0.95, vun: 0.95, sanc: 0.85, opt: 0.85, det: 0.95, care: 0.9, eng: 0.95, san: 0.85, col: 0.9, cfl: 0.4 } },
+
+      { name: 'Nina Simone', tag: 'La colère qui chante juste',
+        desc: 'Elle voulait être pianiste classique, on le lui a refusé pour ce qu\'elle était, et elle a passé sa vie à le faire savoir. Sa musique et son engagement ne se séparaient pas. Elle n\'a jamais adouci son propos pour être plus jouée.',
+        t: { com: 0.95, ide: 0.95, eng: 0.95, ind: 0.95, fair: 0.95, dog: 0.8, aud: 0.9, dip: 0.15, cfl: 0.9, vis: 0.8 } },
+
+      { name: 'Kendrick Lamar', tag: 'L\'introspection en public',
+        desc: 'Il fait des disques entiers sur ses propres contradictions, sa culpabilité et ses doutes, devant des millions de gens. Rare en entretien, il laisse les textes répondre. La complexité y est revendiquée contre la formule.',
+        t: { ouv: 0.9, aff: 0.75, ide: 0.9, ind: 0.9, eng: 0.85, rig: 0.9, soc: 0.25, vsd: 0.9, dog: 0.2, vis: 0.7 } },
     ],
   },
   {
@@ -1758,6 +2209,125 @@ const LICENSES = [
       { name: 'Václav Havel', tag: 'Du théâtre au palais',
         desc: 'Dramaturge emprisonné devenu président par une révolution sans violence, il a gardé toute sa vie une méfiance envers le pouvoir qu\'il exerçait. Il écrivait ses discours lui-même et gardait un humour désarmant.',
         t: { ide: 0.95, dip: 0.9, ouv: 0.95, care: 0.9, vsd: 0.9, emp: 0.9, det: 0.9, vpo: 0.15, dog: 0.15, com: 0.35 } },
+      { name: 'Hatchepsout', tag: 'Elle a pris le titre, pas la permission',
+        desc: 'Régente au départ, elle s\'est fait couronner pharaon et représenter avec la barbe postiche, parce que le protocole n\'avait pas prévu son cas. Son règne fut long, prospère et surtout pacifique : elle a préféré le commerce aux campagnes militaires.',
+        t: { det: 0.95, lea: 0.9, aud: 0.9, vpo: 0.85, rig: 0.85, cfl: 0.3, tmp: 0.85, ord: 0.85, ind: 0.9, vac: 0.85 } },
+
+      { name: 'Ashoka', tag: 'Le conquérant qui s\'est arrêté net',
+        desc: 'Après une bataille effroyable qu\'il avait gagnée, il a renoncé à la guerre et fait graver ses regrets sur des piliers à travers son empire. Le reste de son règne fut consacré aux hôpitaux, aux routes et à la tolérance religieuse.',
+        t: { ide: 0.95, care: 0.95, chg: 0.9, vun: 0.95, ouv: 0.9, sanc: 0.85, cfl: 0.15, eng: 0.9, vpo: 0.4, emp: 0.9 } },
+
+      { name: 'Cicéron', tag: 'La République se défend avec des mots',
+        desc: 'Il a cru jusqu\'au bout qu\'un discours bien construit pouvait arrêter un coup d\'État, et il y a laissé sa tête. Vaniteux, bavard, mais réellement attaché aux institutions qu\'il défendait.',
+        t: { ide: 0.9, dip: 0.7, vac: 0.85, rig: 0.9, auth: 0.6, eng: 0.9, inf: 0.9, aff: 0.75, dog: 0.7, vtr: 0.85 } },
+
+      { name: 'Auguste', tag: 'Tout changer en jurant ne rien changer',
+        desc: 'Il a concentré tous les pouvoirs en répétant qu\'il restaurait la République, et personne n\'a osé le contredire pendant quarante ans. Patient, méthodique, il a bâti un régime en évitant soigneusement d\'en avoir l\'air.',
+        t: { tmp: 0.95, aff: 0.9, dip: 0.9, vpo: 0.9, rig: 0.9, san: 0.95, dog: 0.3, epi: 0.15, ord: 0.9, cfl: 0.4 } },
+
+      { name: 'Saladin', tag: 'La magnanimité comme stratégie',
+        desc: 'Il a repris Jérusalem sans massacre, soigné un adversaire malade et rendu des prisonniers sans rançon, au grand agacement des siens. La générosité y était sincère et parfaitement efficace politiquement.',
+        t: { dip: 0.95, care: 0.85, lea: 0.9, det: 0.9, sanc: 0.85, fair: 0.9, san: 0.9, vbe: 0.85, cfl: 0.5, vpo: 0.7 } },
+
+      { name: 'Charlemagne', tag: 'Il bâtit ce qu\'il ne sait pas lire',
+        desc: 'Il a relancé les écoles, rassemblé les savants et normalisé l\'écriture, tout en n\'ayant jamais vraiment appris à écrire lui-même. Bâtisseur infatigable, brutal quand il le jugeait nécessaire, et convaincu d\'agir pour un ordre plus grand que lui.',
+        t: { lea: 0.95, det: 0.95, auth: 0.9, ord: 0.9, sanc: 0.85, eng: 0.95, ouv: 0.8, vtr: 0.85, dom: 0.9, tmp: 0.85 } },
+
+      { name: 'Laurent de Médicis', tag: 'Le pouvoir par le mécénat',
+        desc: 'Banquier sans titre officiel, il a gouverné Florence en finançant les artistes et en ménageant tout le monde. Il préférait acheter la paix que la gagner, et cultivait l\'image du prince lettré.',
+        t: { dip: 0.95, ouv: 0.9, vpo: 0.8, aff: 0.8, soc: 0.85, epi: 0.2, vac: 0.85, cfl: 0.2, inf: 0.9, vhe: 0.75 } },
+
+      { name: 'Machiavel', tag: 'Décrire le monde tel qu\'il est',
+        desc: 'Fonctionnaire écarté du pouvoir, il a écrit ce que les princes faisaient réellement au lieu de ce qu\'ils prétendaient faire, et on le lui reproche depuis cinq siècles. Il était par ailleurs républicain convaincu.',
+        t: { aff: 0.95, epi: 0.05, nat: 0.85, ouv: 0.9, rig: 0.85, vis: 0.75, ide: 0.5, san: 0.85, dog: 0.2, soc: 0.45 } },
+
+      { name: 'Thomas More', tag: 'Le refus poli qui coûte la tête',
+        desc: 'Il n\'a pas contesté publiquement son roi : il s\'est simplement tu, et ce silence a suffi à le condamner. Juriste brillant et homme d\'humour jusque sur l\'échafaud, il a choisi sa conscience contre sa survie.',
+        t: { ide: 0.98, sanc: 0.9, rig: 0.9, det: 0.95, dog: 0.8, san: 0.9, vco: 0.5, cfl: 0.4, aff: 0.8, vhe: 0.4 } },
+
+      { name: 'Henri IV', tag: 'Un royaume vaut bien un compromis',
+        desc: 'Il a changé de religion pour mettre fin à trente ans de guerre civile, et signé un édit de tolérance que personne n\'aimait vraiment. Bon vivant, populaire, il faisait passer la paix avant la cohérence.',
+        t: { epi: 0.1, dip: 0.95, opt: 0.85, soc: 0.9, care: 0.85, cfl: 0.15, vhe: 0.85, ouv: 0.85, dog: 0.1, lea: 0.85 } },
+
+      { name: 'Richelieu', tag: 'L\'État avant tout, y compris avant Dieu',
+        desc: 'Cardinal, il a soutenu des princes protestants contre une puissance catholique parce que l\'intérêt du royaume l\'exigeait. Froid, méthodique, détesté, il a construit une administration qui lui a survécu de loin.',
+        t: { aff: 0.95, rig: 0.95, tmp: 0.95, auth: 0.95, dom: 0.9, epi: 0.15, emp: 0.2, det: 0.95, san: 0.95, vpo: 0.9 } },
+
+      { name: 'Louis XIV', tag: 'Le pouvoir mis en scène',
+        desc: 'Il a transformé son lever et son coucher en cérémonies d\'État et attiré la noblesse à Versailles pour mieux la neutraliser. Travailleur acharné derrière le décor, il ne déléguait presque rien.',
+        t: { dom: 0.98, vpo: 0.95, ord: 0.95, rig: 0.9, auth: 0.95, vac: 0.9, det: 0.9, dip: 0.6, vtr: 0.9, ind: 0.85 } },
+
+      { name: 'Catherine II de Russie', tag: 'Les Lumières, mais avec le sceptre',
+        desc: 'Elle correspondait avec les philosophes, collectionnait les idées de réforme, et n\'en appliquait que celles qui ne menaçaient pas son autorité. Cultivée, calculatrice, elle savait exactement où s\'arrêtait son libéralisme.',
+        t: { ouv: 0.85, vpo: 0.95, aff: 0.9, dom: 0.9, vac: 0.9, dip: 0.8, epi: 0.3, auth: 0.9, ind: 0.9, rig: 0.85 } },
+
+      { name: 'George Washington', tag: 'Il a rendu le pouvoir',
+        desc: 'Il aurait pu rester, on le lui demandait, et il est rentré chez lui après deux mandats en créant une règle que personne n\'avait écrite. Peu charismatique, obsédé par la dignité de la fonction, il a surtout compris ce qu\'il ne fallait pas faire.',
+        t: { fia: 0.98, vpo: 0.25, auth: 0.7, rig: 0.9, ide: 0.9, san: 0.95, det: 0.9, dip: 0.8, ord: 0.9, vac: 0.5 } },
+
+      { name: 'Toussaint Louverture', tag: 'De l\'esclavage au gouvernement',
+        desc: 'Affranchi devenu général puis chef d\'un territoire, il a joué l\'Espagne, l\'Angleterre et la France les unes contre les autres avec un sens tactique remarquable. Il est mort en prison sans avoir vu l\'indépendance qu\'il avait rendue possible.',
+        t: { det: 0.98, lea: 0.95, aff: 0.85, ide: 0.9, dip: 0.85, ind: 0.9, eng: 0.95, fair: 0.9, nat: 0.8, vpo: 0.75 } },
+
+      { name: 'Simón Bolívar', tag: 'Libérer, puis constater',
+        desc: 'Il a affranchi un continent et passé la fin de sa vie à regarder ses républiques se diviser malgré lui. Son idéalisme s\'est transformé en amertume : il disait avoir labouré la mer.',
+        t: { ide: 0.95, eng: 0.98, aud: 0.95, lea: 0.9, chg: 0.95, vis: 0.85, det: 0.95, dog: 0.7, dip: 0.4, vsd: 0.9 } },
+
+      { name: 'Victor Schœlcher', tag: 'Le dossier préparé à l\'avance',
+        desc: 'Il a passé des années à documenter et à plaider, si bien que le jour où l\'occasion politique s\'est ouverte, le décret d\'abolition était prêt en quelques semaines. La patience méthodique au service d\'une conviction inébranlable.',
+        t: { ide: 0.95, det: 0.95, rig: 0.9, tmp: 0.9, fair: 0.95, vun: 0.95, eng: 0.95, care: 0.9, ord: 0.85, dog: 0.7 } },
+
+      { name: 'Otto von Bismarck', tag: 'Le fer, le sang, et le calcul',
+        desc: 'Il a unifié un pays par trois guerres soigneusement choisies, puis passé vingt ans à empêcher la suivante. Il a aussi inventé les premières assurances sociales, sans aucune sympathie pour ceux qu\'elles protégeaient.',
+        t: { aff: 0.95, tmp: 0.9, epi: 0.1, dom: 0.95, nat: 0.85, rig: 0.9, emp: 0.2, det: 0.95, vpo: 0.95, dip: 0.7 } },
+
+      { name: 'Georges Clemenceau', tag: 'Le Tigre',
+        desc: 'Médecin, journaliste, duelliste, il a renversé plus de gouvernements qu\'il n\'en a dirigé avant d\'arriver au pouvoir à soixante-seize ans. Brutal en polémique, indéfectible sur ses engagements, il ne reculait devant aucun affrontement.',
+        t: { com: 0.98, cfl: 0.95, det: 0.95, ind: 0.95, aud: 0.9, dip: 0.1, eng: 0.95, dom: 0.9, fair: 0.85, san: 0.5 } },
+
+      { name: 'Léon Blum', tag: 'La dignité sous les insultes',
+        desc: 'Intellectuel raffiné jeté dans la politique la plus violente de son époque, il a répondu aux injures par des arguments. Son procès, retourné contre ses accusateurs, reste un modèle de sang-froid.',
+        t: { ide: 0.95, dip: 0.85, aff: 0.8, san: 0.9, rig: 0.9, care: 0.9, eng: 0.9, cfl: 0.35, vun: 0.9, dog: 0.5 } },
+
+      { name: 'Eleanor Roosevelt', tag: 'Elle n\'est pas restée à sa place',
+        desc: 'Première dame, elle a tenu des conférences de presse, écrit une chronique quotidienne et voyagé seule là où on ne l\'attendait pas. Elle a ensuite porté la Déclaration universelle des droits de l\'homme à bout de bras.',
+        t: { eng: 0.95, care: 0.95, vun: 0.95, det: 0.95, ide: 0.9, ind: 0.9, fair: 0.95, chg: 0.85, dip: 0.8, emp: 0.9 } },
+
+      { name: 'Jean Monnet', tag: 'Construire sans jamais se présenter',
+        desc: 'Il n\'a jamais été élu à quoi que ce soit et a passé sa vie à faire adopter des idées par d\'autres. Sa méthode : des petits pas irréversibles plutôt que des grandes déclarations.',
+        t: { tmp: 0.98, vpo: 0.15, dip: 0.95, rig: 0.9, epi: 0.35, ide: 0.85, aff: 0.85, chg: 0.3, san: 0.9, soc: 0.5 } },
+
+      { name: 'Martin Luther King', tag: 'La colère tenue en discipline',
+        desc: 'Il a organisé une contestation massive en imposant une non-violence qui exigeait plus de courage que la riposte. Sa parole était portée par un travail d\'organisation méticuleux et par une lassitude qu\'il cachait bien.',
+        t: { ide: 0.98, eng: 0.98, care: 0.95, det: 0.95, san: 0.85, sanc: 0.85, fair: 0.95, cfl: 0.5, inf: 0.95, col: 0.9 } },
+
+      { name: 'Rosa Parks', tag: 'Rester assise',
+        desc: 'Militante formée depuis des années, elle n\'était pas une passante fatiguée mais quelqu\'un qui savait exactement ce qu\'elle déclenchait. Le geste le plus discret possible a produit l\'un des effets les plus grands.',
+        t: { det: 0.98, ide: 0.95, san: 0.9, ind: 0.9, fair: 0.95, eng: 0.95, soc: 0.3, dom: 0.3, rig: 0.85, cfl: 0.6 } },
+
+      { name: 'Willy Brandt', tag: 'L\'agenouillement de Varsovie',
+        desc: 'Il s\'est mis à genoux devant un monument sans que rien ne l\'y oblige et sans en avoir prévenu personne, réglant d\'un geste ce que des années de discours n\'avaient pas fait. Ancien résistant, il a fait de la réconciliation une politique étrangère.',
+        t: { ide: 0.95, care: 0.9, dip: 0.9, chg: 0.8, eng: 0.9, emp: 0.9, vun: 0.9, aud: 0.85, vpo: 0.4, cfl: 0.2 } },
+
+      { name: 'Mikhaïl Gorbatchev', tag: 'Celui qui a desserré l\'étau',
+        desc: 'Il a ouvert un système en pensant le réformer et l\'a vu se dissoudre entre ses mains, en refusant d\'employer la force pour le retenir. Adulé dehors, détesté chez lui, il a préféré la fin d\'un empire à un bain de sang.',
+        t: { chg: 0.9, ouv: 0.9, ide: 0.85, care: 0.85, cfl: 0.15, dip: 0.9, loc: 0.6, opt: 0.8, dom: 0.4, vis: 0.5 } },
+
+      { name: 'Thomas Sankara', tag: 'L\'intégrité jusqu\'à l\'inconfort',
+        desc: 'Il a vendu les voitures de fonction, réduit son propre salaire et refusé les portraits officiels, tout en menant des réformes radicales en quatre ans. Son intransigeance lui a coûté ses alliés, puis la vie.',
+        t: { ide: 0.98, eng: 0.98, det: 0.95, dog: 0.8, chg: 0.95, vpo: 0.2, fair: 0.95, cfl: 0.85, aud: 0.95, vhe: 0.1 } },
+
+      { name: 'Wangari Maathai', tag: 'Planter des arbres est un acte politique',
+        desc: 'Elle a fait planter des dizaines de millions d\'arbres par des femmes rurales, ce qui lui a valu la prison et des coups de matraque. Elle disait que l\'écologie, la pauvreté et la démocratie étaient le même sujet.',
+        t: { vun: 0.98, eng: 0.95, det: 0.95, care: 0.95, ide: 0.95, col: 0.9, tmp: 0.9, aud: 0.9, chg: 0.85, opt: 0.85 } },
+
+      { name: 'José Mujica', tag: 'Le président à la vieille Coccinelle',
+        desc: 'Il a reversé la plus grande partie de son salaire, vécu dans sa ferme pendant son mandat et refusé le palais présidentiel. Ancien prisonnier politique, il parlait de sobriété avec une autorité que personne ne pouvait lui contester.',
+        t: { vpo: 0.02, ide: 0.95, vun: 0.9, san: 0.9, vhe: 0.3, ind: 0.85, care: 0.9, soc: 0.8, opn: 0.8, dog: 0.5 } },
+
+      { name: 'Jacinda Ardern', tag: 'L\'empathie comme méthode de gouvernement',
+        desc: 'Après un attentat, elle a changé la loi en dix jours tout en refusant de prononcer le nom du tueur. Elle a ensuite démissionné en disant simplement qu\'elle n\'avait plus assez d\'énergie pour bien faire le travail.',
+        t: { emp: 0.95, care: 0.95, det: 0.9, dip: 0.9, ide: 0.85, chg: 0.8, san: 0.85, vbe: 0.9, vpo: 0.3, cfl: 0.25 } },
     ],
   },
   {
@@ -1796,6 +2366,29 @@ const LICENSES = [
       { name: 'Clea', tag: 'La froideur comme protection',
         desc: 'Elle a choisi la distance, le calcul et l\'efficacité plutôt que l\'attachement, et elle s\'y tient avec une rigueur glaçante. Elle n\'explique rien, n\'attend rien, et prend des décisions que personne d\'autre ne voudrait assumer.',
         t: { san: 0.95, aff: 0.9, ind: 0.95, rig: 0.9, det: 0.9, nat: 0.85, emp: 0.2, soc: 0.05, dip: 0.2, vhe: 0.1 } },
+      { name: 'Sophie', tag: 'Celle qui est restée en arrière',
+        desc: 'Elle a aimé quelqu\'un qui partait pour une expédition dont personne ne revient, et elle a dû décider quoi faire de ce temps-là. Sa présence dans les souvenirs pèse plus lourd que beaucoup de vivants. Elle représente ce à quoi on renonce quand on choisit la mission.',
+        t: { att: 0.9, emp: 0.85, vis: 0.7, care: 0.85, san: 0.6, vbe: 0.8, ide: 0.6, col: 0.7, vhe: 0.6, vpo: 0.1 } },
+
+      { name: 'Simon', tag: 'Celui qui ne lâche jamais prise',
+        desc: 'Il refuse absolument d\'accepter la perte, et transforme ce refus en une volonté qui écrase tout sur son passage. Sa force ne vient pas d\'une cruauté mais d\'un attachement devenu incontrôlable. C\'est la démonstration de ce que le deuil non fait peut produire.',
+        t: { dog: 0.95, att: 0.95, det: 0.98, com: 0.9, emp: 0.2, chg: 0.85, cfl: 0.9, thr: 0.9, san: 0.2, vpo: 0.85 } },
+
+      { name: 'Le Curateur', tag: 'Le gardien d\'un ordre étrange',
+        desc: 'Il veille sur des règles dont il est le seul à comprendre l\'usage, et il les applique sans les expliquer. Ni bienveillant ni hostile : administratif, au sens le plus inquiétant du terme. Ce qu\'il protège compte plus pour lui que ceux qu\'il rencontre.',
+        t: { rig: 0.95, ord: 0.95, vco: 0.9, aff: 0.9, auth: 0.85, emp: 0.15, san: 0.9, chg: 0.1, sanc: 0.8, soc: 0.15 } },
+
+      { name: 'Sirène', tag: 'La beauté qui te retient',
+        desc: 'Elle n\'attaque pas : elle attire, et c\'est bien plus efficace. Ce qu\'elle promet est réel, c\'est le prix qui ne l\'est pas. Elle incarne la tentation de rester plutôt que de continuer.',
+        t: { inf: 0.95, vhe: 0.9, nat: 0.85, aff: 0.7, ind: 0.85, care: 0.2, dip: 0.8, vpo: 0.8, com: 0.2, san: 0.85 } },
+
+      { name: 'Visages', tag: 'Tout le monde et personne',
+        desc: 'Il porte les traits de ceux qu\'on a perdus, et c\'est précisément ce qui le rend insoutenable. On ne sait jamais à qui on parle, ni si la question a un sens. Son existence pose la question de ce qui reste d\'une personne quand il ne reste que l\'image.',
+        t: { nat: 0.9, aff: 0.8, ind: 0.85, emp: 0.4, vis: 0.85, inc: 0.9, ouv: 0.7, san: 0.8, soc: 0.4, sanc: 0.6 } },
+
+      { name: 'Goblu', tag: 'Le chef qui préfère la bagarre amicale',
+        desc: 'Il dirige un village entier avec une philosophie simple : on règle les choses par un bon combat, et ensuite on mange ensemble. Aucune rancune, aucune hiérarchie pesante, beaucoup d\'enthousiasme. La camaraderie est chez lui une institution.',
+        t: { soc: 0.95, opt: 0.9, com: 0.8, cfl: 0.6, col: 0.9, vhe: 0.9, dip: 0.7, dom: 0.7, rig: 0.15, vbe: 0.85 } },
     ],
   },
   {

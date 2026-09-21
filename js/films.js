@@ -237,6 +237,268 @@ const FILMS = [
   { name: 'Le Prestige', by: 'Christopher Nolan · 2006', poster: 'https://upload.wikimedia.org/wikipedia/en/d/d2/Prestige_poster.jpg', tag: 'L\'obsession de gagner', color: '#4a4159',
     desc: 'Deux magiciens se détruisent mutuellement pendant des années pour un tour que l\'autre ne peut pas percer. Le film est construit comme un tour de magie, avec sa promesse, son numéro et sa révélation.',
     t: { cmp: 0.98, vac: 0.95, det: 0.95, rig: 0.9, nat: 0.9, aff: 0.9, tmp: 0.8, emp: 0.15, dip: 0.1, vhe: 0.1 } },
+  { name: 'Les Sept Samouraïs', by: 'Akira Kurosawa · 1954', poster: 'https://upload.wikimedia.org/wikipedia/en/c/c8/Seven_Samurai_Poster.png', tag: 'Se battre pour des gens qui ne vous aiment pas', color: '#6b6250',
+    desc: 'Sept hommes acceptent de défendre un village qui les méprise, pour trois bols de riz par jour. Le film prend son temps, installe chaque caractère, puis livre une bataille dans la boue où rien n\'est glorieux. La conclusion est amère : les vainqueurs, ce sont les paysans.',
+    t: { care: 0.9, col: 0.9, fia: 0.9, det: 0.95, vpo: 0.15, tmp: 0.85, vac: 0.2, san: 0.8, loy: 0.9, vis: 0.6 } },
+
+  { name: 'Le Bon, la Brute et le Truand', by: 'Sergio Leone · 1966', poster: 'https://upload.wikimedia.org/wikipedia/en/4/45/Good_the_bad_and_the_ugly_poster.jpg', tag: 'Trois cyniques et un trésor', color: '#b0854a',
+    desc: 'Personne n\'est vraiment bon, tout le monde trahit, et le film prend un plaisir évident à faire durer chaque duel. La grandeur vient de la mise en scène plus que des personnages. C\'est de l\'opportunisme filmé comme une épopée.',
+    t: { cmp: 0.95, vac: 0.9, ind: 0.9, epi: 0.05, nat: 0.9, aud: 0.9, vhe: 0.8, san: 0.8, care: 0.2, dip: 0.3 } },
+
+  { name: '2001 : l\'Odyssée de l\'espace', by: 'Stanley Kubrick · 1968', poster: 'https://upload.wikimedia.org/wikipedia/en/1/11/2001_A_Space_Odyssey_%281968%29.png', tag: 'Le silence et l\'immensité', color: '#5b6a7a',
+    desc: 'Le film refuse d\'expliquer quoi que ce soit et laisse le spectateur devant des images qui dépassent le commentaire. Le rythme est lent au point d\'être une épreuve, et c\'est volontaire. Une œuvre pour ceux que l\'inconnu attire plutôt qu\'il n\'angoisse.',
+    t: { ouv: 0.95, inc: 0.95, aff: 0.9, tmp: 0.95, rig: 0.95, soc: 0.05, epi: 0.6, san: 0.9, vst: 0.7, emp: 0.25 } },
+
+  { name: 'Orange mécanique', by: 'Stanley Kubrick · 1971', poster: 'https://upload.wikimedia.org/wikipedia/en/7/73/A_Clockwork_Orange_%281971%29.png', tag: 'Le libre arbitre, même horrible',
+    color: '#7d5ba6',
+    desc: 'Un film violent qui pose une question désagréable : vaut-il mieux un homme mauvais qui choisit, ou un homme bon qu\'on a conditionné ? Rien n\'y est confortable, tout y est maîtrisé. Il dérange encore, et c\'est le but.',
+    t: { lib: 0.95, ouv: 0.9, com: 0.9, aud: 0.95, sanc: 0.1, care: 0.2, chg: 0.9, cfl: 0.9, vco: 0.05, aff: 0.85 } },
+
+  { name: 'Taxi Driver', by: 'Martin Scorsese · 1976', poster: 'https://upload.wikimedia.org/wikipedia/en/3/33/Taxi_Driver_%281976_film_poster%29.jpg', tag: 'La solitude qui tourne mal', color: '#8c4b3f',
+    desc: 'Un homme seul dans une ville qu\'il méprise se persuade peu à peu qu\'il a une mission. Le film ne le juge pas et ne l\'excuse pas : il reste collé à lui. La fin, ironique, refuse de trancher.',
+    t: { ind: 0.95, nat: 0.95, vis: 0.9, thr: 0.9, soc: 0.05, dog: 0.85, com: 0.85, san: 0.25, emp: 0.4, ide: 0.7 } },
+
+  { name: 'La Liste de Schindler', by: 'Steven Spielberg · 1993', poster: 'https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg', tag: 'Un profiteur qui devient autre chose', color: '#5a5a5a',
+    desc: 'Un homme d\'affaires opportuniste se surprend à sauver des gens, puis ne peut plus s\'arrêter. Le film est d\'une sobriété absolue et se termine sur un regret : il aurait pu en sauver plus. La transformation y est lente et sans discours.',
+    t: { care: 0.95, chg: 0.85, ide: 0.85, det: 0.9, epi: 0.3, emp: 0.9, vbe: 0.9, vis: 0.75, fair: 0.9, vpo: 0.4 } },
+
+  { name: 'Il faut sauver le soldat Ryan', by: 'Steven Spielberg · 1998', poster: 'https://upload.wikimedia.org/wikipedia/en/a/ac/Saving_Private_Ryan_poster.jpg', tag: 'Huit vies pour une',
+    color: '#6f7263',
+    desc: 'Une mission dont l\'absurdité arithmétique est discutée par ceux qui l\'exécutent, et exécutée quand même. Les vingt premières minutes sont un chaos sans héroïsme. Le film interroge la valeur qu\'on accorde à une seule personne.',
+    t: { fia: 0.9, loy: 0.9, col: 0.85, care: 0.85, det: 0.95, ide: 0.7, vis: 0.7, epi: 0.7, san: 0.6, auth: 0.7 } },
+
+  { name: 'La vie est belle', by: 'Roberto Benigni · 1997', poster: 'https://upload.wikimedia.org/wikipedia/en/7/7c/Vitaebella.jpg', tag: 'Protéger par le mensonge', color: '#d99b2a',
+    desc: 'Un père transforme l\'horreur en jeu pour que son fils n\'en comprenne rien, et tient ce mensonge jusqu\'au bout. Le film est drôle et insoutenable dans le même mouvement. L\'optimisme y est un acte de volonté, pas une naïveté.',
+    t: { opt: 0.95, care: 0.98, att: 0.95, emp: 0.9, inf: 0.9, ide: 0.9, soc: 0.85, det: 0.95, vbe: 0.95, vis: 0.4 } },
+
+  { name: 'Le Pianiste', by: 'Roman Polanski · 2002', poster: 'https://upload.wikimedia.org/wikipedia/en/a/a6/The_Pianist_movie.jpg', tag: 'Survivre en se faisant tout petit',
+    color: '#69707a',
+    desc: 'Le personnage ne se bat pas, ne résiste pas : il se cache, et ça suffit à en faire un film. La survie y est faite d\'attente, de faim et de hasards. La musique revient à la toute fin comme une preuve d\'existence.',
+    t: { san: 0.8, thr: 0.9, ind: 0.85, vis: 0.8, loc: 0.75, det: 0.9, soc: 0.1, emp: 0.8, vse: 0.85, aud: 0.25 } },
+
+  { name: 'Django Unchained', by: 'Quentin Tarantino · 2012', poster: 'https://upload.wikimedia.org/wikipedia/en/8/8b/Django_Unchained_Poster.jpg', tag: 'La vengeance comme western',
+    color: '#a83232',
+    desc: 'Un homme libéré revient chercher sa femme et fait payer chaque humiliation avec un plaisir que le film ne cache pas. Bavard, drôle, violent, il assume totalement son point de vue. La justice y passe par le pistolet plutôt que par le tribunal.',
+    t: { com: 0.95, det: 0.95, att: 0.9, cfl: 0.95, aud: 0.9, fair: 0.85, dip: 0.2, vhe: 0.8, eng: 0.9, ind: 0.9 } },
+
+  { name: 'Inglourious Basterds', by: 'Quentin Tarantino · 2009', poster: 'https://upload.wikimedia.org/wikipedia/en/c/c3/Inglourious_Basterds_poster.jpg', tag: 'La tension dans une conversation',
+    color: '#9a3b3b',
+    desc: 'Les meilleures scènes sont des dialogues où personne ne bouge et où tout peut basculer sur un mot mal choisi. Le film réécrit l\'Histoire sans s\'excuser. Il repose entièrement sur la maîtrise de la parole.',
+    t: { aff: 0.85, nat: 0.9, dip: 0.6, vig: 0.95, cmp: 0.9, aud: 0.9, com: 0.85, san: 0.8, rig: 0.85, chg: 0.9 } },
+
+  { name: 'Kill Bill', by: 'Quentin Tarantino · 2003', poster: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Kill_Bill_Volume_1.png', tag: 'Une liste, et on la remonte', color: '#e0b400',
+    desc: 'Une femme se réveille après des années et coche les noms un par un, sans jamais dévier. Le film mélange les genres avec une énergie folle mais la ligne reste droite. La détermination y est le seul moteur.',
+    t: { det: 0.98, com: 0.95, att: 0.9, ind: 0.95, cmp: 0.9, vst: 0.9, aud: 0.95, dip: 0.05, san: 0.6, rig: 0.85 } },
+
+  { name: 'Reservoir Dogs', by: 'Quentin Tarantino · 1992', poster: 'https://upload.wikimedia.org/wikipedia/en/0/01/Reservoir_Dogs.png', tag: 'Tout le monde se soupçonne',
+    color: '#4a4a4a',
+    desc: 'Un braquage raté dans un entrepôt, et une heure et demie à chercher qui a parlé. La méfiance monte jusqu\'à ce qu\'il ne reste plus personne. Huis clos, dialogues, et une brutalité sèche.',
+    t: { nat: 0.98, cfl: 0.95, com: 0.9, thr: 0.95, loy: 0.6, san: 0.3, dip: 0.15, vis: 0.85, ind: 0.85, aff: 0.7 } },
+
+  { name: 'Heat', by: 'Michael Mann · 1995', poster: 'https://upload.wikimedia.org/wikipedia/en/6/6c/Heatposter.jpg', tag: 'Deux professionnels qui se respectent',
+    color: '#4f6275',
+    desc: 'Un braqueur et un flic se ressemblent bien plus qu\'ils ne ressemblent à leurs proches, et le film le leur fait dire autour d\'un café. La rigueur du métier y remplace les liens. Chacun sait exactement ce que ça lui coûte.',
+    t: { rig: 0.95, det: 0.95, ind: 0.9, aff: 0.9, cmp: 0.9, fia: 0.85, att: 0.3, san: 0.9, ord: 0.9, vac: 0.85 } },
+
+  { name: 'Usual Suspects', by: 'Bryan Singer · 1995', poster: 'https://upload.wikimedia.org/wikipedia/en/9/9c/Usual_suspects_ver1.jpg', tag: 'Celui qui raconte décide',
+    color: '#5c5344',
+    desc: 'Tout le film repose sur un récit fait dans un bureau de police, et la dernière minute retourne l\'ensemble. Il récompense ceux qui écoutent et punit ceux qui croient. La méfiance y est une leçon.',
+    t: { nat: 0.95, aff: 0.9, inf: 0.85, ouv: 0.8, san: 0.85, vig: 0.9, dip: 0.7, fia: 0.1, cmp: 0.85, rig: 0.8 } },
+
+  { name: 'Memento', by: 'Christopher Nolan · 2000', poster: 'https://upload.wikimedia.org/wikipedia/en/c/c7/Memento_poster.jpg', tag: 'À l\'envers, et on comprend pourquoi',
+    color: '#6f6a63',
+    desc: 'Le film avance en reculant parce que son personnage ne peut pas se souvenir, et le spectateur se retrouve aussi démuni que lui. C\'est un exercice de construction autant qu\'un récit. La question finale porte sur ce qu\'on choisit d\'oublier.',
+    t: { aff: 0.9, rig: 0.9, ouv: 0.9, inc: 0.85, nat: 0.85, det: 0.9, tmp: 0.4, san: 0.6, thr: 0.85, ord: 0.8 } },
+
+  { name: 'Bienvenue à Gattaca', by: 'Andrew Niccol · 1997', poster: 'https://upload.wikimedia.org/wikipedia/en/d/de/Gattaca_poster.jpg', tag: 'Tricher contre sa propre biologie',
+    color: '#4e7a72',
+    desc: 'Dans un monde où tout est décidé à la naissance, un homme s\'entraîne jusqu\'à l\'épuisement pour passer pour un autre. Le film est calme, froid, et profondément obstiné. Sa morale tient en une phrase : il ne gardait rien pour le retour.',
+    t: { det: 0.98, ide: 0.9, vac: 0.9, ind: 0.9, rig: 0.9, chg: 0.85, fair: 0.9, aud: 0.85, san: 0.85, loc: 0.1 } },
+
+  { name: 'Ex Machina', by: 'Alex Garland · 2015', poster: 'https://upload.wikimedia.org/wikipedia/en/b/ba/Ex-machina-uk-poster.jpg', tag: 'Qui teste qui',
+    color: '#5d7f8c',
+    desc: 'Trois personnages dans une maison de verre, et un jeu de manipulation où le spectateur se trompe autant que le personnage principal. Le film est glacé, minimal, et d\'une intelligence méchante. Il ne console personne.',
+    t: { aff: 0.95, nat: 0.9, ouv: 0.9, rig: 0.9, emp: 0.35, cmp: 0.9, san: 0.9, inc: 0.85, soc: 0.2, care: 0.3 } },
+
+  { name: 'Her', by: 'Spike Jonze · 2013', poster: 'https://upload.wikimedia.org/wikipedia/en/4/44/Her2013Poster.jpg', tag: 'Aimer quelqu\'un qui n\'a pas de corps',
+    color: '#d97a6c',
+    desc: 'Un homme seul tombe amoureux d\'une voix, et le film le prend entièrement au sérieux. Doux, mélancolique, sans ironie. La fin ne condamne personne : elle constate simplement qu\'on ne grandit pas au même rythme.',
+    t: { emp: 0.9, ouv: 0.9, att: 0.85, aff: 0.25, vis: 0.6, soc: 0.3, ide: 0.75, care: 0.85, san: 0.7, vbe: 0.85 } },
+
+  { name: 'Eternal Sunshine of the Spotless Mind', by: 'Michel Gondry · 2004', poster: 'https://upload.wikimedia.org/wikipedia/en/a/a4/Eternal_Sunshine_of_the_Spotless_Mind.png', tag: 'Effacer quelqu\'un, et le regretter',
+    color: '#7b93b8',
+    desc: 'Deux personnes effacent leur histoire commune et la revivent à l\'envers pendant qu\'elle disparaît. Le film est bricolé, inventif, et terriblement juste sur ce que la mémoire garde. Il finit par dire oui malgré tout.',
+    t: { emp: 0.9, ouv: 0.95, att: 0.9, inc: 0.85, vhe: 0.6, ide: 0.8, chg: 0.7, aff: 0.25, soc: 0.5, opt: 0.6 } },
+
+  { name: 'Lost in Translation', by: 'Sofia Coppola · 2003', poster: 'https://upload.wikimedia.org/wikipedia/en/4/4c/Lost_in_Translation_poster.jpg', tag: 'Deux insomnies qui se croisent',
+    color: '#8e8fa8',
+    desc: 'Presque rien ne se passe : deux personnes décalées se tiennent compagnie quelques jours dans un hôtel de Tokyo. Le film vit de silences et de regards. Ce qu\'ils se disent à la fin n\'est pas audible, et c\'est mieux ainsi.',
+    t: { san: 0.9, emp: 0.85, soc: 0.3, tmp: 0.5, vis: 0.6, ouv: 0.85, att: 0.7, cfl: 0.05, ind: 0.8, vhe: 0.5 } },
+
+  { name: 'Little Miss Sunshine', by: 'Dayton et Faris · 2006', poster: 'https://upload.wikimedia.org/wikipedia/en/1/16/Little_miss_sunshine_poster.jpg', tag: 'Une famille cabossée dans un van jaune',
+    color: '#e8b530',
+    desc: 'Chacun rate quelque chose d\'important et ils finissent quand même par danser ensemble sur une scène où ils n\'ont rien à faire. Le film se moque gentiment de la culture de la gagne. La solidarité y est bancale et totale.',
+    t: { col: 0.9, att: 0.9, opt: 0.8, vac: 0.15, soc: 0.8, ouv: 0.85, vhe: 0.8, care: 0.9, cmp: 0.05, emp: 0.9 } },
+
+  { name: 'Billy Elliot', by: 'Stephen Daldry · 2000', poster: 'https://upload.wikimedia.org/wikipedia/en/3/31/Billy_Elliot_movie.jpg', tag: 'Danser dans une ville en grève',
+    color: '#c46a3f',
+    desc: 'Un gamin de mineur veut faire de la danse classique, ce qui n\'arrange personne autour de lui. Le film montre la colère du père et sa capitulation sans jamais le caricaturer. L\'obstination finit par convaincre.',
+    t: { det: 0.95, ide: 0.9, aud: 0.9, chg: 0.85, att: 0.85, vsd: 0.9, opt: 0.8, care: 0.85, cfl: 0.7, col: 0.8 } },
+
+  { name: 'The Full Monty', by: 'Peter Cattaneo · 1997', poster: 'https://upload.wikimedia.org/wikipedia/en/e/ee/TheFullMonty.UKtheatricalposter.jpg', tag: 'Se mettre à nu faute de mieux',
+    color: '#b2763c',
+    desc: 'Des ouvriers au chômage montent un spectacle de strip-tease parce qu\'ils n\'ont plus rien d\'autre. Le film est drôle et jamais condescendant. La dignité y passe par le ridicule assumé.',
+    t: { soc: 0.85, opt: 0.8, col: 0.9, vhe: 0.8, aud: 0.85, att: 0.8, vpo: 0.1, care: 0.8, epi: 0.15, com: 0.5 } },
+
+  { name: 'Dirty Dancing', by: 'Emile Ardolino · 1987', poster: 'https://upload.wikimedia.org/wikipedia/en/0/00/Dirty_Dancing.jpg', tag: 'Un été qui change tout',
+    color: '#d1566f',
+    desc: 'Une jeune fille sage découvre un autre monde en apprenant à danser, et décide de ne plus se taire. Le film est franchement romanesque et assume chaque effet. Il finit par une réplique que tout le monde connaît.',
+    t: { vst: 0.9, aud: 0.85, chg: 0.85, vhe: 0.85, ide: 0.8, soc: 0.85, opt: 0.85, care: 0.8, vco: 0.15, inf: 0.85 } },
+
+  { name: 'Chantons sous la pluie', by: 'Kelly et Donen · 1952', poster: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Singin%27_in_the_Rain_%281952_poster%29.jpg', tag: 'La bonne humeur comme discipline',
+    color: '#4fa0c4',
+    desc: 'Une comédie sur le passage au cinéma parlant, portée par des numéros d\'une précision invraisemblable. Tout y paraît léger parce que tout y a été répété mille fois. L\'optimisme y est une esthétique.',
+    t: { opt: 0.95, soc: 0.9, inf: 0.9, rig: 0.9, vhe: 0.9, det: 0.85, vst: 0.8, chg: 0.7, san: 0.7, vis: 0.1 } },
+
+  { name: 'Cinema Paradiso', by: 'Giuseppe Tornatore · 1988', poster: 'https://upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg', tag: 'La nostalgie assumée',
+    color: '#b8874a',
+    desc: 'Un homme revient dans son village et se souvient du projectionniste qui lui a tout appris, y compris de partir. Le film est sentimental sans honte et magnifiquement fabriqué. La dernière scène est un cadeau posthume.',
+    t: { att: 0.95, vtr: 0.9, emp: 0.9, opn: 0.85, tmp: 0.7, care: 0.9, vis: 0.5, soc: 0.75, ide: 0.8, vbe: 0.85 } },
+
+  { name: 'Le Labyrinthe de Pan', by: 'Guillermo del Toro · 2006', poster: 'https://upload.wikimedia.org/wikipedia/en/6/67/Pan%27s_Labyrinth.jpg', tag: 'Un conte qui ne protège de rien',
+    color: '#5e7a4a',
+    desc: 'Une enfant invente un monde merveilleux pendant que la guerre civile se déroule à côté, et le film refuse de dire lequel est réel. La cruauté y côtoie la féerie sans transition. La désobéissance y est présentée comme une vertu.',
+    t: { ide: 0.9, ouv: 0.9, lib: 0.9, care: 0.85, vis: 0.8, aud: 0.85, auth: 0.05, emp: 0.9, inc: 0.85, san: 0.55 } },
+
+  { name: 'Portrait de la jeune fille en feu', by: 'Céline Sciamma · 2019', poster: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Portrait_of_a_Lady_on_Fire.jpg', tag: 'Regarder et être regardée',
+    color: '#c46a4f',
+    desc: 'Presque pas de musique, très peu d\'hommes, et une tension qui tient entièrement dans les regards. Le film prend son temps et fait confiance au spectateur. La dernière scène ne dure qu\'un plan et suffit.',
+    t: { emp: 0.9, tmp: 0.9, san: 0.9, ouv: 0.9, att: 0.9, aff: 0.4, soc: 0.3, rig: 0.9, vhe: 0.6, ide: 0.85 } },
+
+  { name: '120 battements par minute', by: 'Robin Campillo · 2017', poster: 'https://upload.wikimedia.org/wikipedia/en/a/af/120_battements_par_minute.png', tag: 'L\'urgence organisée',
+    color: '#cf3b52',
+    desc: 'Des militants débattent, s\'engueulent, votent, et vont mourir. Le film montre autant les réunions que les actions, et c\'est ce qui le rend juste. La colère y est collective et méthodique.',
+    t: { eng: 0.98, col: 0.95, com: 0.9, ide: 0.95, care: 0.9, cfl: 0.85, chg: 0.9, fair: 0.95, tmp: 0.3, soc: 0.85 } },
+
+  { name: 'Les Quatre Cents Coups', by: 'François Truffaut · 1959', poster: 'https://upload.wikimedia.org/wikipedia/en/f/f9/Quatre_coups2.jpg', tag: 'L\'enfance qu\'on ne comprend pas',
+    color: '#7a808c',
+    desc: 'Un gamin fugue, ment, et personne autour de lui ne se demande pourquoi. Le film ne pleure jamais sur lui. Le dernier plan, face caméra, laisse la question ouverte.',
+    t: { ind: 0.9, lib: 0.9, vis: 0.7, auth: 0.1, vsd: 0.9, att: 0.4, emp: 0.8, chg: 0.8, soc: 0.5, opt: 0.35 } },
+
+  { name: 'À bout de souffle', by: 'Jean-Luc Godard · 1960', poster: 'https://upload.wikimedia.org/wikipedia/en/3/3f/%C3%80_bout_de_souffle_%28movie_poster%29.jpg', tag: 'Faire tout de travers, exprès',
+    color: '#8a8a8a',
+    desc: 'Montage cassé, caméra à l\'épaule, personnages qui parlent à la caméra : le film démolit les règles avec un plaisir évident. Son héros est insupportable et charmant. C\'est de la rupture pour la rupture, et ça a marché.',
+    t: { chg: 0.95, ouv: 0.95, vsd: 0.95, aud: 0.9, ord: 0.05, vco: 0.05, ind: 0.9, vhe: 0.8, epi: 0.4, rsk: 0.9 } },
+
+  { name: 'Le Samouraï', by: 'Jean-Pierre Melville · 1967', poster: 'https://upload.wikimedia.org/wikipedia/en/2/28/LeSamourai.jpg', tag: 'Le silence comme méthode',
+    color: '#5f6b78',
+    desc: 'Un tueur méticuleux, un imperméable, et presque aucune parole pendant près de deux heures. Tout est rituel, répétition et solitude choisie. Le film fait de la froideur un style.',
+    t: { san: 0.98, rig: 0.98, ind: 0.95, ord: 0.95, soc: 0.02, aff: 0.9, emp: 0.2, vhe: 0.05, fia: 0.85, det: 0.9 } },
+
+  { name: 'La Cité de la peur', by: 'Alain Berbérian · 1994', poster: 'https://upload.wikimedia.org/wikipedia/en/a/ac/La_Cit%C3%A9_de_la_peur.jpg', tag: 'L\'absurde à plein régime',
+    color: '#e0a32a',
+    desc: 'Un film qui enchaîne les vannes sans se soucier du récit et invente des répliques que la France entière cite encore. Rien n\'y est sérieux une seconde. Le non-sens y est travaillé avec une vraie rigueur.',
+    t: { vhe: 0.95, inf: 0.95, soc: 0.9, ouv: 0.9, ord: 0.1, opt: 0.9, epi: 0.15, vco: 0.05, aud: 0.85, san: 0.4 } },
+
+  { name: 'Les Tontons flingueurs', by: 'Georges Lautner · 1963', poster: 'https://upload.wikimedia.org/wikipedia/en/c/cd/Les-tontons-flingueurs.jpg', tag: 'Des truands qui parlent mieux qu\'ils ne tirent',
+    color: '#9c7a45',
+    desc: 'L\'intrigue est un prétexte : ce qui compte, ce sont les dialogues d\'Audiard et la scène de la cuisine. Les personnages sont des durs vieillissants avec un code d\'honneur désuet. On les regarde pour la manière, pas pour l\'histoire.',
+    t: { soc: 0.9, vtr: 0.9, loy: 0.9, vhe: 0.85, inf: 0.9, opn: 0.85, com: 0.7, att: 0.85, epi: 0.3, san: 0.75 } },
+
+  { name: 'Le Père Noël est une ordure', by: 'Jean-Marie Poiré · 1982', poster: 'https://upload.wikimedia.org/wikipedia/en/2/27/Le_p%C3%A8re_No%C3%ABl_est_une_ordure.jpg', tag: 'Le huis clos qui dégénère',
+    color: '#c4483c',
+    desc: 'Une permanence téléphonique un soir de Noël, et une succession de catastrophes qu\'aucun des personnages ne sait gérer. La méchanceté y est constante et hilarante. Rien ni personne n\'est épargné.',
+    t: { com: 0.85, vhe: 0.9, cfl: 0.85, soc: 0.8, care: 0.25, ord: 0.1, dip: 0.15, inf: 0.9, vis: 0.7, epi: 0.2 } },
+
+  { name: 'Qu\'est-ce qu\'on a fait au Bon Dieu ?', by: 'Philippe de Chauveron · 2014', poster: 'https://upload.wikimedia.org/wikipedia/en/e/e0/Qu%27est-ce_qu%27on_a_fait_au_bon_dieu%3F_poster.jpg', tag: 'Les préjugés autour d\'une table',
+    color: '#d08a3c',
+    desc: 'Une famille bourgeoise découvre que ses quatre gendres ne correspondent à rien de ce qu\'elle espérait. Le film met tout le monde à égalité devant le ridicule. La réconciliation y passe par la moquerie partagée.',
+    t: { soc: 0.9, vtr: 0.8, dip: 0.7, vhe: 0.85, opn: 0.8, ouv: 0.7, att: 0.85, cfl: 0.5, col: 0.8, opt: 0.85 } },
+
+  { name: 'Le Prénom', by: 'de la Patellière et Delaporte · 2012', poster: 'https://upload.wikimedia.org/wikipedia/en/0/07/WhatsInANamePoster.png', tag: 'Un dîner qui déraille',
+    color: '#a2554f',
+    desc: 'Une blague sur un prénom fait exploser trente ans de non-dits entre amis. Tout se joue dans un salon, en temps réel, à coups de répliques. Le film montre combien la politesse tenait à peu de chose.',
+    t: { com: 0.9, cfl: 0.9, soc: 0.85, inf: 0.85, aff: 0.7, att: 0.8, dip: 0.3, nat: 0.7, ouv: 0.7, vhe: 0.75 } },
+
+  { name: 'Anatomie d\'une chute', by: 'Justine Triet · 2023', poster: 'https://upload.wikimedia.org/wikipedia/en/8/88/Anatomy_of_a_Fall_%282023%29_film_poster.jpg', tag: 'On ne saura jamais vraiment',
+    color: '#6d7b8c',
+    desc: 'Un procès où chaque version est plausible et où le film refuse jusqu\'au bout de donner la réponse. Ce qui est jugé, ce n\'est pas un crime mais un couple. Le spectateur est mis à la place du fils.',
+    t: { aff: 0.9, inc: 0.95, ouv: 0.9, nat: 0.75, rig: 0.9, dog: 0.1, emp: 0.75, tmp: 0.7, san: 0.8, vis: 0.6 } },
+
+  { name: 'Les Misérables', by: 'Ladj Ly · 2019', poster: 'https://upload.wikimedia.org/wikipedia/en/0/05/Les_Mis%C3%A9rables_2019_film_poster.jpg', tag: 'La cocotte-minute',
+    color: '#8a6f4a',
+    desc: 'Une journée dans une cité où chaque petite décision fait monter la pression d\'un cran. Le film ne désigne pas de coupable unique et finit sur une image suspendue. La tension y est la vraie protagoniste.',
+    t: { cfl: 0.95, thr: 0.95, com: 0.85, vis: 0.85, nat: 0.9, eng: 0.85, care: 0.7, col: 0.8, san: 0.3, fair: 0.85 } },
+
+  { name: 'Le Tombeau des lucioles', by: 'Isao Takahata · 1988', poster: 'https://upload.wikimedia.org/wikipedia/en/a/a5/Grave_of_the_Fireflies_Japanese_poster.jpg', tag: 'On sait dès la première minute',
+    color: '#8c6a5a',
+    desc: 'Le film annonce la fin d\'emblée et raconte quand même, ce qui rend chaque instant plus lourd. Un frère essaie de protéger sa petite sœur et n\'y arrive pas. C\'est l\'un des films les plus tristes jamais réalisés.',
+    t: { att: 0.98, care: 0.95, vis: 0.95, emp: 0.95, ind: 0.8, opt: 0.05, det: 0.9, vpo: 0.05, col: 0.6, san: 0.4 } },
+
+  { name: 'Le Vent se lève', by: 'Hayao Miyazaki · 2013', poster: 'https://upload.wikimedia.org/wikipedia/en/a/a3/Kaze_Tachinu_poster.jpg', tag: 'Faire de belles choses au mauvais moment',
+    color: '#7f9ab0',
+    desc: 'Un ingénieur rêve d\'avions magnifiques et les voit servir à la guerre, sans jamais renoncer à les dessiner. Le film ne l\'absout pas et ne le condamne pas. La beauté et la responsabilité y cohabitent mal.',
+    t: { ide: 0.9, rig: 0.9, tmp: 0.85, aff: 0.75, vis: 0.7, ouv: 0.85, att: 0.85, det: 0.9, epi: 0.6, vac: 0.75 } },
+
+  { name: 'Perfect Blue', by: 'Satoshi Kon · 1997', poster: 'https://upload.wikimedia.org/wikipedia/en/2/2a/Perfectblueposter.png', tag: 'Ne plus savoir qui on est',
+    color: '#9b5b8a',
+    desc: 'Une chanteuse change de métier et perd pied entre son image publique et elle-même. Le montage brouille volontairement le réel et le fantasme. Le film est anxiogène du début à la fin.',
+    t: { thr: 0.95, nat: 0.9, inc: 0.8, vis: 0.85, aff: 0.6, ind: 0.7, san: 0.15, ouv: 0.8, emp: 0.7, chg: 0.8 } },
+
+  { name: 'Shrek', by: 'Adamson et Jenson · 2001', poster: 'https://upload.wikimedia.org/wikipedia/en/7/7b/Shrek_%282001_animated_feature_film%29.jpg', tag: 'L\'ogre qui refuse le conte',
+    color: '#6fa83c',
+    desc: 'Un film qui démonte les codes des contes de fées tout en en racontant un très classique. L\'humour est irrévérencieux, la morale sincère. Il tient debout parce qu\'il aime ce qu\'il moque.',
+    t: { vhe: 0.9, ouv: 0.85, ind: 0.85, soc: 0.75, inf: 0.85, chg: 0.8, care: 0.85, vco: 0.15, opt: 0.85, com: 0.6 } },
+
+  { name: 'Monstres et Cie', by: 'Pete Docter · 2001', poster: 'https://upload.wikimedia.org/wikipedia/en/6/63/Monsters_Inc.JPG', tag: 'Le rire vaut mieux que la peur',
+    color: '#4fa8c8',
+    desc: 'Deux employés découvrent que leur industrie entière repose sur une erreur de méthode. Le film est chaleureux, drôle, et se termine sur une porte qu\'on n\'ose pas ouvrir. L\'attachement y est le vrai sujet.',
+    t: { soc: 0.9, care: 0.9, att: 0.9, opt: 0.9, vbe: 0.9, ouv: 0.85, chg: 0.8, vhe: 0.85, col: 0.85, thr: 0.25 } },
+
+  { name: 'Le Monde de Nemo', by: 'Andrew Stanton · 2003', poster: 'https://upload.wikimedia.org/wikipedia/en/2/29/Finding_Nemo.jpg', tag: 'Un père qui doit lâcher',
+    color: '#e88a2a',
+    desc: 'Un poisson surprotecteur traverse un océan pour retrouver son fils et apprend en chemin à lui faire confiance. Le film est magnifique et très drôle. L\'anxiété y est traitée avec tendresse.',
+    t: { care: 0.95, att: 0.95, thr: 0.9, det: 0.95, emp: 0.9, opt: 0.8, vse: 0.85, soc: 0.8, chg: 0.7, aud: 0.45 } },
+
+  { name: 'Les Indestructibles', by: 'Brad Bird · 2004', poster: 'https://upload.wikimedia.org/wikipedia/en/2/27/The_Incredibles_%282004_animated_feature_film%29.jpg', tag: 'Ranger ses pouvoirs au placard',
+    color: '#c43f3f',
+    desc: 'Une famille de super-héros interdits d\'exercer s\'ennuie ferme dans une vie normale. Le film parle d\'excellence contrariée et de ce qu\'on fait de ses dons. L\'action y sert un propos très clair.',
+    t: { vac: 0.9, det: 0.9, col: 0.85, att: 0.9, cmp: 0.85, ind: 0.8, aud: 0.9, chg: 0.75, lea: 0.85, vco: 0.2 } },
+
+  { name: 'Zootopie', by: 'Howard et Moore · 2016', poster: 'https://upload.wikimedia.org/wikipedia/en/9/96/Zootopia_%28movie_poster%29.jpg', tag: 'Les préjugés vus d\'en bas',
+    color: '#4f9c8c',
+    desc: 'Une lapine policière et un renard arnaqueur enquêtent dans une ville où chacun est assigné à son espèce. Le film est plus politique qu\'il n\'en a l\'air et ne donne pas de réponse facile. L\'obstination joyeuse y est le moteur.',
+    t: { det: 0.95, opt: 0.9, fair: 0.9, ouv: 0.85, vun: 0.85, soc: 0.85, chg: 0.8, care: 0.85, dip: 0.7, vac: 0.8 } },
+
+  { name: 'Le Géant de fer', by: 'Brad Bird · 1999', poster: 'https://upload.wikimedia.org/wikipedia/en/d/d3/The_Iron_Giant_poster.JPG', tag: 'On choisit ce qu\'on est',
+    color: '#6b7f8c',
+    desc: 'Une arme découvre l\'amitié et décide de ne pas être ce pour quoi elle a été construite. Le film est sobre, mélancolique, et vise juste sans effets. Sa phrase finale tient en trois mots.',
+    t: { ide: 0.95, care: 0.9, vsd: 0.9, chg: 0.85, att: 0.9, emp: 0.9, vbe: 0.9, san: 0.8, auth: 0.2, vis: 0.4 } },
+
+  { name: 'Casablanca', by: 'Michael Curtiz · 1942', poster: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/CasablancaPoster-Gold.jpg', tag: 'Le cynique qui craque',
+    color: '#9a8a6a',
+    desc: 'Un tenancier qui jure ne se mêler de rien finit par sacrifier ce qu\'il aime pour une cause. Les répliques sont devenues proverbiales. Le film est un modèle d\'efficacité romanesque.',
+    t: { ide: 0.85, att: 0.9, dip: 0.8, san: 0.85, chg: 0.7, care: 0.85, vpo: 0.3, aff: 0.6, eng: 0.8, vhe: 0.6 } },
+
+  { name: 'Psychose', by: 'Alfred Hitchcock · 1960', poster: 'https://upload.wikimedia.org/wikipedia/commons/7/76/Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg', tag: 'Tuer son héroïne à la moitié',
+    color: '#6b6b73',
+    desc: 'Le film détruit ses propres règles au bout de quarante minutes et laisse le spectateur sans repère. La tension repose sur ce qu\'on ne voit pas. Il a redéfini ce qu\'un film pouvait se permettre.',
+    t: { thr: 0.95, nat: 0.9, aud: 0.9, rig: 0.95, chg: 0.9, san: 0.5, vis: 0.85, ouv: 0.85, inc: 0.75, soc: 0.2 } },
+
+  { name: 'Les Dents de la mer', by: 'Steven Spielberg · 1975', poster: 'https://upload.wikimedia.org/wikipedia/commons/4/40/Jaws_movie_poster.jpg', tag: 'La peur de ce qu\'on ne voit pas',
+    color: '#3f7a8c',
+    desc: 'La machine ne marchait pas, alors le requin reste hors champ — et c\'est ce qui rend le film terrifiant. Trois hommes dans un bateau trop petit et une note de musique suffisent. La contrainte y est devenue la méthode.',
+    t: { thr: 0.95, det: 0.9, col: 0.8, vig: 0.95, aud: 0.85, care: 0.8, san: 0.5, epi: 0.25, com: 0.6, inc: 0.7 } },
+
+  { name: 'Léon', by: 'Luc Besson · 1994', poster: 'https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg', tag: 'Le tueur et la gamine',
+    color: '#7a6a4a',
+    desc: 'Un homme qui ne sait rien faire d\'autre que son métier se retrouve responsable d\'une enfant. Le film mélange la violence et une tendresse maladroite. La plante verte est le meilleur personnage secondaire du cinéma.',
+    t: { att: 0.95, care: 0.9, ind: 0.9, rig: 0.9, soc: 0.15, fia: 0.9, emp: 0.8, det: 0.95, san: 0.8, vhe: 0.3 } },
+
+  { name: 'Trainspotting', by: 'Danny Boyle · 1996', poster: 'https://upload.wikimedia.org/wikipedia/en/7/71/Trainspotting_ver2.jpg', tag: 'Choisir la vie, ou pas',
+    color: '#d9622a',
+    desc: 'Un film sur l\'héroïne qui refuse de moraliser et avance à un rythme de clip. Drôle, sale, énergique, il finit par une trahison présentée comme une libération. Rien n\'y est confortable.',
+    t: { vst: 0.95, vhe: 0.9, ind: 0.9, chg: 0.9, nat: 0.85, ord: 0.05, vco: 0.05, aud: 0.9, vis: 0.75, rsk: 0.95 } },
 ];
 
 window.PRISME_FILMS = { FILMS };
