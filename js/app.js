@@ -3804,8 +3804,26 @@
     return null;
   }
 
+  /* Un personnage très typé est loin de tout le monde, un personnage tiède est
+     proche de tout le monde. Sans correction, ce sont toujours les mêmes tièdes
+     qui gagnent et la moitié du casting n'est jamais attribuée. On calcule donc
+     l'écart qu'un profil pris au hasard aurait avec ce personnage — loi normale
+     centrée sur 50, écart-type 20 — pour le retrancher au moment du classement. */
+  const REF_SD = 0.2;
+  const normPdf = z => Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI);
+  function normCdf(z) { // approximation d'Abramowitz et Stegun (7.1.26)
+    const sgn = z < 0 ? -1 : 1, x = Math.abs(z) / Math.SQRT2;
+    const t = 1 / (1 + 0.3275911 * x);
+    const y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+    return 0.5 * (1 + sgn * y);
+  }
+  function meanGap(tv) {
+    const z = (0.5 - tv) / REF_SD;
+    return (0.5 - tv) * (2 * normCdf(z) - 1) + 2 * REF_SD * normPdf(z);
+  }
+
   function matchCharacter(r, ch) {
-    let num = 0, den = 0;
+    let num = 0, den = 0, ref = 0;
     const parts = [];
     Object.entries(ch.t).forEach(([key, tv]) => {
       const info = traitInfo(r, key);
@@ -3813,13 +3831,25 @@
       const w = 0.4 + Math.abs(tv - 0.5) * 2; // un trait extrême définit davantage le personnage
       const sim = 1 - Math.abs(info.v - tv);
       num += w * sim; den += w;
+      ref += w * (1 - meanGap(tv));          // ce que ferait n'importe qui sur ce trait
       parts.push({ key, tv, pv: info.v, w, sim, label: info.v >= 0.5 ? info.hi : info.lo });
     });
-    return parts.length >= 5 ? { ch, score: num / den, parts } : null;
+    return parts.length >= 5 ? { ch, score: num / den, base: ref / den, parts } : null;
+  }
+
+  /* Le classement se fait sur l'écart à cette attente, remis à l'échelle de la
+     liste : le pourcentage affiché reste une ressemblance, mais ressembler à un
+     personnage difficile vaut plus que ressembler à un personnage passe-partout. */
+  function rankMatches(list, r) {
+    const ms = list.map(x => matchCharacter(r, x)).filter(Boolean);
+    if (!ms.length) return ms;
+    const mean = ms.reduce((t, m) => t + m.base, 0) / ms.length;
+    ms.forEach(m => { m.score = clamp(m.score - m.base + mean, 0, 0.99); });
+    return ms.sort((a, b) => b.score - a.score);
   }
 
   function castFor(r, lic) {
-    return lic.cast.map(ch => matchCharacter(r, ch)).filter(Boolean).sort((a, b) => b.score - a.score);
+    return rankMatches(lic.cast, r);
   }
 
   function matchWhy(m, count) {
@@ -3890,7 +3920,7 @@
   }
 
   function wowFor(r) {
-    return WOW.map(w => matchCharacter(r, w)).filter(Boolean).sort((a, b) => b.score - a.score);
+    return rankMatches(WOW, r);
   }
 
   function wowCombo(w) {
@@ -3941,6 +3971,7 @@
 
   function renderCast(cur) {
     const r = cur.r;
+
     const html = castHtml(lic => {
       const ranked = castFor(r, lic);
       if (!ranked.length) return '';
@@ -4029,7 +4060,7 @@
   };
 
   function pickFor(r, key) {
-    return PICK_LISTS[key].items.map(a => matchCharacter(r, a)).filter(Boolean).sort((x, y) => y.score - x.score);
+    return rankMatches(PICK_LISTS[key].items, r);
   }
 
   /* Affiches et extraits
@@ -4345,7 +4376,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 36;
+  const BUILD = 37;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
