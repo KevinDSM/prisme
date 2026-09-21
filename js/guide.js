@@ -239,6 +239,7 @@
       <li><b>Le rang, du perchoir aux hauteurs</b> : ton score d'engagement. Comme dans la vraie Assemblée, ceux qui montent au créneau siègent en bas, près du perchoir ; les observateurs sont tout en haut. Il y a 12 rangs.</li>
     </ul>
     <p class="gtext">L'hémicycle est découpé en <b>sept blocs intemporels</b> (gauche radicale, gauche, centre gauche, centre, centre droit, droite, droite nationale) : ils ne correspondent à aucun groupe parlementaire réel, qui changent à chaque législature. Tes <b>voisins de banc</b> sont les deux familles politiques de Prisme dont la position gauche-droite encadre la tienne. « Pourquoi ce siège » liste les axes qui te tirent le plus vers chaque côté : si tu es tiré des deux côtés, ton siège est une moyenne, et tu « traverserais l'allée » sur certains votes.</p>
+    <p class="gtext">Dans un cercle, tout le monde est assis dans le même hémicycle. Quand deux personnes pensent presque pareil, elles tombent sur des sièges voisins et leurs pastilles se recouvriraient : elles sont alors <b>légèrement écartées</b>, et un trait fin les relie à leur vrai siège, marqué d'un point. Le siège affiché dans la liste des blocs reste toujours le bon.</p>
     <p class="gtext">Dans un cercle, tout le monde est assis dans le même hémicycle : on voit d'un coup d'œil s'il y aurait une majorité, qui est le plus à gauche, le plus à droite, et qui siège le plus près du perchoir.</p>`);
 
   /* ---------------------------------------------------------

@@ -2267,6 +2267,43 @@
   }
 
   // people : [{ name, tag, color, me, spot }]
+  /* Deux personnes politiquement proches tombent sur des sièges voisins, et
+     leurs pastilles se recouvrent — à partir de sept ou huit, c'est illisible.
+     On les écarte juste assez pour qu'elles se lisent, un trait fin les relie
+     à leur vrai siège, et le siège garde un point : même procédé que les
+     lignes « où chacun se situe ». */
+  function spreadSeats(people, r) {
+    const { W, H } = HEMI;
+    const gap = 2.5, reach = r * 3.2;
+    const marks = people.map(p => ({ p, sx: p.spot.seat.x, sy: p.spot.seat.y, x: p.spot.seat.x, y: p.spot.seat.y }));
+    for (let pass = 0; pass < 90; pass++) {
+      let moved = false;
+      for (let i = 0; i < marks.length; i++) {
+        for (let j = i + 1; j < marks.length; j++) {
+          const a = marks[i], b = marks[j];
+          let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+          const min = 2 * r + gap;
+          if (d >= min) continue;
+          if (d < 0.01) { dx = (j % 2 ? 1 : -1); dy = 0.3; d = 1; }
+          const push = (min - d) / 2 / d;
+          a.x -= dx * push; a.y -= dy * push;
+          b.x += dx * push; b.y += dy * push;
+          moved = true;
+        }
+      }
+      marks.forEach(m => {
+        m.x += (m.sx - m.x) * 0.05;          // rappel : la pastille reste près de son siège
+        m.y += (m.sy - m.y) * 0.05;
+        const dx = m.x - m.sx, dy = m.y - m.sy, d = Math.hypot(dx, dy);
+        if (d > reach) { m.x = m.sx + dx / d * reach; m.y = m.sy + dy / d * reach; }
+        m.x = clamp(m.x, r + 2, W - r - 2);
+        m.y = clamp(m.y, r + 2, H - r - 2);
+      });
+      if (!moved) break;
+    }
+    return marks;
+  }
+
   function renderHemicycle(people, big) {
     const { W, H, cx, cy } = HEMI;
     const used = new Map(people.map(p => [p.spot.seat.num, p]));
@@ -2277,13 +2314,16 @@
     });
     svg += `<rect class="hemi-perchoir" x="${cx - 34}" y="${cy - 16}" width="68" height="24" rx="6"/><text class="hemi-perchoir-lbl" x="${cx}" y="${cy + 1}" text-anchor="middle">PERCHOIR</text>`;
     svg += `<text class="hemi-side" x="8" y="${H - 6}">GAUCHE</text><text class="hemi-side" x="${W - 8}" y="${H - 6}" text-anchor="end">DROITE</text>`;
-    people.forEach(p => {
-      const s = p.spot.seat;
-      const r = big ? 13 : 11;
+    const r = big ? 13 : 11;
+    spreadSeats(people, r).forEach(m => {
+      const p = m.p, s = p.spot.seat;
+      const off = Math.hypot(m.x - s.x, m.y - s.y) > 1.5;
       svg += `<g class="hemi-me"><title>${esc(p.name)} — siège n° ${s.num}, rang ${s.row + 1}, ${esc(p.spot.bloc.label.toLowerCase())}</title>`
         + (big ? `<circle class="hemi-halo" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="25"/>` : '')
-        + `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${r}" style="fill:${p.color}" class="${p.me ? 'me' : ''}"/>`
-        + `<text x="${s.x.toFixed(1)}" y="${(s.y + 3.8).toFixed(1)}" text-anchor="middle" class="${p.me ? 'me' : ''}">${esc(p.tag)}</text></g>`;
+        + (off ? `<line class="hemi-lead" x1="${s.x.toFixed(1)}" y1="${s.y.toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${m.y.toFixed(1)}" style="stroke:${p.color}"/>`
+               + `<circle class="hemi-anchor" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="3.2" style="fill:${p.color}"/>` : '')
+        + `<circle cx="${m.x.toFixed(1)}" cy="${m.y.toFixed(1)}" r="${r}" style="fill:${p.color}" class="${p.me ? 'me' : ''}"/>`
+        + `<text x="${m.x.toFixed(1)}" y="${(m.y + 3.8).toFixed(1)}" text-anchor="middle" class="${p.me ? 'me' : ''}">${esc(p.tag)}</text></g>`;
     });
     return svg + '</svg>';
   }
@@ -4297,7 +4337,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 33;
+  const BUILD = 34;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
