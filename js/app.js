@@ -2725,13 +2725,20 @@
       });
       return groups;
     };
+    /* Qualité d'un découpage : pour chacun, l'écart entre la distance aux siens
+       et la distance au clan voisin le plus proche, <b>ramenée à la plus grande
+       des deux</b> (la silhouette). Sans cette normalisation, fusionner deux
+       camps éloignés gonflait artificiellement l'écart « eux / nous », et le
+       calcul ramenait toujours deux clans — même sur un cercle qui en comptait
+       trois nettement séparés. */
     const contrast = groups => {
       if (groups.some(g => g.length < 2)) return -1;
       let total = 0;
       groups.forEach((g, gi) => g.forEach(i => {
-        const mine = meanOf(g.filter(j => j !== i).map(j => aff[i][j]));
-        const others = Math.max(...groups.filter((o, oi) => oi !== gi).map(o => meanOf(o.map(j => aff[i][j]))));
-        total += mine - others;
+        const a = 1 - meanOf(g.filter(j => j !== i).map(j => aff[i][j]));
+        const b = 1 - Math.max(...groups.filter((o, oi) => oi !== gi).map(o => meanOf(o.map(j => aff[i][j]))));
+        const m = Math.max(a, b);
+        total += m > 1e-6 ? (b - a) / m : 0;
       }));
       return total / n;
     };
@@ -2747,7 +2754,8 @@
       combos(k).forEach(heads => {
         const groups = split(heads);
         const biggest = Math.max(...groups.map(g => g.length)) / n;
-        const score = contrast(groups) - 0.006 * (k - 2) - 0.3 * (biggest - 1 / k); // légère préférence pour des clans équilibrés
+        // À qualité égale on préfère le découpage le plus simple et le moins déséquilibré
+        const score = contrast(groups) - 0.02 * (k - 2) - 0.08 * (biggest - 1 / k);
         if (!bestSplit || score > bestSplit.score) bestSplit = { groups, score };
       });
     }
@@ -4337,7 +4345,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 34;
+  const BUILD = 35;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
