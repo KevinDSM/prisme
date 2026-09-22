@@ -2956,6 +2956,7 @@
     renderLife(r);
     renderCast(cur);
     renderPick(cur, 'animal');
+    renderAnimalFamilies(cur);
     renderPick(cur, 'film');
     renderPick(cur, 'musique');
     $('values-section').hidden = !vp;
@@ -4063,6 +4064,44 @@
     return rankMatches(PICK_LISTS[key].items, r);
   }
 
+  /* Les familles d'animaux
+     Une seule réponse sur cent soixante-dix animaux, c'est peu de choix et
+     beaucoup de fauves : les mammifères écrasent le classement. Chaque famille
+     donne donc aussi le sien, sur le même principe qu'un univers de fiction. */
+  function animalFamilyOrder() {
+    const out = [];
+    PICK_LISTS.animal.items.forEach(a => {
+      const c = a.cat || 'Autres';
+      if (out.indexOf(c) < 0) out.push(c);
+    });
+    return out;
+  }
+
+  function renderAnimalFamilies(cur) {
+    // un seul classement, découpé ensuite : les pourcentages restent ceux de la carte du dessus
+    const all = rankMatches(PICK_LISTS.animal.items, cur.r);
+    const html = animalFamilyOrder().map(c => {
+      const ranked = all.filter(m => (m.ch.cat || 'Autres') === c);
+      if (!ranked.length) return '';
+      const best = ranked[0];
+      const why = matchWhy(best, 3), gap = matchGap(best);
+      const others = ranked.slice(1, 3).map(x => `${esc(x.ch.name)} (${pct(x.score)}\u00a0%)`);
+      return `
+      <details class="lic" style="--c:${best.ch.color}">
+        <summary><span class="lic-kind">${ranked.length} animaux</span><span class="lic-name">${esc(c)}</span><span class="lic-cta">Découvrir le mien</span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="lic-body">
+          <p class="lic-k">Dans cette famille, tu serais</p>
+          <h3 class="lic-char">${esc(best.ch.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
+          <p class="lic-tag">${esc(best.ch.tag)}</p>
+          <p>${esc(best.ch.desc)}</p>
+          <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'comme lui, tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+          ${others.length ? `<p class="lic-others">Tu n'étais pas loin non plus de : ${others.join(' · ')}.</p>` : ''}
+        </div>
+      </details>`;
+    }).join('');
+    $('animal-families').innerHTML = html;
+  }
+
   /* Affiches et extraits
      Les URL sont résolues une fois pour toutes dans js/films.js et js/musics.js :
      le site ne lance aucune recherche. Il ne charge qu'une image (Wikipédia), et
@@ -4376,7 +4415,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 39;
+  const BUILD = 40;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

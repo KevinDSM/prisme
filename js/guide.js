@@ -421,10 +421,25 @@
      10 quinquies. Quel animal
      --------------------------------------------------------- */
   const ANIMALS = (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS;
+  // Les animaux sont rangés par famille, dans l'ordre où elles apparaissent dans la liste
+  function animalFamilies() {
+    const out = [];
+    ANIMALS.forEach(a => {
+      const c = a.cat || 'Autres';
+      let row = out.find(x => x[0] === c);
+      if (!row) out.push(row = [c, []]);
+      row[1].push(a);
+    });
+    return out;
+  }
   section('animal', 'Le sur-mesure', 'Quel animal serais-tu ?', `
     <p class="gtext">Même méthode que pour les personnages, sur une liste de <b>${ANIMALS.length} animaux</b> décrits eux aussi avec les dimensions du test : qualités, couleurs DISC, valeurs, morale et axes de caractère. Aucun trait politique n'entre dans le calcul. Ton animal est celui dont le profil est le plus proche du tien ; les trois suivants sont indiqués à côté.</p>
     <p class="gtext">La liste est volontairement longue pour qu'un cercle entier puisse recevoir <b>un animal différent par personne</b> : le plus ressemblant est servi en premier, et chacun prend ensuite l'animal restant qui lui va le mieux. À onze, personne ne tombe sur le même.</p>
-    <div class="gchips">${ANIMALS.map(a => `<span class="gchip">${esc(a.name)}</span>`).join('')}</div>`);
+    <h3 class="gsub">Famille par famille</h3>
+    <p class="gtext">Sur une liste aussi longue, les mammifères raflent presque tout : ils sont les plus nombreux et les plus proches de nous. Le résultat est donc donné <b>une fois pour l'ensemble</b>, puis <b>une fois par famille</b> — mammifères, oiseaux, reptiles et amphibiens, mers et océans, insectes et petites bêtes. Les cinq volets utilisent le même classement que la carte principale : les pourcentages sont les mêmes, seule la liste change. Dans un cercle, la ménagerie continue de piocher dans l'ensemble.</p>
+    ${animalFamilies().map(([fam, list]) => `
+      <h4 class="gsub4">${esc(fam)} <small>${list.length}</small></h4>
+      <div class="gchips">${list.map(a => `<span class="gchip">${esc(a.name)}</span>`).join('')}</div>`).join('')}`);
 
   /* ---------------------------------------------------------
      10 sexies. Film et musique
