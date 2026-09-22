@@ -3417,7 +3417,286 @@
 
 
 
+  /* ---------------------------------------------------------
+     L'image à partager
+     Une story 1080 × 1920 dessinée dans le navigateur : rien ne part vers un
+     serveur, on la télécharge ou on la passe au partage du téléphone. Le motif
+     est le spectre de la personne : un prisme qui décompose un faisceau en
+     quatre bandes aux couleurs DISC, chacune aussi épaisse que le score. Couleurs
+     du thème clair en dur : l'image doit être la même quel que soit le thème.
+     --------------------------------------------------------- */
+  const CARD = {
+    w: 1080, h: 1920, pad: 92,
+    bg: '#f5efe4', panel: '#fffcf6', ink: '#1a1722', ink2: '#3d3946', ink3: '#65606d', line: 'rgba(26,23,34,0.14)',
+    disc: { dom: '#e03a3e', inf: '#eaa800', ste: '#2f9e62', con: '#2b7bc4' },
+    serif: 'Fraunces, Georgia, serif', sans: 'Manrope, "Segoe UI", sans-serif',
+  };
+
+  // Une ligne trop longue rétrécit jusqu'à un plancher, puis passe sur deux lignes
+  function cardFit(ctx, text, font, size, min, maxW) {
+    let s = size;
+    while (s > min) {
+      ctx.font = font.replace('{s}', s);
+      if (ctx.measureText(text).width <= maxW) return { lines: [text], size: s };
+      s -= 2;
+    }
+    ctx.font = font.replace('{s}', min);
+    const words = text.split(' ');
+    const lines = [];
+    let cur = '';
+    words.forEach(w => {
+      const t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t;
+    });
+    if (cur) lines.push(cur);
+    return { lines: lines.slice(0, 2), size: min };
+  }
+
+  function cardText(ctx, text, x, y, font, size, min, maxW, color, lh) {
+    const f = cardFit(ctx, text, font, size, min, maxW);
+    ctx.font = font.replace('{s}', f.size);
+    ctx.fillStyle = color;
+    f.lines.forEach((l, i) => ctx.fillText(l, x, y + i * f.size * (lh || 1.08)));
+    return y + (f.lines.length - 1) * f.size * (lh || 1.08);
+  }
+
+  function drawSpectrum(ctx, disc, top) {
+    const W = CARD.w;
+    const cx = 330, cy = top + 200, side = 250;
+    const hgt = side * Math.sqrt(3) / 2;
+    const A = [cx, cy - hgt * 0.62], B = [cx - side / 2, cy + hgt * 0.38], C = [cx + side / 2, cy + hgt * 0.38];
+    const leftMid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+    const rightMid = [(A[0] + C[0]) / 2, (A[1] + C[1]) / 2];
+
+    // le faisceau qui entre
+    ctx.strokeStyle = CARD.ink;
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-10, leftMid[1] + 60);
+    ctx.lineTo(leftMid[0] + 6, leftMid[1]);
+    ctx.stroke();
+
+    // les quatre bandes, proportionnelles aux scores
+    const keys = ['dom', 'inf', 'ste', 'con'];
+    const vals = keys.map(k => Math.max(0.06, disc ? disc[k] : 0.25));
+    const sum = vals.reduce((a, b) => a + b, 0);
+    const outTop = top + 10, outBot = top + 400, inH = 40;
+    let yIn = rightMid[1] - inH / 2, yOut = outTop;
+    keys.forEach((k, n) => {
+      const hIn = inH * vals[n] / sum, hOut = (outBot - outTop) * vals[n] / sum;
+      ctx.fillStyle = CARD.disc[k];
+      ctx.beginPath();
+      ctx.moveTo(rightMid[0] - 4, yIn);
+      ctx.lineTo(W + 2, yOut);
+      ctx.lineTo(W + 2, yOut + hOut);
+      ctx.lineTo(rightMid[0] - 4, yIn + hIn);
+      ctx.closePath();
+      ctx.fill();
+      if (disc && hOut >= 64) {             // le chiffre seulement s'il a la place d'être lu
+        ctx.font = `700 34px ${CARD.sans}`;
+        ctx.fillStyle = k === 'inf' ? CARD.ink : CARD.panel;
+        ctx.textAlign = 'right';
+        ctx.fillText(`${'DISC'[n]} ${Math.round(disc[k] * 100)}`, W - 40, yOut + hOut / 2 + 12);
+        ctx.textAlign = 'left';
+      }
+      yIn += hIn;
+      yOut += hOut;
+    });
+
+    // le prisme, par-dessus
+    ctx.fillStyle = CARD.panel;
+    ctx.strokeStyle = CARD.ink;
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    return top + 430;
+  }
+
+  // Le meilleur personnage, toutes licences confondues
+  function bestCharacter(r) {
+    let best = null;
+    LICENSES.forEach(lic => {
+      const m = castFor(r, lic)[0];
+      if (m && (!best || m.score > best.m.score)) best = { lic, m };
+    });
+    return best;
+  }
+
+  // Une ligne de la fiche : libellé à gauche, valeur à droite, note éventuelle dessous
+  function cardRow(ctx, y, label, value, note, font, size, min) {
+    const x2 = CARD.pad + 250;
+    const maxW = CARD.w - CARD.pad - x2;
+    ctx.font = `600 27px ${CARD.sans}`;
+    ctx.fillStyle = CARD.ink3;
+    ctx.fillText(label, CARD.pad, y);
+    let yy = cardText(ctx, value, x2, y, font, size, min, maxW, CARD.ink, 1.08);
+    if (note) {
+      yy += 40;
+      ctx.font = `500 27px ${CARD.sans}`;
+      ctx.fillStyle = CARD.ink3;
+      ctx.fillText(note, x2, yy);
+    }
+    return yy;
+  }
+
+  async function drawShareCard(cur) {
+    const r = cur.r;
+    const P = CARD.pad, maxW = CARD.w - 2 * P;
+    try {
+      await Promise.all([
+        document.fonts.load(`600 150px ${CARD.serif}`),
+        document.fonts.load(`500 50px ${CARD.serif}`),
+        document.fonts.load(`700 30px ${CARD.sans}`),
+        document.fonts.load(`500 30px ${CARD.sans}`),
+      ]);
+    } catch (e) { /* polices système de repli */ }
+
+    const cv = document.createElement('canvas');
+    cv.width = CARD.w;
+    cv.height = CARD.h;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = CARD.bg;
+    ctx.fillRect(0, 0, CARD.w, CARD.h);
+
+    // en-tête
+    ctx.font = `800 30px ${CARD.sans}`;
+    ctx.fillStyle = CARD.ink;
+    ctx.fillText('PRISME', P, 112);
+    ctx.font = `500 28px ${CARD.sans}`;
+    ctx.fillStyle = CARD.ink3;
+    ctx.textAlign = 'right';
+    ctx.fillText('test politique et psychologique', CARD.w - P, 112);
+    ctx.textAlign = 'left';
+
+    const name = (cur.name || '').trim();
+    ctx.font = `500 36px ${CARD.sans}`;
+    ctx.fillStyle = CARD.ink3;
+    ctx.fillText(name ? 'Le profil de' : 'Mon profil', P, 206);
+    let y = cardText(ctx, name || 'Prisme', P, 340, `600 {s}px ${CARD.serif}`, 150, 92, maxW, CARD.ink, 1.02);
+
+    // le spectre, puis ses quatre scores en clair
+    const dp = discProfile(r.disc);
+    y = drawSpectrum(ctx, r.disc, y + 34);
+    ctx.font = `600 29px ${CARD.sans}`;
+    ctx.fillStyle = CARD.ink2;
+    ctx.fillText(dp ? `Au DISC : ${discLabel(dp)}` : 'Spectre DISC non mesuré', P, y);
+    if (r.disc) {
+      ctx.font = `500 27px ${CARD.sans}`;
+      ctx.fillStyle = CARD.ink3;
+      ctx.fillText(`D ${Math.round(r.disc.dom * 100)}   I ${Math.round(r.disc.inf * 100)}   S ${Math.round(r.disc.ste * 100)}   C ${Math.round(r.disc.con * 100)}`, P, y + 44);
+    }
+
+    // qui tu es
+    const fam = rankFamilies(r)[0];
+    const temp = rankTemperaments(r)[0];
+    const psy = rankPsyche(r)[0];
+    y += 142;
+    const serifRow = `500 {s}px ${CARD.serif}`;
+    [['Famille', fam && fam.name], ['Tempérament', temp && temp.name], ['Archétype', psy && psy.name]]
+      .filter(x => x[1])
+      .forEach(([label, value]) => { y = cardRow(ctx, y, label, value, '', serifRow, 50, 36) + 84; });
+
+    // pour le plaisir
+    y -= 36;
+    ctx.fillStyle = CARD.line;
+    ctx.fillRect(P, y, maxW, 2);
+    y += 74;
+    const hero = bestCharacter(r);
+    const animal = pickFor(r, 'animal')[0];
+    const plat = pickFor(r, 'plat')[0];
+    const job = jobsFor(r)[0];
+    const sansRow = `600 {s}px ${CARD.sans}`;
+    [
+      hero && ['Personnage', hero.m.ch.name, hero.lic.name],
+      animal && ['Animal', animal.ch.name, ''],
+      plat && ['Plat', plat.ch.name, plat.ch.by || ''],
+      job && ['Au bureau', job.ch.name, job.ch.dept.name === job.ch.name ? '' : job.ch.dept.name],
+    ].filter(Boolean).forEach(([label, value, note]) => {
+      if (y > CARD.h - 230) return;
+      y = cardRow(ctx, y, label, value, note, sansRow, 38, 30) + 76;
+    });
+
+    // pied : l'invitation
+    ctx.fillStyle = CARD.ink;
+    ctx.fillRect(0, CARD.h - 170, CARD.w, 170);
+    ctx.font = `500 30px ${CARD.sans}`;
+    ctx.fillStyle = 'rgba(245,239,228,0.72)';
+    ctx.fillText('Et toi, tu es qui ?', P, CARD.h - 100);
+    ctx.font = `700 40px ${CARD.sans}`;
+    ctx.fillStyle = CARD.bg;
+    ctx.fillText('kevindsm.github.io/prisme', P, CARD.h - 50);
+    return cv;
+  }
+
+  let cardUrl = null;
+  async function openImagePanel() {
+    const panel = $('image-panel');
+    panel.hidden = false;
+    $('image-status').textContent = 'Fabrication de l\u2019image\u2026';
+    $('image-actions').hidden = true;
+    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const cv = await drawShareCard(current);
+    const blob = await new Promise(done => cv.toBlob(done, 'image/png'));
+    if (!blob) { $('image-status').textContent = 'Ton navigateur n\u2019a pas pu fabriquer l\u2019image.'; return; }
+    if (cardUrl) URL.revokeObjectURL(cardUrl);
+    cardUrl = URL.createObjectURL(blob);
+    const file = new File([blob], 'prisme' + (current.name ? '-' + current.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '') + '.png', { type: 'image/png' });
+    $('image-preview').src = cardUrl;
+    $('image-preview').hidden = false;
+    const dl = $('btn-image-dl');
+    dl.href = cardUrl;
+    dl.download = file.name;
+    const canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+    $('btn-image-share').hidden = !canShare;
+    $('btn-image-share').onclick = () => navigator.share({ files: [file], text: 'Mon profil Prisme' }).catch(() => {});
+    $('image-status').textContent = 'L\u2019image est fabriqu\u00e9e sur ton appareil : rien n\u2019a \u00e9t\u00e9 envoy\u00e9.';
+    $('image-actions').hidden = false;
+  }
+
+  /* Chargement différé des listes
+     Elles pèsent les deux tiers du site et ne servent qu'aux résultats. Elles
+     partent en tâche de fond dès que l'accueil est affiché ; un lien de résultat
+     ouvert directement les attend avant de s'afficher. Une liste qui ne répond pas
+     laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
+  const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow'];
+  let extrasReady = false, extrasPromise = null;
+
+  function initExtras() {
+    LICENSES = (window.PRISME_CHARACTERS || { LICENSES: [] }).LICENSES;
+    WOWD = window.PRISME_WOW || { WOW: [] };
+    WOW = WOWD.WOW;
+    WOW.forEach(w => { w.name = w.race + ' · ' + w.classe + ' · ' + w.spec; });
+    DEPARTMENTS = (window.PRISME_COMPANY || { DEPARTMENTS: [] }).DEPARTMENTS;
+    ROLES.length = 0;
+    DEPARTMENTS.forEach(d => d.roles.forEach(role => {
+      role.dept = d;
+      role.color = d.color;
+      ROLES.push(role);
+    }));
+    extrasReady = true;
+  }
+
+  function loadExtras() {
+    if (extrasPromise) return extrasPromise;
+    extrasPromise = Promise.all(EXTRA_SCRIPTS.map(n => new Promise(done => {
+      const el = document.createElement('script');
+      el.src = 'js/' + n + '.js?v=' + BUILD;
+      el.onload = el.onerror = done;
+      document.body.appendChild(el);
+    }))).then(initExtras);
+    return extrasPromise;
+  }
+
   function route() {
+    // un résultat ou un cercle a besoin des listes : on les attend, puis on revient
+    if (!extrasReady && /(^|[#&])[gp]=/.test(location.hash)) {
+      loadExtras().then(route);
+      return;
+    }
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const g = params.get('g');
     if (g) {
@@ -3781,7 +4060,7 @@
      « Quel personnage serais-tu ? » : on compare le profil psychologique de la personne
      (qualités, DISC, valeurs, morale, traits, axes de caractère) à celui de chaque personnage.
      --------------------------------------------------------- */
-  const { LICENSES } = window.PRISME_CHARACTERS;
+  let LICENSES = [];   // rempli par initExtras() quand js/characters.js est arrivé
   const peuDe = word => (/^[aeiouyéèêàâîôûh]/i.test(word) ? 'peu d\'' : 'peu de ') + word;
 
   // Valeur de 0 à 1 de la personne sur une dimension, avec le libellé à afficher
@@ -3911,9 +4190,8 @@
      combinaison race / classe / spécialisation est notée comme un personnage,
      sur le tempérament qu'il faut avoir pour s'y plaire — ce ne sont pas des
      conseils de jeu : personne ne dira qu'un orc ne peut pas être prêtre. */
-  const WOWD = window.PRISME_WOW || { WOW: [] };
-  const WOW = WOWD.WOW;
-  WOW.forEach(w => { w.name = w.race + ' · ' + w.classe + ' · ' + w.spec; });
+  let WOWD = { WOW: [] };
+  let WOW = [];
 
   // Pourquoi cette race, cette classe, cette spécialisation : trois phrases, une par part
   function wowWhy(w) {
@@ -4048,22 +4326,22 @@
      --------------------------------------------------------- */
   const PICK_LISTS = {
     animal: {
-      items: (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS,
+      get items() { return (window.PRISME_ANIMALS || { ANIMALS: [] }).ANIMALS; },
       kicker: 'Ton animal', like: 'comme lui', next: 'Tu aurais aussi pu être',
       section: 'animal-section', card: 'animal-card', group: 'animal', list: 'animals',
     },
     film: {
-      items: (window.PRISME_FILMS || { FILMS: [] }).FILMS,
+      get items() { return (window.PRISME_FILMS || { FILMS: [] }).FILMS; },
       kicker: 'Ton film', like: 'comme ce film', next: 'Ta séance de rattrapage',
       section: 'film-section', card: 'film-card', group: 'film', list: 'films', art: true,
     },
     musique: {
-      items: (window.PRISME_MUSICS || { MUSICS: [] }).MUSICS,
+      get items() { return (window.PRISME_MUSICS || { MUSICS: [] }).MUSICS; },
       kicker: 'Ton morceau', like: 'comme ce morceau', next: 'La suite de la playlist',
       section: 'musique-section', card: 'musique-card', group: 'musique', list: 'musiques', play: true,
     },
     plat: {
-      items: (window.PRISME_DISHES || { DISHES: [] }).DISHES,
+      get items() { return (window.PRISME_DISHES || { DISHES: [] }).DISHES; },
       kicker: 'Ton plat', like: 'comme lui', next: 'Le reste du menu',
       section: 'plat-section', card: 'plat-card', group: 'plat', list: 'plats',
     },
@@ -4073,13 +4351,8 @@
      Les postes d'une grande entreprise sont notés comme les personnages : sur
      le tempérament qu'ils réclament, jamais sur le diplôme. Chaque poste garde
      un lien vers sa direction, ce qui permet de dessiner l'organigramme du cercle. */
-  const DEPARTMENTS = (window.PRISME_COMPANY || { DEPARTMENTS: [] }).DEPARTMENTS;
+  let DEPARTMENTS = [];
   const ROLES = [];
-  DEPARTMENTS.forEach(d => d.roles.forEach(role => {
-    role.dept = d;
-    role.color = d.color;
-    ROLES.push(role);
-  }));
 
   function jobsFor(r) {
     return rankMatches(ROLES, r);
@@ -4403,6 +4676,7 @@
       if (current) current.name = name;
       $('url-out').value = profileUrl(current.code, name);
     };
+    $('btn-image').onclick = () => { openImagePanel(); };
     $('btn-copy').onclick = () => {
       $('url-panel').hidden = false;
       $('url-name').value = (current && current.name) || myName();
@@ -4521,7 +4795,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 42;
+  const BUILD = 43;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -4551,5 +4825,7 @@
   initCircleByUrl();
   window.addEventListener('hashchange', route);
   route();
+  // les listes arrivent pendant qu'on lit l'accueil ou qu'on répond au quiz
+  (window.requestIdleCallback || (f => setTimeout(f, 1200)))(() => loadExtras());
   checkForUpdate();
 })();

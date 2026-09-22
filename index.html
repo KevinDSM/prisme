@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=42">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=43">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=42">
+  <link rel="stylesheet" href="css/style.css?v=43">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -210,6 +210,7 @@
       <p class="res-headline" id="res-headline"></p>
       <div class="res-share" id="res-share">
         <button id="btn-copy" class="btn btn-primary" type="button"><span>Générer mon URL</span></button>
+        <button id="btn-image" class="btn btn-ghost" type="button">Créer mon image</button>
         <button id="btn-make-circle" class="btn btn-ghost" type="button">Créer un cercle</button>
         <button id="btn-retake" class="btn btn-ghost" type="button">Refaire le test</button>
       </div>
@@ -223,6 +224,17 @@
         <textarea id="url-out" rows="3" readonly spellcheck="false"></textarea>
         <div class="maker-actions">
           <button id="btn-url-copy" class="btn btn-primary" type="button"><span>Copier l'URL</span></button>
+        </div>
+      </div>
+
+      <div id="image-panel" class="maker image-panel" hidden>
+        <h3>Ton image</h3>
+        <p>Au format story, prête à poster : ton prénom, ton spectre DISC, ta famille, ton tempérament, ton archétype, et quatre résultats pour le plaisir.</p>
+        <p id="image-status" class="image-status"></p>
+        <img id="image-preview" class="image-preview" alt="Aperçu de ton image Prisme" hidden>
+        <div id="image-actions" class="maker-actions" hidden>
+          <a id="btn-image-dl" class="btn btn-primary" href="#"><span>Télécharger l'image</span></a>
+          <button id="btn-image-share" class="btn btn-ghost" type="button" hidden>Partager</button>
         </div>
       </div>
 
@@ -837,15 +849,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=42"></script>
-  <script src="js/profiles.js?v=42"></script>
-  <script src="js/characters.js?v=42"></script>
-  <script src="js/animals.js?v=42"></script>
-  <script src="js/films.js?v=42"></script>
-  <script src="js/musics.js?v=42"></script>
-  <script src="js/dishes.js?v=42"></script>
-  <script src="js/company.js?v=42"></script>
-  <script src="js/wow.js?v=42"></script>
-  <script src="js/app.js?v=42"></script>
+  <script src="js/questions.js?v=43"></script>
+  <script src="js/profiles.js?v=43"></script>
+  <script src="js/app.js?v=43"></script>
 </body>
 </html>
