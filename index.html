@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=40">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=41">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=40">
+  <link rel="stylesheet" href="css/style.css?v=41">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -545,7 +545,7 @@
     <section class="res-section" id="cast-section" hidden>
       <div class="section-head">
         <h2 data-nav="Personnages">Quel personnage serais-tu ?</h2>
-        <p>D'après ton profil psychologique — tes qualités, tes couleurs DISC, tes valeurs, ton caractère — et pas tes opinions. Trente-huit univers et plus de mille personnages : clique sur une famille, puis sur un univers, pour découvrir le tien et pourquoi c'est lui.</p>
+        <p>D'après ton profil psychologique — tes qualités, tes couleurs DISC, tes valeurs, ton caractère — et pas tes opinions. Quarante-trois univers et plus de onze cents personnages : clique sur une famille, puis sur un univers, pour découvrir le tien et pourquoi c'est lui.</p>
       </div>
       <div id="cast" class="cast"></div>
     </section>
@@ -573,6 +573,14 @@
         <p class="pick-note">Le bouton joue un extrait de 30 secondes servi par Apple, chargé seulement si tu cliques. Deux morceaux sur cent n'en ont pas : ils ne sont pas au catalogue.</p>
       </div>
       <div id="musique-card" class="animal-wrap"></div>
+    </section>
+
+    <section class="res-section" id="plat-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Ton plat">Si tu étais un plat</h2>
+        <p>Pas ton plat préféré : celui dont le tempérament ressemble au tien. Un plat qui mijote six heures ne tombe pas sur la même personne qu'un plat qui se rate en trois secondes.</p>
+      </div>
+      <div id="plat-card" class="animal-wrap"></div>
     </section>
 
     <footer class="res-foot">
@@ -764,6 +772,12 @@
         <p class="group-intro">Un morceau par personne, et un morceau différent pour chacun : de quoi faire une vraie playlist du cercle.</p>
         <div id="g-musiques"></div>
       </article>
+      <article class="res-card group-card" id="g-plat-card-group" hidden>
+        <p class="card-kicker">Le menu du cercle</p>
+        <h2 data-nav="Menu">Qui serait quel plat</h2>
+        <p class="group-intro">Un plat par personne, et un plat différent pour chacun : de quoi composer un repas entier.</p>
+        <div id="g-plats"></div>
+      </article>
     </section>
 
     <div class="res-act" data-act="Un par un">
@@ -809,13 +823,14 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=40"></script>
-  <script src="js/profiles.js?v=40"></script>
-  <script src="js/characters.js?v=40"></script>
-  <script src="js/animals.js?v=40"></script>
-  <script src="js/films.js?v=40"></script>
-  <script src="js/musics.js?v=40"></script>
-  <script src="js/wow.js?v=40"></script>
-  <script src="js/app.js?v=40"></script>
+  <script src="js/questions.js?v=41"></script>
+  <script src="js/profiles.js?v=41"></script>
+  <script src="js/characters.js?v=41"></script>
+  <script src="js/animals.js?v=41"></script>
+  <script src="js/films.js?v=41"></script>
+  <script src="js/musics.js?v=41"></script>
+  <script src="js/dishes.js?v=41"></script>
+  <script src="js/wow.js?v=41"></script>
+  <script src="js/app.js?v=41"></script>
 </body>
 </html>

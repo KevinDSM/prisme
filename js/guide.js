@@ -446,15 +446,19 @@
      --------------------------------------------------------- */
   const FILMS = (window.PRISME_FILMS || { FILMS: [] }).FILMS;
   const MUSICS = (window.PRISME_MUSICS || { MUSICS: [] }).MUSICS;
-  section('filmusique', 'Le sur-mesure', 'Ton film et ta musique', `
-    <p class="gtext">Même méthode encore, sur deux listes plates : <b>${FILMS.length} films</b> et <b>${MUSICS.length} morceaux</b>. Ce n'est pas une question de goût — Prisme ne sait pas ce que tu aimes. Ce qui est décrit, c'est le <b>tempérament</b> de l'œuvre : son énergie, son rapport au temps, sa façon de traiter les gens, ce qu'elle cherche à provoquer. Un film lent et patient tombera sur quelqu'un de patient, pas sur quelqu'un qui l'a aimé.</p>
+  const DISHES = (window.PRISME_DISHES || { DISHES: [] }).DISHES;
+  section('filmusique', 'Le sur-mesure', 'Ton film, ta musique et ton plat', `
+    <p class="gtext">Même méthode encore, sur trois listes plates : <b>${FILMS.length} films</b>, <b>${MUSICS.length} morceaux</b> et <b>${DISHES.length} plats</b>. Ce n'est pas une question de goût — Prisme ne sait pas ce que tu aimes. Ce qui est décrit, c'est le <b>tempérament</b> de l'œuvre : son énergie, son rapport au temps, sa façon de traiter les gens, ce qu'elle cherche à provoquer. Un film lent et patient tombera sur quelqu'un de patient, pas sur quelqu'un qui l'a aimé.</p>
     <p class="gtext">Comme pour les animaux, la liste est assez longue pour qu'un cercle entier reçoive une entrée différente par personne : la page de cercle en tire une <b>filmothèque</b> et une <b>playlist</b>.</p>
     <h3 class="gsub">L'affiche et l'extrait</h3>
     <p class="gtext">Chaque film porte son <b>affiche</b>, et chaque morceau un bouton qui joue un <b>extrait de 30 secondes</b>. Les affiches viennent de Wikipédia, les extraits d'Apple. Les adresses sont résolues une fois pour toutes quand le site est construit : Prisme ne lance <b>aucune recherche</b> pendant que tu lis, et n'envoie rien qui vienne de tes réponses. Ton navigateur va simplement chercher une image, comme il va chercher les polices du site — et l'extrait seulement si tu cliques. Si une affiche ou un extrait ne répond pas, il disparaît sans rien casser : deux morceaux sur ${MUSICS.length} n'ont d'ailleurs pas d'extrait, faute d'être au catalogue.</p>
     <h3 class="gsub">Les films</h3>
     <div class="gchips">${FILMS.map(f => `<span class="gchip">${esc(f.name)}</span>`).join('')}</div>
     <h3 class="gsub">Les morceaux</h3>
-    <div class="gchips">${MUSICS.map(m => `<span class="gchip">${esc(m.name)}</span>`).join('')}</div>`);
+    <div class="gchips">${MUSICS.map(m => `<span class="gchip">${esc(m.name)}</span>`).join('')}</div>
+    <h3 class="gsub">Si tu étais un plat</h3>
+    <p class="gtext">Un plat n'a pas de goût dans Prisme : il a un <b>tempérament</b>. Un pot-au-feu qui mijote six heures sans qu'on y touche ne tombe pas sur la même personne qu'un soufflé qui retombe si on hésite, ou qu'une raclette dont tout l'intérêt est le temps passé autour de la table. Ce qui est décrit, c'est le rapport au temps, à la technique, au partage et à la démonstration. La liste couvre la cuisine de famille, la rue, le restaurant et les déserts, et le cercle en tire un <b>menu</b> : un plat différent par personne.</p>
+    <div class="gchips">${DISHES.map(d => `<span class="gchip">${esc(d.name)}</span>`).join('')}</div>`);
 
   /* ---------------------------------------------------------
      11. Signatures

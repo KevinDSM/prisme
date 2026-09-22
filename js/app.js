@@ -2959,6 +2959,7 @@
     renderAnimalFamilies(cur);
     renderPick(cur, 'film');
     renderPick(cur, 'musique');
+    renderPick(cur, 'plat');
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
     const upgradable = canUpgrade(r);
@@ -3603,6 +3604,7 @@
     renderGroupPick(people, 'g-', 'animal');
     renderGroupPick(people, 'g-', 'film');
     renderGroupPick(people, 'g-', 'musique');
+    renderGroupPick(people, 'g-', 'plat');
     renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
@@ -4058,6 +4060,11 @@
       kicker: 'Ton morceau', like: 'comme ce morceau', next: 'La suite de la playlist',
       section: 'musique-section', card: 'musique-card', group: 'musique', list: 'musiques', play: true,
     },
+    plat: {
+      items: (window.PRISME_DISHES || { DISHES: [] }).DISHES,
+      kicker: 'Ton plat', like: 'comme lui', next: 'Le reste du menu',
+      section: 'plat-section', card: 'plat-card', group: 'plat', list: 'plats',
+    },
   };
 
   function pickFor(r, key) {
@@ -4415,7 +4422,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 40;
+  const BUILD = 41;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
