@@ -461,6 +461,18 @@
     <div class="gchips">${DISHES.map(d => `<span class="gchip">${esc(d.name)}</span>`).join('')}</div>`);
 
   /* ---------------------------------------------------------
+     10 septies. Dans quel service
+     --------------------------------------------------------- */
+  const DEPTS = (window.PRISME_COMPANY || { DEPARTMENTS: [] }).DEPARTMENTS;
+  const ROLE_TOTAL = DEPTS.reduce((n, d) => n + d.roles.length, 0);
+  section('service', 'Le sur-mesure', 'Dans quel service travaillerais-tu ?', `
+    <p class="gtext">Prisme dessine une grande entreprise internationale : <b>${DEPTS.length} directions</b> et <b>${ROLE_TOTAL} postes</b>, de la direction générale à l'accueil, en passant par la paie, la cybersécurité, les achats, la maintenance et les affaires publiques. Chaque poste est noté exactement comme un personnage, mais sur une seule question : <b>quel tempérament ce métier réclame-t-il ?</b> Le diplôme n'entre pas dans le calcul, l'expérience non plus. On peut tomber sur « contrôle de gestion » sans avoir jamais ouvert un tableur : ce qui est comparé, c'est l'aptitude à poser des questions gênantes avec le sourire.</p>
+    <p class="gtext">En solo, la fiche donne <b>ton service</b>, ce qu'on y fait, <b>ton poste</b>, ce qu'il exige, <b>pourquoi toi</b> et les trois postes suivants. Dans un cercle, la page construit un <b>organigramme complet</b> : une boîte de tête pour la direction générale — si quelqu'un a le tempérament du poste, sinon la case reste vide et c'est dit — puis une carte par direction, avec chacun à son poste, son pourcentage et les deux dimensions qui l'y ont amené. Comme pour les personnages, <b>deux personnes ne peuvent pas occuper le même poste</b> : le plus proche est servi en premier, les suivants prennent le poste restant qui leur va le mieux. À sept, on obtient généralement quatre ou cinq directions.</p>
+    ${DEPTS.map(d => `
+      <h4 class="gsub4">${esc(d.name)} <small>${d.roles.length} postes</small></h4>
+      <div class="gchips">${d.roles.map(r => `<span class="gchip">${esc(r.name)}</span>`).join('')}</div>`).join('')}`);
+
+  /* ---------------------------------------------------------
      11. Signatures
      --------------------------------------------------------- */
   section('signatures', 'Le sur-mesure', 'Les signatures', `

@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=41">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=42">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=41">
+  <link rel="stylesheet" href="css/style.css?v=42">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -583,6 +583,14 @@
       <div id="plat-card" class="animal-wrap"></div>
     </section>
 
+    <section class="res-section" id="poste-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Ton service">Dans quel service travaillerais-tu ?</h2>
+        <p>Une grande entreprise internationale, ses quinze directions et ses soixante-dix postes. Chaque poste est noté sur le <b>tempérament</b> qu'il réclame, jamais sur le diplôme : on peut tomber sur « contrôle de gestion » sans avoir jamais ouvert un tableur.</p>
+      </div>
+      <div id="poste-card" class="animal-wrap"></div>
+    </section>
+
     <footer class="res-foot">
       <p>Prisme est un miroir, pas un verdict. Les familles, tempéraments et archétypes sont des approximations : le profil réel est la somme des curseurs, pas l'étiquette.</p>
       <p><a href="guide.html">Mode d'emploi</a> : comment lire chaque axe, chaque portrait et le DISC · <a href="https://github.com/KevinDSM/prisme" target="_blank" rel="noopener">Code source</a> · Les réponses ne quittent jamais ton navigateur.</p>
@@ -778,6 +786,12 @@
         <p class="group-intro">Un plat par personne, et un plat différent pour chacun : de quoi composer un repas entier.</p>
         <div id="g-plats"></div>
       </article>
+      <article class="res-card group-card" id="g-org-card-group" hidden>
+        <p class="card-kicker">L'organigramme du cercle</p>
+        <h2 data-nav="Organigramme">Qui travaillerait à quel service</h2>
+        <p class="group-intro">Si le cercle montait une entreprise, voici comment les postes se répartiraient : une direction par encadré, chacun à son poste, avec ce qui l'y amène. Deux personnes ne peuvent pas occuper le même poste : le plus proche est servi en premier, les suivants prennent le poste restant qui leur va le mieux.</p>
+        <div id="g-org"></div>
+      </article>
     </section>
 
     <div class="res-act" data-act="Un par un">
@@ -823,14 +837,15 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=41"></script>
-  <script src="js/profiles.js?v=41"></script>
-  <script src="js/characters.js?v=41"></script>
-  <script src="js/animals.js?v=41"></script>
-  <script src="js/films.js?v=41"></script>
-  <script src="js/musics.js?v=41"></script>
-  <script src="js/dishes.js?v=41"></script>
-  <script src="js/wow.js?v=41"></script>
-  <script src="js/app.js?v=41"></script>
+  <script src="js/questions.js?v=42"></script>
+  <script src="js/profiles.js?v=42"></script>
+  <script src="js/characters.js?v=42"></script>
+  <script src="js/animals.js?v=42"></script>
+  <script src="js/films.js?v=42"></script>
+  <script src="js/musics.js?v=42"></script>
+  <script src="js/dishes.js?v=42"></script>
+  <script src="js/company.js?v=42"></script>
+  <script src="js/wow.js?v=42"></script>
+  <script src="js/app.js?v=42"></script>
 </body>
 </html>

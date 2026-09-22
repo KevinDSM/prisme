@@ -2177,3 +2177,51 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   .wow-build { padding: 16px 16px 18px; }
   .wow-part b { font-size: 22px; }
 }
+
+/* ============================================================
+   L'ORGANIGRAMME DU CERCLE
+   Une boîte de tête, un trait, puis une direction par encadré.
+   Les traits sont dessinés en CSS : rien à recalculer au redimensionnement.
+   ============================================================ */
+.job-role-k { margin: 18px 0 2px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3); }
+.job-role { margin: 0 0 6px; font-family: var(--font-display); font-size: 27px; font-weight: 500;
+  line-height: 1.15; letter-spacing: -0.01em; color: var(--c, var(--ink)); }
+
+.org { --org-line: color-mix(in oklab, var(--ink) 18%, transparent); padding-top: 4px; }
+.org-top { position: relative; max-width: 460px; margin: 0 auto 34px; padding: 16px 22px 18px;
+  border: 1px solid var(--line); border-radius: 16px; background: rgba(var(--panel2-rgb), 0.9);
+  text-align: center; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03); }
+.org-co { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3); }
+.org-boss { display: block; margin-top: 6px; font-family: var(--font-display); font-size: 25px;
+  font-weight: 500; line-height: 1.15; }
+.org-boss-role { display: block; margin-top: 2px; font-size: 14px; color: var(--ink-2); }
+.org-top::after { content: ''; position: absolute; left: 50%; bottom: -18px; width: 1px; height: 18px;
+  background: var(--org-line); }
+
+.org-grid { position: relative; display: grid; gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); padding-top: 18px; }
+.org-grid::before { content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+  background: var(--org-line); }
+
+.org-dept { position: relative; align-self: start; border: 1px solid var(--line); border-top: 3px solid var(--c);
+  border-radius: 14px; background: color-mix(in srgb, var(--c) 5%, rgba(var(--panel-rgb), 0.9)); padding: 14px 16px 6px; }
+.org-dept header h3 { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 500;
+  line-height: 1.2; }
+.org-dept header p { margin: 2px 0 10px; font-size: 13px; color: var(--ink-3); }
+.org-dept ul { margin: 0; padding: 0; list-style: none; }
+.org-dept li { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; align-items: baseline;
+  padding: 10px 0; border-top: 1px dotted var(--line); }
+.org-who { font-weight: 700; }
+.org-dept li .pct { grid-column: 2; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.org-role { grid-column: 1 / -1; font-size: 14px; color: var(--c); font-weight: 600; }
+.org-why { grid-column: 1 / -1; margin-top: 2px; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+
+@media (max-width: 700px) {
+  .org-grid { grid-template-columns: 1fr; }
+  .org-grid::before { left: 22%; right: 22%; }
+}
+@media print {
+  .org-dept { break-inside: avoid; }
+}

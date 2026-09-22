@@ -2960,6 +2960,7 @@
     renderPick(cur, 'film');
     renderPick(cur, 'musique');
     renderPick(cur, 'plat');
+    renderJob(cur);
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
     const upgradable = canUpgrade(r);
@@ -3605,6 +3606,7 @@
     renderGroupPick(people, 'g-', 'film');
     renderGroupPick(people, 'g-', 'musique');
     renderGroupPick(people, 'g-', 'plat');
+    renderGroupOrg(people);
     renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
@@ -4067,6 +4069,103 @@
     },
   };
 
+  /* Dans quel service travaillerais-tu ?
+     Les postes d'une grande entreprise sont notés comme les personnages : sur
+     le tempérament qu'ils réclament, jamais sur le diplôme. Chaque poste garde
+     un lien vers sa direction, ce qui permet de dessiner l'organigramme du cercle. */
+  const DEPARTMENTS = (window.PRISME_COMPANY || { DEPARTMENTS: [] }).DEPARTMENTS;
+  const ROLES = [];
+  DEPARTMENTS.forEach(d => d.roles.forEach(role => {
+    role.dept = d;
+    role.color = d.color;
+    ROLES.push(role);
+  }));
+
+  function jobsFor(r) {
+    return rankMatches(ROLES, r);
+  }
+
+  function renderJob(cur) {
+    const ranked = jobsFor(cur.r);
+    $('poste-section').hidden = !ranked.length;
+    if (!ranked.length) return;
+    const best = ranked[0], d = best.ch.dept;
+    const why = matchWhy(best, 4), gap = matchGap(best);
+    const others = ranked.slice(1, 4);
+    $('poste-card').innerHTML = `
+      <article class="animal" style="--c:${d.color}">
+        <div class="pick-body">
+          <p class="animal-k">Ton service</p>
+          <h3 class="animal-name">${esc(d.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
+          <p class="animal-by">${esc(d.kind)}</p>
+          <p class="animal-desc">${esc(d.desc)}</p>
+          <p class="job-role-k">Ton poste</p>
+          <p class="job-role">${esc(best.ch.name)}</p>
+          <p class="animal-tag">${esc(best.ch.tag)}</p>
+          <p class="animal-desc">${esc(best.ch.desc)}</p>
+          <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? 'ce poste demande ce que tu as : ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+        </div>
+      </article>
+      <div class="animal-next">
+        <p class="animal-next-k">Tu aurais aussi pu être</p>
+        <ul>${others.map(x => `<li style="--c:${x.ch.color}"><span class="dot"></span><span class="an-id"><b>${esc(x.ch.name)}</b>${x.ch.dept.name === x.ch.name ? '' : `<span class="animal-sub">${esc(x.ch.dept.name)}</span>`}<small>${esc(x.ch.tag)}</small></span><span class="pct">${pct(x.score)}\u00a0%</span></li>`).join('')}</ul>
+      </div>`;
+  }
+
+  /* L'organigramme du cercle : chacun son poste, et deux personnes ne peuvent
+     pas occuper le même. On sert d'abord la meilleure correspondance, puis on
+     regroupe les gens par direction. */
+  function renderGroupOrg(people) {
+    const card = $('g-org-card-group');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    const table = people.map(p => jobsFor(p.r));
+    const freeP = new Set(people.map((p, i) => i).filter(i => table[i].length));
+    const taken = new Set();
+    const picks = [];
+    while (freeP.size) {
+      let best = null;
+      freeP.forEach(i => {
+        const m = table[i].find(x => !taken.has(x.ch.name)) || table[i][0];
+        if (!best || m.score > best.m.score) best = { i, m };
+      });
+      taken.add(best.m.ch.name);
+      freeP.delete(best.i);
+      picks.push({ p: people[best.i], m: best.m });
+    }
+    const groups = [];
+    DEPARTMENTS.forEach(d => {
+      const list = picks.filter(x => x.m.ch.dept === d).sort((a, b) => b.m.score - a.m.score);
+      if (list.length) groups.push({ d, list });
+    });
+    // la boîte du haut est le poste de direction générale, s'il a trouvé preneur
+    const head = picks.find(x => x.m.ch.lead);
+    const shown = groups.map(g => ({ d: g.d, list: g.list.filter(x => x !== head) })).filter(g => g.list.length);
+    const line = x => {
+      const why = matchWhy(x.m, 2);
+      return `<li>
+        <span class="org-who">${esc(x.p.name)}</span>
+        <span class="pct">${pct(x.m.score)}\u00a0%</span>
+        <span class="org-role">${esc(x.m.ch.name)}</span>
+        <span class="org-why">${why.length ? esc(joinFr(why)) : esc(x.m.ch.tag.toLowerCase())}</span>
+      </li>`;
+    };
+    const deptCard = g => `
+      <article class="org-dept" style="--c:${g.d.color}">
+        <header><h3>${esc(g.d.name)}</h3><p>${esc(g.d.kind)}</p></header>
+        <ul>${g.list.map(line).join('')}</ul>
+      </article>`;
+    $('g-org').innerHTML = `
+      <div class="org">
+        <div class="org-top">
+          <span class="org-co">${people.length} personnes, ${groups.length} direction${groups.length > 1 ? 's' : ''}</span>
+          ${head ? `<span class="org-boss">${esc(head.p.name)}</span><span class="org-boss-role">Direction générale · ${pct(head.m.score)}\u00a0%</span>`
+            : `<span class="org-boss">Pas de direction générale</span><span class="org-boss-role">personne n'a le tempérament du poste, et ce n'est pas un défaut</span>`}
+        </div>
+        <div class="org-grid">${shown.map(deptCard).join('')}</div>
+      </div>`;
+  }
+
   function pickFor(r, key) {
     return rankMatches(PICK_LISTS[key].items, r);
   }
@@ -4422,7 +4521,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 41;
+  const BUILD = 42;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
