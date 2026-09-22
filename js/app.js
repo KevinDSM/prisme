@@ -642,7 +642,7 @@
       + `${nq} curseurs, environ ${mins} minutes. Les réponses déjà données sont gardées : le test n'est pas à refaire.\n\n`
       + `À la fin, on revient à ce cercle avec le profil à jour.`);
     if (!ok) return;
-    store(STORAGE_BACK, { code, members: groupMembers.map(x => ({ code: x.code, name: x.name })) });
+    store(STORAGE_BACK, { code, title: circleName, members: groupMembers.map(x => ({ code: x.code, name: x.name })) });
     startUpgrade(code);
   }
 
@@ -674,7 +674,8 @@
     store(STORAGE_BACK, null);
     if (back && baseCode && back.code === baseCode && Array.isArray(back.members) && back.members.length > 1) {
       const members = back.members.map(x => (x.code === baseCode ? { code, name: x.name } : x));
-      location.hash = 'g=' + encodeGroup(withNames(members));
+      circleName = back.title || '';
+      location.hash = groupHashOf(members);
       toast('Profil à jour : le cercle repart avec. Pense à copier la nouvelle URL pour la partager.');
       return;
     }
@@ -2951,6 +2952,7 @@
     $('disc-section').hidden = !dp;
     if (dp) renderDiscSection(r, dp);
 
+    if (!silent) resetCard('');
     renderAssembly(cur);
     renderQualities(r);
     renderLife(r);
@@ -3460,75 +3462,210 @@
     return y + (f.lines.length - 1) * f.size * (lh || 1.08);
   }
 
-  function drawSpectrum(ctx, disc, top) {
-    const W = CARD.w;
-    const cx = 330, cy = top + 200, side = 250;
-    const hgt = side * Math.sqrt(3) / 2;
-    const A = [cx, cy - hgt * 0.62], B = [cx - side / 2, cy + hgt * 0.38], C = [cx + side / 2, cy + hgt * 0.38];
-    const leftMid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
-    const rightMid = [(A[0] + C[0]) / 2, (A[1] + C[1]) / 2];
-
-    // le faisceau qui entre
-    ctx.strokeStyle = CARD.ink;
-    ctx.lineWidth = 7;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(-10, leftMid[1] + 60);
-    ctx.lineTo(leftMid[0] + 6, leftMid[1]);
-    ctx.stroke();
-
-    // les quatre bandes, proportionnelles aux scores
-    const keys = ['dom', 'inf', 'ste', 'con'];
-    const vals = keys.map(k => Math.max(0.06, disc ? disc[k] : 0.25));
-    const sum = vals.reduce((a, b) => a + b, 0);
-    const outTop = top + 10, outBot = top + 400, inH = 40;
-    let yIn = rightMid[1] - inH / 2, yOut = outTop;
-    keys.forEach((k, n) => {
-      const hIn = inH * vals[n] / sum, hOut = (outBot - outTop) * vals[n] / sum;
-      ctx.fillStyle = CARD.disc[k];
+  // La roue DISC du site, redessinée en canvas pour garder les polices du site
+  // (une image SVG ne voit pas les polices web). Même géométrie que renderDiscWheel.
+  function drawWheel(ctx, cx, cy, R, { fill, points }) {
+    const k = R / 128;
+    const quads = { dom: [180, 270], inf: [270, 360], ste: [0, 90], con: [90, 180] };
+    const rad = d => d * Math.PI / 180;
+    const pt = (deg, r) => [cx + Math.cos(rad(deg)) * r, cy + Math.sin(rad(deg)) * r];
+    const sector = (a0, a1, r, color, alpha) => {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.moveTo(rightMid[0] - 4, yIn);
-      ctx.lineTo(W + 2, yOut);
-      ctx.lineTo(W + 2, yOut + hOut);
-      ctx.lineTo(rightMid[0] - 4, yIn + hIn);
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, rad(a0), rad(a1));
       ctx.closePath();
       ctx.fill();
-      if (disc && hOut >= 64) {             // le chiffre seulement s'il a la place d'être lu
-        ctx.font = `700 34px ${CARD.sans}`;
-        ctx.fillStyle = k === 'inf' ? CARD.ink : CARD.panel;
-        ctx.textAlign = 'right';
-        ctx.fillText(`${'DISC'[n]} ${Math.round(disc[k] * 100)}`, W - 40, yOut + hOut / 2 + 12);
-        ctx.textAlign = 'left';
-      }
-      yIn += hIn;
-      yOut += hOut;
-    });
+      ctx.globalAlpha = 1;
+    };
+    DISC.forEach(x => sector(quads[x.id][0], quads[x.id][1], R, CARD.disc[x.id], 0.13));
+    if (fill) DISC.forEach(x => sector(quads[x.id][0], quads[x.id][1], R * (0.16 + 0.84 * fill[x.id]), CARD.disc[x.id], 0.9));
 
-    // le prisme, par-dessus
-    ctx.fillStyle = CARD.panel;
-    ctx.strokeStyle = CARD.ink;
-    ctx.lineWidth = 5;
-    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(26,23,34,0.22)';
+    ctx.lineWidth = 1.2 * k;
+    [1 / 3, 2 / 3, 1].forEach(f => { ctx.beginPath(); ctx.arc(cx, cy, R * f, 0, Math.PI * 2); ctx.stroke(); });
+    ctx.lineWidth = 1.5 * k;
     ctx.beginPath();
-    ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(cx - R - 8 * k, cy); ctx.lineTo(cx + R + 8 * k, cy);
+    ctx.moveTo(cx, cy - R - 8 * k); ctx.lineTo(cx, cy + R + 8 * k);
     ctx.stroke();
-    return top + 430;
-  }
 
-  // Le meilleur personnage, toutes licences confondues
-  function bestCharacter(r) {
-    let best = null;
-    LICENSES.forEach(lic => {
-      const m = castFor(r, lic)[0];
-      if (m && (!best || m.score > best.m.score)) best = { lic, m };
+    // les deux axes, en toutes lettres
+    ctx.fillStyle = CARD.ink3;
+    ctx.font = `800 ${Math.round(11.5 * k)}px ${CARD.sans}`;
+    ctx.textAlign = 'center';
+    ctx.fillText('RAPIDE \u00b7 AFFIRM\u00c9', cx, cy - R - 20 * k);
+    ctx.fillText('POS\u00c9 \u00b7 R\u00c9FL\u00c9CHI', cx, cy + R + 30 * k);
+    [['T\u00c2CHES', -1], ['RELATIONS', 1]].forEach(([t, side]) => {
+      ctx.save();
+      ctx.translate(cx + side * (R + 20 * k), cy);
+      ctx.rotate(side * Math.PI / 2);
+      ctx.fillText(t, 0, 0);
+      ctx.restore();
     });
-    return best;
+
+    // pastilles D I S C, et les scores si la roue est remplie
+    DISC.forEach(x => {
+      const mid = quads[x.id][0] + 45;
+      const [bx, by] = pt(mid, R + 34 * k);
+      ctx.fillStyle = CARD.disc[x.id];
+      ctx.strokeStyle = CARD.panel;
+      ctx.lineWidth = 3 * k;
+      ctx.beginPath(); ctx.arc(bx, by, 20 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = CARD.panel;
+      ctx.font = `600 ${Math.round(22 * k)}px ${CARD.serif}`;
+      ctx.fillText(x.letter, bx, by + 8 * k);
+      if (fill) {
+        const [sx, sy] = pt(mid, R * 0.58);
+        ctx.font = `600 ${Math.round(22 * k)}px ${CARD.serif}`;
+        ctx.lineWidth = 5 * k;
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = 'rgba(245,239,228,0.9)';
+        ctx.strokeText(String(pct(fill[x.id])), sx, sy + 8 * k);
+        ctx.fillStyle = CARD.ink;
+        ctx.fillText(String(pct(fill[x.id])), sx, sy + 8 * k);
+      }
+    });
+
+    /* Les points. Des profils presque identiques tombent au même endroit : ils
+       forment une grappe serrée (en nid d'abeille autour de leur position commune).
+       Jusqu'à trois, l'étiquette donne les prénoms ; au-delà, elle dit combien ils
+       sont — la légende, avec les couleurs, dit qui. Les étiquettes évitent les
+       pastilles et les titres d'axes, restent dans l'image, et sont reliées à leur
+       point par un trait quand il a fallu les déplacer. */
+    const W = ctx.canvas.width;
+    const raw = (points || []).map(p => {
+      const [dx, dy] = discPoint(p.disc);
+      return { p, x: cx + dx * R, y: cy - dy * R };
+    });
+    const near = 16 * k;
+    const clusters = [];
+    raw.forEach(m => {
+      const c = clusters.find(g => Math.hypot(g.x - m.x, g.y - m.y) < near);
+      if (c) {
+        c.items.push(m);
+        c.x = c.items.reduce((t, z) => t + z.x, 0) / c.items.length;
+        c.y = c.items.reduce((t, z) => t + z.y, 0) / c.items.length;
+      } else clusters.push({ x: m.x, y: m.y, items: [m] });
+    });
+    const offsets = n => {
+      if (n === 1) return [[0, 0]];
+      if (n <= 6) {
+        const r0 = (n <= 3 ? 10 : 14) * k;
+        return Array.from({ length: n }, (_, t) => [Math.cos(-Math.PI / 2 + t / n * 2 * Math.PI) * r0, Math.sin(-Math.PI / 2 + t / n * 2 * Math.PI) * r0]);
+      }
+      const out = [[0, 0]];
+      let ring = 1;
+      while (out.length < n) {
+        const cnt = Math.min(6 * ring, n - out.length), r0 = 15 * k * ring;
+        for (let t = 0; t < cnt; t++) out.push([Math.cos(t / cnt * 2 * Math.PI) * r0, Math.sin(t / cnt * 2 * Math.PI) * r0]);
+        ring++;
+      }
+      return out;
+    };
+    const font = `800 ${Math.round(14 * k)}px ${CARD.sans}`;
+    const lh = 18 * k;
+    ctx.font = font;
+    clusters.forEach(g => {
+      const n = g.items.length;
+      const offs = offsets(n);
+      g.spread = Math.max(...offs.map(([a, b]) => Math.hypot(a, b))) + (n > 1 ? 7 * k : 0);
+      // une grosse grappe au bord est ramenée vers l'intérieur, pour rester sur la roue
+      const d = Math.hypot(g.x - cx, g.y - cy), lim = R - g.spread * 0.6;
+      if (n > 1 && d > lim) { g.x = cx + (g.x - cx) * lim / d; g.y = cy + (g.y - cy) * lim / d; }
+      g.items.forEach((m, t) => { m.px = g.x + offs[t][0]; m.py = g.y + offs[t][1]; });
+
+      const roomR = W - 16 * k - (g.x + g.spread + 13 * k), roomL = (g.x - g.spread - 13 * k) - 16 * k;
+      const words = n <= 3 ? g.items.map((m, t) => m.p.label + (t < n - 1 ? ',' : '')) : [`${n} profils`];
+      // à droite du point comme sur le site, à gauche seulement si la place manque
+      const want = Math.min(230 * k, ctx.measureText(words.join(' ')).width);
+      g.right = roomR < want && roomL > roomR;
+      const maxW = Math.max(120 * k, Math.min(230 * k, g.right ? roomL : roomR));
+      const lines = [];
+      let cur = '';
+      words.forEach(w => {
+        const tryLine = cur ? cur + ' ' + w : w;
+        if (cur && ctx.measureText(tryLine).width > maxW) { lines.push(cur); cur = w; } else cur = tryLine;
+      });
+      if (cur) lines.push(cur);
+      g.lines = lines;
+      g.w = Math.max(...lines.map(l => ctx.measureText(l).width));
+      g.h = lines.length * lh;
+      g.lx = g.right ? g.x - g.spread - 13 * k : g.x + g.spread + 13 * k;
+      g.ly = g.y - g.h / 2 + lh * 0.72;
+    });
+
+    const box = g => [g.right ? g.lx - g.w : g.lx, g.ly - lh * 0.72, g.w, g.h];
+    const hit = (a, b) => a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
+    // obstacles fixes : les quatre pastilles et les titres d'axes du haut et du bas
+    const obstacles = DISC.map(x => {
+      const [bx, by] = pt(quads[x.id][0] + 45, R + 34 * k);
+      return [bx - 23 * k, by - 23 * k, 46 * k, 46 * k];
+    }).concat([[cx - 90 * k, cy - R - 34 * k, 180 * k, 18 * k], [cx - 90 * k, cy + R + 16 * k, 180 * k, 18 * k]]);
+    const dotBox = m => [m.px - 9 * k, m.py - 9 * k, 18 * k, 18 * k];
+    const top = cy - R - 12 * k, bottom = cy + R + 12 * k;
+    for (let pass = 0; pass < 80; pass++) {
+      let moved = false;
+      clusters.forEach((a, ai) => clusters.forEach((b, bi) => {
+        if (bi <= ai) return;
+        const A = box(a), B = box(b);
+        if (!hit(A, B)) return;
+        const over = Math.min(A[1] + A[3] - B[1], B[1] + B[3] - A[1]) / 2 + 0.5;
+        const sgn = (B[1] + B[3] / 2) >= (A[1] + A[3] / 2) ? 1 : -1;
+        a.ly -= sgn * over; b.ly += sgn * over;
+        moved = true;
+      }));
+      clusters.forEach(g => {
+        const others = clusters.filter(h => h !== g).flatMap(h => h.items.map(dotBox));
+        obstacles.concat(others).forEach(o => {
+          const A = box(g);
+          if (!hit(A, o)) return;
+          const down = (A[1] + A[3] / 2) >= (o[1] + o[3] / 2);
+          g.ly += down ? (o[1] + o[3]) - A[1] + 1 : o[1] - (A[1] + A[3]) - 1;
+          moved = true;
+        });
+        const A = box(g);
+        if (A[1] < top) { g.ly += top - A[1]; moved = true; }
+        if (A[1] + A[3] > bottom) { g.ly -= A[1] + A[3] - bottom; moved = true; }
+      });
+      if (!moved) break;
+    }
+
+    // traits de rappel, puis points, puis étiquettes
+    clusters.forEach(g => {
+      const mid = g.ly - lh * 0.72 + g.h / 2;
+      if (Math.abs(mid - g.y) > 8 * k) {
+        ctx.strokeStyle = 'rgba(26,23,34,0.35)';
+        ctx.lineWidth = 1.2 * k;
+        ctx.beginPath(); ctx.moveTo(g.x + (g.right ? -g.spread : g.spread), g.y); ctx.lineTo(g.lx + (g.right ? 3 : -3) * k, mid); ctx.stroke();
+      }
+    });
+    clusters.forEach(g => g.items.forEach(m => {
+      ctx.fillStyle = m.p.color || CARD.ink;
+      ctx.strokeStyle = CARD.panel;
+      ctx.lineWidth = 2.5 * k;
+      ctx.beginPath(); ctx.arc(m.px, m.py, (m.p.me ? 9 : 7) * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }));
+    clusters.forEach(g => {
+      ctx.textAlign = g.right ? 'right' : 'left';
+      ctx.font = font;
+      ctx.lineWidth = 4 * k;
+      ctx.lineJoin = 'round';
+      g.lines.forEach((l, t) => {
+        const y = g.ly + t * lh;
+        ctx.strokeStyle = 'rgba(245,239,228,0.95)';
+        ctx.strokeText(l, g.lx, y);
+        ctx.fillStyle = CARD.ink;
+        ctx.fillText(l, g.lx, y);
+      });
+    });
+    ctx.textAlign = 'left';
   }
 
-  // Une ligne de la fiche : libellé à gauche, valeur à droite, note éventuelle dessous
+  // Une ligne de la fiche : libellé à gauche, valeur à droite
   function cardRow(ctx, y, label, value, note, font, size, min) {
-    const x2 = CARD.pad + 250;
+    const x2 = CARD.pad + 270;
     const maxW = CARD.w - CARD.pad - x2;
     ctx.font = `600 27px ${CARD.sans}`;
     ctx.fillStyle = CARD.ink3;
@@ -3543,34 +3680,62 @@
     return yy;
   }
 
-  async function drawShareCard(cur) {
-    const r = cur.r;
-    const P = CARD.pad, maxW = CARD.w - 2 * P;
+  async function cardFonts() {
     try {
       await Promise.all([
         document.fonts.load(`600 150px ${CARD.serif}`),
         document.fonts.load(`500 50px ${CARD.serif}`),
-        document.fonts.load(`700 30px ${CARD.sans}`),
+        document.fonts.load(`800 30px ${CARD.sans}`),
+        document.fonts.load(`600 30px ${CARD.sans}`),
         document.fonts.load(`500 30px ${CARD.sans}`),
       ]);
     } catch (e) { /* polices système de repli */ }
+  }
 
+  function cardCanvas() {
     const cv = document.createElement('canvas');
     cv.width = CARD.w;
     cv.height = CARD.h;
     const ctx = cv.getContext('2d');
     ctx.fillStyle = CARD.bg;
     ctx.fillRect(0, 0, CARD.w, CARD.h);
+    return { cv, ctx };
+  }
 
-    // en-tête
+  function cardHeader(ctx, right) {
     ctx.font = `800 30px ${CARD.sans}`;
     ctx.fillStyle = CARD.ink;
-    ctx.fillText('PRISME', P, 112);
+    ctx.fillText('PRISME', CARD.pad, 112);
     ctx.font = `500 28px ${CARD.sans}`;
     ctx.fillStyle = CARD.ink3;
     ctx.textAlign = 'right';
-    ctx.fillText('test politique et psychologique', CARD.w - P, 112);
+    ctx.fillText(right, CARD.w - CARD.pad, 112);
     ctx.textAlign = 'left';
+  }
+
+  function cardFooter(ctx, ask) {
+    ctx.fillStyle = CARD.ink;
+    ctx.fillRect(0, CARD.h - 170, CARD.w, 170);
+    ctx.font = `500 30px ${CARD.sans}`;
+    ctx.fillStyle = 'rgba(245,239,228,0.72)';
+    ctx.fillText(ask, CARD.pad, CARD.h - 100);
+    ctx.font = `700 40px ${CARD.sans}`;
+    ctx.fillStyle = CARD.bg;
+    ctx.fillText('kevindsm.github.io/prisme', CARD.pad, CARD.h - 50);
+  }
+
+  function discTitleOf(dp) {
+    if (!dp) return '';
+    return dp.secondary ? dp.pair.title : dp.primary.style.title;
+  }
+
+  // L'image solo : la roue DISC, puis les titres politiques et moraux
+  async function drawShareCard(cur) {
+    const r = cur.r;
+    const P = CARD.pad, maxW = CARD.w - 2 * P;
+    await cardFonts();
+    const { cv, ctx } = cardCanvas();
+    cardHeader(ctx, 'test politique et psychologique');
 
     const name = (cur.name || '').trim();
     ctx.font = `500 36px ${CARD.sans}`;
@@ -3578,83 +3743,179 @@
     ctx.fillText(name ? 'Le profil de' : 'Mon profil', P, 206);
     let y = cardText(ctx, name || 'Prisme', P, 340, `600 {s}px ${CARD.serif}`, 150, 92, maxW, CARD.ink, 1.02);
 
-    // le spectre, puis ses quatre scores en clair
+    // la roue, ou à défaut une ligne qui le dit
     const dp = discProfile(r.disc);
-    y = drawSpectrum(ctx, r.disc, y + 34);
-    ctx.font = `600 29px ${CARD.sans}`;
-    ctx.fillStyle = CARD.ink2;
-    ctx.fillText(dp ? `Au DISC : ${discLabel(dp)}` : 'Spectre DISC non mesuré', P, y);
     if (r.disc) {
-      ctx.font = `500 27px ${CARD.sans}`;
+      const R = 232, cy = y + 90 + R + 60;
+      drawWheel(ctx, CARD.w / 2, cy, R, { fill: r.disc, points: [{ disc: r.disc, label: name || 'Moi', me: true }] });
+      y = cy + R + 150;
+      ctx.font = `600 29px ${CARD.sans}`;
       ctx.fillStyle = CARD.ink3;
-      ctx.fillText(`D ${Math.round(r.disc.dom * 100)}   I ${Math.round(r.disc.inf * 100)}   S ${Math.round(r.disc.ste * 100)}   C ${Math.round(r.disc.con * 100)}`, P, y + 44);
+      ctx.fillText('DISC', P, y);
+      const col = discLabel(dp);
+      y = cardText(ctx, col.charAt(0).toUpperCase() + col.slice(1) + ' \u00b7 ' + discTitleOf(dp), P + 270, y, `500 {s}px ${CARD.serif}`, 44, 32, CARD.w - 2 * P - 270, CARD.ink, 1.08);
+    } else {
+      y += 120;
+      ctx.font = `500 30px ${CARD.sans}`;
+      ctx.fillStyle = CARD.ink3;
+      ctx.fillText('Profil DISC non mesur\u00e9 (ancienne version du test)', P, y);
     }
 
-    // qui tu es
-    const fam = rankFamilies(r)[0];
-    const temp = rankTemperaments(r)[0];
-    const psy = rankPsyche(r)[0];
-    y += 142;
-    const serifRow = `500 {s}px ${CARD.serif}`;
-    [['Famille', fam && fam.name], ['Tempérament', temp && temp.name], ['Archétype', psy && psy.name]]
-      .filter(x => x[1])
-      .forEach(([label, value]) => { y = cardRow(ctx, y, label, value, '', serifRow, 50, 36) + 84; });
-
-    // pour le plaisir
-    y -= 36;
+    // les titres politiques et moraux
+    y += 44;
     ctx.fillStyle = CARD.line;
     ctx.fillRect(P, y, maxW, 2);
-    y += 74;
-    const hero = bestCharacter(r);
-    const animal = pickFor(r, 'animal')[0];
-    const plat = pickFor(r, 'plat')[0];
-    const job = jobsFor(r)[0];
-    const sansRow = `600 {s}px ${CARD.sans}`;
+    y += 82;
+    const fam = rankFamilies(r)[0];
+    const temp = rankTemperaments(r)[0];
+    let bloc = null;
+    try { bloc = seatOf(r).bloc.label; } catch (e) { /* pas de si\u00e8ge */ }
+    const moral = FOUNDATIONS.slice().sort((a, b) => r.found[b.id] - r.found[a.id]).slice(0, 2).map(f => f.label).join(' et ');
+    const vp = valueProfile(r);
     [
-      hero && ['Personnage', hero.m.ch.name, hero.lic.name],
-      animal && ['Animal', animal.ch.name, ''],
-      plat && ['Plat', plat.ch.name, plat.ch.by || ''],
-      job && ['Au bureau', job.ch.name, job.ch.dept.name === job.ch.name ? '' : job.ch.dept.name],
-    ].filter(Boolean).forEach(([label, value, note]) => {
-      if (y > CARD.h - 230) return;
-      y = cardRow(ctx, y, label, value, note, sansRow, 38, 30) + 76;
+      ['Famille', fam && fam.name],
+      ['Temp\u00e9rament', temp && temp.name],
+      ['\u00c0 l\u2019Assembl\u00e9e', bloc],
+      ['Boussole morale', moral],
+      ['Valeurs', vp && valueTitle(vp)],
+    ].filter(x => x[1]).forEach(([label, value]) => {
+      if (y > CARD.h - 250) return;
+      y = cardRow(ctx, y, label, value, '', `500 {s}px ${CARD.serif}`, 48, 34) + 82;
     });
 
-    // pied : l'invitation
-    ctx.fillStyle = CARD.ink;
-    ctx.fillRect(0, CARD.h - 170, CARD.w, 170);
-    ctx.font = `500 30px ${CARD.sans}`;
-    ctx.fillStyle = 'rgba(245,239,228,0.72)';
-    ctx.fillText('Et toi, tu es qui ?', P, CARD.h - 100);
-    ctx.font = `700 40px ${CARD.sans}`;
-    ctx.fillStyle = CARD.bg;
-    ctx.fillText('kevindsm.github.io/prisme', P, CARD.h - 50);
+    cardFooter(ctx, 'Et toi, tu es qui ?');
     return cv;
   }
 
-  let cardUrl = null;
-  async function openImagePanel() {
-    const panel = $('image-panel');
+  // L'image du cercle : son nom, la roue avec un point par personne, et la légende
+  async function drawCircleCard(people, title) {
+    const P = CARD.pad, maxW = CARD.w - 2 * P;
+    await cardFonts();
+    const { cv, ctx } = cardCanvas();
+    cardHeader(ctx, `${people.length} personnes`);
+
+    ctx.font = `500 36px ${CARD.sans}`;
+    ctx.fillStyle = CARD.ink3;
+    ctx.fillText('Le cercle', P, 206);
+    let y = cardText(ctx, title || 'Notre cercle', P, 330, `600 {s}px ${CARD.serif}`, 130, 76, maxW, CARD.ink, 1.02);
+
+    const withDisc = people.filter(p => p.r && p.r.disc);
+    const R = 250, cy = y + 90 + R + 60;
+    drawWheel(ctx, CARD.w / 2, cy, R, {
+      points: withDisc.map(p => ({ disc: p.r.disc, label: p.name, color: p.color })),
+    });
+    y = cy + R + 140;
+
+    // la couleur la plus présente
+    const dps = withDisc.map(p => discProfile(p.r.disc));
+    if (dps.length) {
+      const counts = {};
+      DISC.forEach(x => { counts[x.id] = 0; });
+      dps.forEach(dp => discColors(dp).forEach(x => { counts[x.id] += 1; }));
+      const top = DISC.slice().sort((a, b) => counts[b.id] - counts[a.id])[0];
+      ctx.font = `600 30px ${CARD.sans}`;
+      ctx.fillStyle = CARD.ink2;
+      ctx.fillText(`Couleur la plus pr\u00e9sente : ${top.color.toLowerCase()} (${counts[top.id]} sur ${dps.length})`, P, y);
+      y += 40;
+    }
+    y += 24;
+    ctx.fillStyle = CARD.line;
+    ctx.fillRect(P, y, maxW, 2);
+    y += 64;
+
+    // la légende : deux colonnes, pastille, prénom, couleurs DISC
+    const colW = maxW / 2;
+    const rows = Math.ceil(people.length / 2);
+    const rowH = Math.min(92, Math.max(62, (CARD.h - 230 - y) / Math.max(rows, 1)));
+    people.forEach((p, i) => {
+      const col = i < rows ? 0 : 1;
+      const row = col ? i - rows : i;
+      const x = P + col * colW, yy = y + row * rowH;
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(x + 12, yy - 11, 12, 0, Math.PI * 2); ctx.fill();
+      cardText(ctx, p.name, x + 38, yy, `700 {s}px ${CARD.sans}`, 34, 26, colW - 60, CARD.ink, 1.05);
+      const dp = p.r && discProfile(p.r.disc);
+      ctx.font = `500 25px ${CARD.sans}`;
+      ctx.fillStyle = CARD.ink3;
+      ctx.fillText(dp ? discLabel(dp) : 'sans DISC', x + 38, yy + 32);
+    });
+
+    cardFooter(ctx, 'Et vous, vous \u00eates qui ?');
+    return cv;
+  }
+
+  const cardUrls = {};
+  function slug(t) {
+    return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  // Affiche une image dans un panneau (préfixe '' pour le solo, 'g-' pour le cercle)
+  async function showCard(pre, make, fileBase) {
+    const panel = $(pre + 'image-panel');
+    const wasHidden = panel.hidden;
     panel.hidden = false;
-    $('image-status').textContent = 'Fabrication de l\u2019image\u2026';
-    $('image-actions').hidden = true;
-    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    const cv = await drawShareCard(current);
+    $(pre + 'image-status').textContent = 'Fabrication de l\u2019image\u2026';
+    if (wasHidden) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const cv = await make();
     const blob = await new Promise(done => cv.toBlob(done, 'image/png'));
-    if (!blob) { $('image-status').textContent = 'Ton navigateur n\u2019a pas pu fabriquer l\u2019image.'; return; }
-    if (cardUrl) URL.revokeObjectURL(cardUrl);
-    cardUrl = URL.createObjectURL(blob);
-    const file = new File([blob], 'prisme' + (current.name ? '-' + current.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '') + '.png', { type: 'image/png' });
-    $('image-preview').src = cardUrl;
-    $('image-preview').hidden = false;
-    const dl = $('btn-image-dl');
-    dl.href = cardUrl;
+    if (!blob) { $(pre + 'image-status').textContent = 'Ton navigateur n\u2019a pas pu fabriquer l\u2019image.'; return; }
+    if (cardUrls[pre]) URL.revokeObjectURL(cardUrls[pre]);
+    cardUrls[pre] = URL.createObjectURL(blob);
+    const file = new File([blob], 'prisme-' + (slug(fileBase) || 'profil') + '.png', { type: 'image/png' });
+    $(pre + 'image-preview').src = cardUrls[pre];
+    $(pre + 'image-preview').hidden = false;
+    const dl = $(pre + 'btn-image-dl');
+    dl.href = cardUrls[pre];
     dl.download = file.name;
-    const canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
-    $('btn-image-share').hidden = !canShare;
-    $('btn-image-share').onclick = () => navigator.share({ files: [file], text: 'Mon profil Prisme' }).catch(() => {});
-    $('image-status').textContent = 'L\u2019image est fabriqu\u00e9e sur ton appareil : rien n\u2019a \u00e9t\u00e9 envoy\u00e9.';
-    $('image-actions').hidden = false;
+    const share = $(pre + 'btn-image-share');
+    share.hidden = !(navigator.canShare && navigator.canShare({ files: [file] }));
+    share.onclick = () => navigator.share({ files: [file], text: 'Prisme' }).catch(() => {});
+    $(pre + 'image-status').textContent = 'L\u2019image est fabriqu\u00e9e sur ton appareil : rien n\u2019a \u00e9t\u00e9 envoy\u00e9.';
+    $(pre + 'image-actions').hidden = false;
+  }
+
+  // Un autre profil ou un autre cercle s'affiche : l'ancienne image ne doit pas rester
+  function resetCard(pre) {
+    $(pre + 'image-panel').hidden = true;
+    $(pre + 'image-preview').hidden = true;
+    $(pre + 'image-preview').removeAttribute('src');
+    $(pre + 'image-actions').hidden = true;
+    $(pre + 'image-status').textContent = '';
+  }
+
+  function openImagePanel() {
+    showCard('', () => drawShareCard(current), current.name || 'profil');
+  }
+
+  function circlePeople() {
+    return groupMembers.map((m, i) => ({
+      name: m.name || `Personne ${i + 1}`, r: decodeResult(m.code), color: FRIEND_COLORS[i % FRIEND_COLORS.length],
+    }));
+  }
+
+  function openCircleImage() {
+    showCard('g-', () => drawCircleCard(circlePeople(), circleName), circleName || 'cercle');
+  }
+
+  /* Le nom du cercle vit dans l'URL (&nom=) : il suit le cercle quand on ajoute,
+     retire ou met à jour quelqu'un, et tous ceux qui ouvrent le lien le voient. */
+  let circleName = '';
+  function groupHashOf(members) {
+    return 'g=' + encodeGroup(withNames(members)) + (circleName ? '&nom=' + encodeURIComponent(circleName) : '');
+  }
+
+  function groupTitleHtml(n) {
+    return circleName ? `${esc(circleName)}, <em>${n} profils</em>` : `Le cercle, <em>${n} profils</em>`;
+  }
+
+  let nameTimer = null;
+  function renameCircle(value) {
+    circleName = value.trim().slice(0, 40);
+    history.replaceState(null, '', location.pathname + location.search + '#' + groupHashOf(groupMembers));
+    $('group-url').value = location.href;
+    $('group-title').innerHTML = groupTitleHtml(groupMembers.length);
+    clearTimeout(nameTimer);
+    nameTimer = setTimeout(openCircleImage, 350);
   }
 
   /* Chargement différé des listes
@@ -3700,6 +3961,7 @@
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const g = params.get('g');
     if (g) {
+      circleName = (params.get('nom') || '').trim().slice(0, 40);
       const members = parseGroup(g);
       if (members.length) { renderGroupScreen(members); return; }
       toast('Ce lien de cercle est invalide');
@@ -3841,7 +4103,10 @@
     const n = people.length;
     const who = p => `<span class="who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`;
 
-    $('group-title').innerHTML = `Le cercle, <em>${n} profils</em>`;
+    $('group-title').innerHTML = groupTitleHtml(n);
+    $('g-circle-name').value = circleName;
+    clearTimeout(nameTimer);
+    resetCard('g-');
     $('group-people').innerHTML = people.map(p => {
       const jump = `href="#person-${p.code}" data-jump="${p.code}"`;
       if (!canUpgrade(p.r)) return `<a class="medal" ${jump}>${who(p)}</a>`;
@@ -4634,7 +4899,7 @@
   }
 
   function openCircle(members) {
-    location.hash = 'g=' + encodeGroup(withNames(members));
+    location.hash = groupHashOf(members);
   }
 
   function refreshMaker() {
@@ -4677,6 +4942,8 @@
       $('url-out').value = profileUrl(current.code, name);
     };
     $('btn-image').onclick = () => { openImagePanel(); };
+    $('btn-group-image').onclick = () => { openCircleImage(); };
+    $('g-circle-name').addEventListener('input', e => renameCircle(e.target.value));
     $('btn-copy').onclick = () => {
       $('url-panel').hidden = false;
       $('url-name').value = (current && current.name) || myName();
@@ -4795,7 +5062,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 43;
+  const BUILD = 44;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

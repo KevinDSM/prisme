@@ -1452,7 +1452,7 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
   border: 1px solid var(--line-2); background: var(--bg-2); color: var(--ink);
   font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 13.5px; line-height: 1.5;
 }
-.maker input#url-name, .maker input#group-add-name { font-family: inherit; font-size: 16px; max-width: 360px; }
+.maker input#url-name, .maker input#group-add-name, .maker input#g-circle-name { font-family: inherit; font-size: 16px; max-width: 360px; }
 .maker textarea { resize: vertical; word-break: break-all; }
 .maker textarea:focus, .maker input:focus, .group-url input:focus { outline: none; border-color: var(--accent); }
 .maker-label { display: block; margin: 6px 0 6px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
