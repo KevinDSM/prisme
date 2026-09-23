@@ -5191,11 +5191,14 @@
       f: r => [[r.rel.ass, 1], [r.rel.fam, 1], [r.found.loy, 1], [r.rel.anx, 0.3]] },
   ];
   function roleCloseOf(r) {
+    return roleScores(r)[0].x;
+  }
+  function roleScores(r) {
     return ROLES_CLOSE.map(x => {
       const parts = x.f(r);
       const w = parts.reduce((s, p) => s + p[1], 0);
       return { x, s: parts.reduce((s, p) => s + p[0] * p[1], 0) / w };
-    }).sort((a, b) => b.s - a.s)[0].x;
+    }).sort((a, b) => b.s - a.s);
   }
 
   /* Deux cartes à deux dimensions : l'attachement (besoin d'espace → , besoin d'être rassuré ↑)
@@ -5225,7 +5228,8 @@
     svg += `<text transform="translate(${P - 9},${P + W}) rotate(-90)" class="relmap-lbl">${esc(yl[0])}</text><text transform="translate(${P - 9},${P}) rotate(-90)" text-anchor="end" class="relmap-lbl">${esc(yl[1])} →</text>`;
     points.forEach(p => {
       const x = X(att ? p.rel.avo : p.rel.ass), y = Y(att ? p.rel.anx : p.rel.coo);
-      svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.big ? 9 : 7}" fill="${p.color || 'var(--ink)'}" class="relmap-dot"><title>${esc(p.label || '')}</title></circle>`;
+      svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.tag ? 11 : p.big ? 9 : 7}" fill="${p.color || 'var(--ink)'}" class="relmap-dot"><title>${esc(p.label || '')}</title></circle>`;
+      if (p.tag) svg += `<text x="${x.toFixed(1)}" y="${(y + 3.6).toFixed(1)}" text-anchor="middle" class="relmap-tag">${esc(p.tag)}</text>`;
       // près du bord droit, le prénom passe à gauche du point
       const left = x > S - 80;
       if (p.label && p.showLabel) svg += `<text x="${(left ? x - 13 : x + 13).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${left ? 'end' : 'start'}" class="relmap-name">${esc(p.label)}</text>`;
@@ -5356,6 +5360,7 @@
     card.hidden = withSit.length < 2;
     if (withSit.length < 2) return;
     const N = withSit.length;
+    const tags = shortTags(withSit), tagOf = new Map(withSit.map((p, i) => [p, tags[i]]));
     // le programme du cercle : pour chaque situation, la réponse la plus choisie
     const rows = SITS.map((q, k) => {
       const votes = withSit.map(p => ({ p, c: p.r.sit[k] })).filter(v => v.c !== null && v.c !== undefined);
@@ -5366,11 +5371,13 @@
       const tie = opts.length > 1 && opts[1].ps.length === opts[0].ps.length;
       return { q, k, votes, opts, top: opts[0], tie, share: opts[0].ps.length / votes.length };
     }).filter(Boolean);
-    const seg = o => `<span class="gsit-seg" style="flex:${o.ps.length};--c:${o.camp.color}" title="${esc(o.camp.label + ' : ' + o.ps.map(p => p.name).join(', '))}">${o.ps.map(p => `<i style="background:${p.color}"></i>`).join('')}</span>`;
+    const seg = o => `<span class="gsit-seg" style="flex:${o.ps.length};--c:${o.camp.color}" title="${esc(o.camp.label + ' : ' + o.ps.map(p => p.name).join(', '))}">${o.ps.map(p => `<i style="background:${p.color}" title="${esc(p.name)}">${esc(tagOf.get(p))}</i>`).join('')}</span>`;
     $('g-sit-prog').innerHTML = rows.map(x => `
       <li class="gsit-row">
         <p class="gsit-theme">${x.k + 1}. ${esc(x.q.theme)}${x.share === 1 && x.votes.length > 1 ? '<span class="gsit-badge">unanime</span>' : x.tie ? '<span class="gsit-badge is-tie">à égalité</span>' : ''}</p>
-        <p class="gsit-win">${esc(x.q.o[x.top.c].t)} <small style="--c:${x.top.camp.color}">${esc(x.top.camp.label)} · ${x.top.ps.length} sur ${x.votes.length}</small></p>
+        ${x.tie
+          ? `<p class="gsit-win is-tie">Pas de majorité : ${x.opts.filter(o => o.ps.length === x.top.ps.length).map(o => `<small style="--c:${o.camp.color}">${esc(o.camp.label)}</small>`).join(' · ')} font jeu égal.</p>`
+          : `<p class="gsit-win">${esc(x.q.o[x.top.c].t)} <small style="--c:${x.top.camp.color}">${esc(x.top.camp.label)} · ${x.top.ps.length} sur ${x.votes.length}</small></p>`}
         <div class="gsit-bar">${x.opts.slice().sort((u, v) => campT(u.camp) - campT(v.camp)).map(seg).join('')}</div>
       </li>`).join('');
     const divisive = rows.slice().sort((a, b) => a.share - b.share || b.opts.length - a.opts.length)[0];
@@ -5396,33 +5403,109 @@
     }).join('');
   }
 
+  /* Le cercle et les autres : des records lisibles d'un coup d'œil, puis une fiche par
+     personne (ses trois styles et six jauges), ce qui fait plaisir à chacun et le climat. */
+  const REL_RECORDS = [
+    { t: 'Le plus loyal', sub: 'fidèle aux siens quoi qu\'il arrive', v: p => p.r.found.loy },
+    { t: 'Le plus en demande', sub: 'a besoin de signes d\'affection', v: p => p.r.rel.anx },
+    { t: 'Le plus indépendant', sub: 'a besoin d\'air, même avec ceux qu\'il aime', v: p => p.r.rel.avo },
+    { t: 'Le cœur sur la main', sub: 'montre tout ce qu\'il ressent', v: p => p.r.rel.exp },
+    { t: 'Le plus secret', sub: 'garde ses peines pour lui', v: p => 1 - p.r.rel.exp },
+    { t: 'Celui qui pardonne tout', sub: 'tourne la page le plus vite', v: p => p.r.rel.par },
+    { t: 'Celui qui n\'oublie pas', sub: 'pardonne le moins vite', v: p => 1 - p.r.rel.par },
+    { t: 'La famille avant tout', sub: 'les siens d\'abord', v: p => p.r.rel.fam },
+    { t: 'Le plus entouré', sub: 'se fait des amis partout', v: p => p.r.rel.cer },
+    { t: 'Le franc-parler', sub: 's\'affirme le plus dans un désaccord', v: p => p.r.rel.ass },
+    { t: 'Le gardien de la paix', sub: 'tient le plus à se quitter en bons termes', v: p => p.r.rel.coo },
+  ];
+  const REL_METERS = [
+    { k: 'Loyauté', v: r => r.found.loy, c: '#f8961e' },
+    { k: 'Besoin d\'être rassuré', v: r => r.rel.anx, c: '#e76f51' },
+    { k: 'Besoin d\'espace', v: r => r.rel.avo, c: '#4d7ea8' },
+    { k: 'Montre ses émotions', v: r => r.rel.exp, c: '#f4a261' },
+    { k: 'Pardonne vite', v: r => r.rel.par, c: '#8ab17d' },
+    { k: 'Famille d\'abord', v: r => r.rel.fam, c: '#b08900' },
+  ];
+
   function renderGroupRel(people) {
     const withRel = people.filter(p => p.r.rel);
     const card = $('g-rel-card-group');
     card.hidden = withRel.length < 2;
     if (withRel.length < 2) return;
-    const pts = withRel.map(p => ({ rel: p.r.rel, color: p.color, label: p.name }));
-    $('g-rel-map').innerHTML = relMapSvg('conflict', pts);
-    $('g-rel-styles').innerHTML = withRel.map(p => { const c = conflictOf(p.r.rel); return `<li>${whoChip(p)}<b style="--c:${c.color}">${esc(c.name)}</b><span>${esc(c.tag)}</span></li>`; }).join('');
+    const n = withRel.length;
+    const tags = shortTags(withRel), tagOf = new Map(withRel.map((p, i) => [p, tags[i]]));
+    $('g-rel-map').innerHTML = relMapSvg('conflict', withRel.map(p => ({ rel: p.r.rel, color: p.color, label: p.name, tag: tagOf.get(p) })));
+
+    // les records : un titre par dimension, à qui va le plus loin ; à un point près, à qui en a le moins
+    const count = new Map(withRel.map(p => [p, 0]));
+    const recs = REL_RECORDS.map(x => {
+      const ranked = withRel.map(p => ({ p, v: x.v(p) })).sort((a, b) => b.v - a.v);
+      const top = ranked.filter(y => pct(ranked[0].v) - pct(y.v) <= 1);
+      const w = top.reduce((a, b) => (count.get(b.p) < count.get(a.p) ? b : a));
+      count.set(w.p, count.get(w.p) + 1);
+      const next = ranked.find(y => y.p !== w.p);
+      return { x, w, next };
+    }).filter(y => y.w.v >= 0.55);
+    $('g-rel-records').innerHTML = recs.map(({ x, w, next }) => `
+      <div class="grec">
+        <p class="grec-t">${esc(x.t)}</p>
+        <p class="grec-who">${whoChip(w.p)}<b>${pct(w.v)}</b></p>
+        <p class="grec-sub">${esc(x.sub)}${next ? ` · puis ${esc(next.p.name)} (${pct(next.v)})` : ''}</p>
+      </div>`).join('');
+
+    // un rôle différent pour chacun (tant qu'il y en a) : le plus net est servi en premier
+    const roleOf = new Map();
+    const free = new Set(withRel);
+    const table = new Map(withRel.map(p => [p, roleScores(p.r)]));
+    while (free.size) {
+      let best = null;
+      free.forEach(p => {
+        const m = table.get(p).find(y => ![...roleOf.values()].includes(y.x)) || table.get(p)[0];
+        if (!best || m.s > best.m.s) best = { p, m };
+      });
+      roleOf.set(best.p, best.m.x);
+      free.delete(best.p);
+    }
+
+    // une fiche par personne
     const lw = x => (x !== null && x !== undefined ? LOVE_WAYS[x] : null);
+    $('g-rel-people').innerHTML = withRel.map(p => {
+      const rel = p.r.rel, a = attachOf(rel), c = conflictOf(rel), role = roleOf.get(p);
+      const g = lw(rel.give), w = lw(rel.want);
+      return `<article class="grel-person" style="--pc:${p.color}">
+        <header>${whoChip(p)}<span class="grel-role">${esc(role.name)}</span></header>
+        <div class="grel-tags">
+          <span class="grel-tag" style="--c:${a.color}" title="${esc(a.tag)}">${esc(a.name)}</span>
+          <span class="grel-tag" style="--c:${c.color}" title="${esc(c.tag)}">${esc(c.name.replace(/^(Le |L')/, ''))}</span>
+        </div>
+        <div class="grel-meters">${REL_METERS.map(m => {
+          const v = pct(m.v(p.r));
+          return `<div class="grel-m${v >= 75 ? ' is-high' : v <= 25 ? ' is-low' : ''}" style="--c:${m.c}"><span class="grel-m-k">${esc(m.k)}</span><span class="grel-m-bar"><i style="width:${v}%"></i></span><span class="grel-m-v">${v}</span></div>`;
+        }).join('')}</div>
+        ${g || w ? `<p class="grel-love">${g ? `<span title="ce qu'il donne">${g.icon} donne ${esc(g.label.toLowerCase())}</span>` : ''}${w ? `<span title="ce qui le touche">${w.icon} touché par ${esc(w.label.toLowerCase())}</span>` : ''}</p>` : ''}
+      </article>`;
+    }).join('');
+
+    // ce qui fait plaisir à chacun
     $('g-rel-love').innerHTML = `<table class="gl-table"><thead><tr><th></th><th>Montre son affection par</th><th>Ce qui le touche</th></tr></thead><tbody>${withRel.map(p => {
       const g = lw(p.r.rel.give), w = lw(p.r.rel.want);
       return `<tr><th>${whoChip(p)}</th><td>${g ? `<span class="gl-ico">${g.icon}</span>${esc(g.label)}` : '—'}</td><td>${w ? `<span class="gl-ico">${w.icon}</span>${esc(w.label)}` : '—'}</td></tr>`;
     }).join('')}</tbody></table>`;
-    $('g-rel-roles').innerHTML = withRel.map(p => `<li>${whoChip(p)}<b>${esc(roleCloseOf(p.r).name)}</b></li>`).join('');
-    // le climat : l'attachement ne s'affiche qu'en totaux, jamais nominativement
-    const counts = Object.values(ATTACH).map(a => ({ a, n: withRel.filter(p => attachOf(p.r.rel) === a).length }));
-    const n = withRel.length;
-    const c = id => counts.find(x => x.a.id === id).n;
+
+    // le climat du cercle, style par style, avec qui
+    const counts = Object.values(ATTACH).map(a => ({ a, ps: withRel.filter(p => attachOf(p.r.rel) === a) }));
+    const c = id => counts.find(x => x.a.id === id).ps.length;
     const advice = [];
     if (c('anxious') + c('fearful') >= 2) advice.push('Plusieurs personnes ici ont besoin de signes réguliers : un message, une nouvelle, un « bien arrivé ». Ça ne coûte rien et ça compte beaucoup.');
     if (c('avoidant') + c('fearful') >= 2) advice.push('Plusieurs ont besoin d\'air : un silence de leur part n\'est pas un désintérêt.');
     if (c('anxious') >= 1 && c('avoidant') >= 1) advice.push('Le cercle mélange des gens qui ont besoin de proximité et d\'autres qui ont besoin d\'espace : c\'est le terrain du malentendu classique (« il ne répond jamais » / « elle me relance tout le temps »). Le savoir, c\'est déjà l\'éviter.');
     if (c('secure') >= Math.ceil(n / 2)) advice.push('Un cercle plutôt serein : on peut se perdre de vue quelques semaines sans que personne s\'en inquiète, et se retrouver comme si de rien n\'était.');
     $('g-rel-climate').innerHTML = `<div class="gclim">${counts.map(x => `
-      <div class="gclim-row" style="--c:${x.a.color}"><span class="gclim-name">${esc(x.a.name)}</span><span class="gclim-bar"><i style="width:${(x.n / n * 100).toFixed(0)}%"></i></span><span class="gclim-n">${x.n}</span></div>`).join('')}</div>
+      <div class="gclim-row" style="--c:${x.a.color}"><span class="gclim-name">${esc(x.a.name)}</span><span class="gclim-bar"><i style="width:${(x.ps.length / n * 100).toFixed(0)}%"></i></span><span class="gclim-n">${x.ps.length}</span>
+        ${x.ps.length ? `<span class="gclim-who">${x.ps.map(whoChip).join('')}</span>` : ''}</div>`).join('')}</div>
       <p class="gclim-note">${esc(advice.join(' ') || 'Des façons de s\'attacher variées, sans tendance dominante : chacun a son rythme.')}</p>`;
   }
+
 
   /* ---------------------------------------------------------
      Les « listes plates » : animal, film, musique.
@@ -5989,7 +6072,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 51;
+  const BUILD = 53;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

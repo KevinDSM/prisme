@@ -2435,3 +2435,42 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .relmap-zone { paint-order: stroke; stroke: rgba(var(--panel-rgb), 0.9); stroke-width: 3px; }
 .gsit-win small { color: color-mix(in srgb, var(--c) var(--label-mix), var(--label-toward)); }
 .sit-db .db-row.is-thin { opacity: 0.5; }
+
+/* ---------- cercle : initiales dans le programme et sur la carte ---------- */
+.gsit-bar { height: 30px; }
+.gsit-seg i { display: inline-flex; align-items: center; justify-content: center; width: auto; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 10px; border: 2px solid rgba(var(--panel-rgb), 0.95); box-sizing: border-box; color: #fff; font-size: 9.5px; font-weight: 800; font-style: normal; line-height: 1; letter-spacing: -0.04em; }
+.relmap-tag { font-family: var(--font-body); font-size: 9px; font-weight: 800; fill: #fff; pointer-events: none; }
+
+/* ---------- cercle : comment chacun aime et se dispute ---------- */
+.grecs { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.grec { padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(var(--bg-rgb), 0.5); }
+.grec p { margin: 0; }
+.grec-t { font-family: var(--font-display); font-style: italic; font-size: 17px; line-height: 1.2; }
+.grec-who { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 6px 0 2px !important; font-size: 15px; }
+.grec-who b { font-family: var(--font-display); font-weight: 400; font-size: 20px; font-variant-numeric: tabular-nums; }
+.grec-sub { font-size: 12.5px; line-height: 1.4; color: var(--ink-3); }
+.grel-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.grel-person { padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line); border-top: 4px solid var(--pc); background: rgba(var(--bg-rgb), 0.5); }
+.grel-person header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; }
+.grel-role { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--ink-2); text-align: right; }
+.grel-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px; }
+.grel-tag { padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--c) 16%, transparent); color: color-mix(in srgb, var(--c) var(--label-mix), var(--label-toward)); font-size: 12.5px; font-weight: 800; }
+.grel-meters { display: grid; gap: 5px; }
+.grel-m { display: grid; grid-template-columns: 142px minmax(0, 1fr) 26px; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-3); }
+.grel-m-bar { height: 7px; border-radius: 7px; background: var(--line); overflow: hidden; }
+.grel-m-bar i { display: block; height: 100%; border-radius: 7px; background: color-mix(in srgb, var(--c) 70%, transparent); }
+.grel-m-v { text-align: right; font-weight: 800; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.grel-m.is-high .grel-m-k, .grel-m.is-high .grel-m-v { color: var(--ink); font-weight: 800; }
+.grel-m.is-high .grel-m-bar i { background: var(--c); }
+.grel-m.is-low .grel-m-bar i { opacity: 0.5; }
+.grel-love { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 10px 0 0; font-size: 12.5px; color: var(--ink-2); }
+.grel-top > div { min-width: 0; }
+.gclim-row { grid-template-columns: 110px minmax(0, 1fr) 28px; row-gap: 4px; }
+.gclim-who { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13.5px; font-weight: 600; }
+.gclim-none { color: var(--ink-3); font-weight: 400; }
+.gclim { gap: 12px; }
+@media (max-width: 560px) {
+  .grel-m { grid-template-columns: 128px minmax(0, 1fr) 26px; }
+}
+.gsit-win.is-tie { color: var(--ink-2); font-style: italic; }
+.gsit-win.is-tie small { margin: 0; font-style: normal; }
