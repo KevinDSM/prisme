@@ -201,6 +201,287 @@ const VALUES_BANK = [
   { t: 'Je fais l\'effort de comprendre ceux qui sont très différents de moi.', w: { vun: 1 } },
 ];
 
+// ---------- Module « Toi et les autres » : comment on aime, on se dispute, on tient aux siens ----------
+// Huit dimensions de 0 à 1. L'attachement (anx, avo) suit le modèle à deux dimensions de Brennan,
+// Clark et Shaver ; le désaccord (ass, coo) les deux axes de Thomas et Kilmann.
+const REL_DIMS = [
+  { id: 'anx', label: 'Besoin d\'être rassuré', low: 'Serein quand l\'autre s\'éloigne', high: 'Inquiet quand l\'autre s\'éloigne', color: '#e76f51' },
+  { id: 'avo', label: 'Besoin d\'espace', low: 'Aime la proximité', high: 'A besoin d\'air', color: '#4d7ea8' },
+  { id: 'ass', label: 'S\'affirmer', low: 'Laisse tomber', high: 'Dit ce qu\'il pense', color: '#d1495b' },
+  { id: 'coo', label: 'Préserver le lien', low: 'Tient à avoir raison', high: 'Tient à se quitter en bons termes', color: '#2fb67c' },
+  { id: 'exp', label: 'Montrer ce qu\'on ressent', low: 'Garde pour soi', high: 'Montre sans filtre', color: '#f4a261' },
+  { id: 'par', label: 'Pardonner', low: 'N\'oublie pas', high: 'Tourne la page vite', color: '#8ab17d' },
+  { id: 'cer', label: 'Taille du cercle', low: 'Quelques amis très proches', high: 'Beaucoup de monde', color: '#00bfc4' },
+  { id: 'fam', label: 'Place de la famille', low: 'Les amis d\'abord', high: 'La famille d\'abord', color: '#b08900' },
+];
+
+// Les façons de montrer qu'on tient à quelqu'un (cinq « langages », à lire comme des tendances)
+const LOVE_WAYS = [
+  { id: 'mots', label: 'Les mots', icon: '✉', give: 'Je le lui dis : un message, un compliment, un « je suis fier de toi ».', want: 'Qu\'on me le dise : un mot, un message, un merci sincère.', desc: 'le dire, l\'écrire, le souligner' },
+  { id: 'temps', label: 'Le temps', icon: '◷', give: 'Je lui consacre du temps, rien que pour nous, sans téléphone.', want: 'Qu\'on prenne du temps pour moi, vraiment présent, sans téléphone.', desc: 'du temps rien qu\'à deux' },
+  { id: 'aide', label: 'Les services', icon: '✦', give: 'Je lui rends service : je m\'occupe de ce qui lui pèse.', want: 'Qu\'on me soulage : qu\'on s\'occupe d\'un truc qui me pèse sans que j\'aie à demander.', desc: 'faire à sa place ce qui pèse' },
+  { id: 'cadeau', label: 'Les attentions', icon: '❖', give: 'Je lui offre quelque chose qui lui ressemble, même tout petit.', want: 'Une attention qui prouve qu\'on a pensé à moi, même toute petite.', desc: 'une attention qui prouve qu\'on a pensé à l\'autre' },
+  { id: 'contact', label: 'La présence', icon: '◉', give: 'Je suis là physiquement : une accolade, une main sur l\'épaule.', want: 'Une présence physique : une accolade, quelqu\'un à côté de moi.', desc: 'être là, physiquement' },
+];
+
+const REL_BANK = [
+  // Besoin d'être rassuré (anxiété d'attachement)
+  { t: 'Quand quelqu\'un que j\'aime tarde à répondre à un message, je finis par me demander ce que ça veut dire.', w: { anx: 1 } },
+  { t: 'J\'ai souvent besoin qu\'on me confirme que l\'on tient à moi.', w: { anx: 1 } },
+  { t: 'J\'ai parfois peur que les gens que j\'aime finissent par se lasser de moi.', w: { anx: 1 } },
+  { t: 'Quand un proche prend un peu de distance pendant quelques jours, je reste serein.', w: { anx: -1 } },
+  // Besoin d'espace (évitement de la proximité)
+  { t: 'Je préfère ne pas trop dépendre des autres, même de ceux que j\'aime.', w: { avo: 1 } },
+  { t: 'Parler de ce que je ressens au fond, même à un proche, me met mal à l\'aise.', w: { avo: 1, exp: -0.5 } },
+  { t: 'Quand une relation devient très fusionnelle, j\'ai besoin d\'air.', w: { avo: 1 } },
+  { t: 'Je me confie facilement aux gens dont je suis proche.', w: { avo: -1, exp: 0.5 } },
+  // Dans un désaccord
+  { t: 'Quand je ne suis pas d\'accord avec un proche, je le dis clairement, même si ça crée une tension.', w: { ass: 1 } },
+  { t: 'Dans une dispute, je préfère laisser tomber plutôt que défendre mon point de vue.', w: { ass: -1 } },
+  { t: 'Dans un conflit avec un proche, ce qui compte le plus pour moi, c\'est qu\'on se quitte en bons termes.', w: { coo: 1 } },
+  { t: 'Dans un désaccord, je cherche une solution qui convienne vraiment à nous deux, même si ça prend du temps.', w: { coo: 1, ass: 0.5 } },
+  { t: 'Quand j\'ai raison, je ne vois pas pourquoi je devrais faire des concessions.', w: { coo: -1, ass: 0.5 } },
+  // Montrer ce qu'on ressent
+  { t: 'Mes proches savent toujours ce que je ressens : je le montre sans filtre.', w: { exp: 1 } },
+  { t: 'Je garde souvent pour moi ce qui me fait de la peine, pour ne pas inquiéter les autres.', w: { exp: -1 } },
+  // Pardonner
+  { t: 'Quand un proche me blesse, je pardonne vite et je passe à autre chose.', w: { par: 1 } },
+  { t: 'Il y a des choses qu\'on m\'a faites que je n\'ai jamais vraiment pardonnées.', w: { par: -1 } },
+  // Le cercle et la famille
+  { t: 'Je préfère quelques amis très proches à beaucoup de connaissances.', w: { cer: -1 } },
+  { t: 'J\'aime être entouré de beaucoup de monde, et je me fais facilement de nouveaux amis.', w: { cer: 1 } },
+  { t: 'Ma famille passe avant presque tout le reste.', w: { fam: 1 } },
+  { t: 'Je me sens plus proche de mes amis que de ma famille.', w: { fam: -1 } },
+  // Deux questions à choix : ce qu'on donne, ce qu'on attend
+  { type: 'choice', key: 'give', t: 'Quand tu veux montrer à quelqu\'un que tu tiens à lui, qu\'est-ce qui te vient le plus naturellement ?',
+    o: LOVE_WAYS.map(x => ({ k: x.id, t: x.give })) },
+  { type: 'choice', key: 'want', t: 'Et toi, qu\'est-ce qui te fait le plus sentir que quelqu\'un tient à toi ?',
+    o: LOVE_WAYS.map(x => ({ k: x.id, t: x.want })) },
+];
+
+// ---------- Module « Face au réel » : quinze mises en situation ----------
+// Chaque réponse appartient à un camp, jamais affiché pendant le test. Le camp donne sa position sur les
+// axes que la situation met en jeu : c'est ce qui permet de comparer ce qu'on dit (les curseurs) et ce
+// qu'on ferait (les situations).
+const CAMPS = [
+  { id: 'rad', label: 'Gauche radicale', color: '#b3001b', v: { eco: -0.9, egl: -0.9, soc: -0.7, idn: -0.8, aut: -0.1, env: 0.5, geo: 0.1, jus: -0.7, tec: 0.2 } },
+  { id: 'lbt', label: 'Libertaire', color: '#9b5de5', v: { eco: -0.5, egl: -0.7, soc: -0.9, idn: -0.8, aut: -1, env: 0.5, geo: 0.1, jus: -0.9, tec: 0.2 } },
+  { id: 'gau', label: 'Gauche', color: '#e5485f', v: { eco: -0.5, egl: -0.6, soc: -0.5, idn: -0.5, aut: -0.1, env: 0.4, geo: -0.4, jus: -0.4, tec: -0.1 } },
+  { id: 'eco', label: 'Écologiste', color: '#2fb67c', v: { eco: -0.4, egl: -0.5, soc: -0.6, idn: -0.6, aut: -0.2, env: 1, geo: -0.2, jus: -0.5, tec: 0.5 } },
+  { id: 'cen', label: 'Centre', color: '#f2b705', v: { eco: 0.3, egl: 0.1, soc: -0.3, idn: -0.3, aut: 0.1, env: 0.1, geo: -0.7, jus: 0, tec: -0.5 } },
+  { id: 'lib', label: 'Libéral', color: '#00a6c4', v: { eco: 0.9, egl: 0.7, soc: -0.2, idn: -0.2, aut: -0.4, env: -0.4, geo: -0.5, jus: 0.1, tec: -0.7 } },
+  { id: 'dro', label: 'Droite', color: '#2f7fd1', v: { eco: 0.6, egl: 0.6, soc: 0.5, idn: 0.4, aut: 0.5, env: -0.2, geo: 0.1, jus: 0.6, tec: -0.2 } },
+  { id: 'nat', label: 'Droite nationale', color: '#1b3a7a', v: { eco: -0.1, egl: 0.3, soc: 0.7, idn: 1, aut: 0.8, env: -0.2, geo: 0.9, jus: 0.9, tec: 0.2 } },
+];
+
+// t = la situation, q = la question, o = les réponses (c = camp, jamais affiché pendant le test)
+const SITUATIONS_BANK = [
+  { theme: 'Emploi', axes: ['eco', 'geo'],
+    t: 'L\'usine d\'électroménager de ta ville, 420 salariés, va fermer : le groupe qui la possède, pourtant bénéficiaire, délocalise la production en Europe de l\'Est. Tu es élu au conseil municipal, et la mairie doit adopter une position commune avant la réunion avec la direction et la préfecture.',
+    q: 'Que défends-tu au conseil ?',
+    o: [
+      { c: 'rad', t: 'Exiger la réquisition du site et sa reprise sous contrôle public et salarié : un groupe qui fait des profits ne doit pas pouvoir fermer.' },
+      { c: 'lbt', t: 'Soutenir les salariés s\'ils occupent l\'usine, et les aider à monter une coopérative qu\'ils géreraient eux-mêmes.' },
+      { c: 'gau', t: 'Exiger le remboursement des aides publiques reçues et négocier un plan social solide, avec reclassement et formation pour chacun.' },
+      { c: 'eco', t: 'Faire de la reconversion une chance : transformer le site en pôle de réparation et de réemploi, avec des emplois locaux et durables.' },
+      { c: 'cen', t: 'Réunir l\'État, la région et des investisseurs pour trouver un repreneur, et orienter les salariés vers les filières qui recrutent.' },
+      { c: 'lib', t: 'Ne pas s\'acharner sur un site qui n\'est plus rentable : baisser la fiscalité locale pour attirer de nouvelles entreprises.' },
+      { c: 'dro', t: 'Aider les salariés à rebondir vite par l\'apprentissage et l\'emploi local, et alléger les charges pour que produire ici redevienne rentable.' },
+      { c: 'nat', t: 'Réclamer des droits de douane sur les produits délocalisés et réserver la commande publique aux entreprises qui produisent en France.' }
+    ] },
+
+  { theme: 'Eau et agriculture', axes: ['env', 'eco'],
+    t: 'Ton voisin, éleveur et céréalier, perd une partie de ses récoltes à cause des sécheresses à répétition. Un groupement d\'agriculteurs propose une grande réserve d\'eau remplie l\'hiver en pompant dans la nappe, financée en partie par de l\'argent public. La commune organise une consultation, et ta voix peut faire basculer le vote.',
+    q: 'Quelle position soutiens-tu ?',
+    o: [
+      { c: 'rad', t: 'Refuser tant que l\'eau profite surtout aux plus grosses exploitations : c\'est un bien commun, à partager équitablement entre tous.' },
+      { c: 'lbt', t: 'Voter contre et soutenir une occupation pacifique du site : l\'usage de l\'eau doit être décidé par les habitants, pas imposé d\'en haut.' },
+      { c: 'gau', t: 'Accepter une réserve plus modeste, gérée publiquement, réservée aux exploitants qui s\'engagent sur des économies d\'eau vérifiées.' },
+      { c: 'eco', t: 'Refuser, et aider mon voisin à changer de cultures, planter des haies et retenir l\'eau dans les sols plutôt que la stocker à l\'air libre.' },
+      { c: 'cen', t: 'Voter pour, avec un contrôle scientifique indépendant des volumes pompés et une révision du projet au bout de cinq ans.' },
+      { c: 'lib', t: 'Laisser les agriculteurs financer eux-mêmes leur réserve, sans argent public, et leur faire payer l\'eau à son vrai prix.' },
+      { c: 'dro', t: 'Soutenir le projet : nos agriculteurs nourrissent le pays et ont besoin de sécurité pour travailler, dans le respect des règles fixées.' },
+      { c: 'nat', t: 'Voter pour sans hésiter : la souveraineté alimentaire passe avant tout, et nos paysans ne doivent pas céder face aux importations.' }
+    ] },
+
+  { theme: 'Sécurité du quartier', axes: ['aut', 'jus'],
+    t: 'Depuis six mois, ton quartier a connu une vingtaine de cambriolages, dont deux chez des voisins âgés. Une réunion publique est prévue et le maire hésite entre plusieurs réponses, avec un budget limité. Tu présides le conseil de quartier : il te demande ce que les habitants attendent vraiment.',
+    q: 'Que recommandes-tu au maire ?',
+    o: [
+      { c: 'rad', t: 'Mettre le budget dans l\'emploi des jeunes, les centres sociaux et le logement : on réduit durablement la délinquance en réduisant la misère.' },
+      { c: 'lbt', t: 'Organiser l\'entraide entre voisins et refuser la vidéosurveillance : plus de caméras, c\'est moins de libertés, pour une efficacité douteuse.' },
+      { c: 'gau', t: 'Réclamer le retour d\'une police de proximité, présente et connue des habitants, et renforcer les éducateurs de rue.' },
+      { c: 'eco', t: 'Recréer du lien : éclairage ciblé, jardins partagés, commerces de proximité, des rues vivantes où les voisins se connaissent.' },
+      { c: 'cen', t: 'S\'inspirer de ce qui marche ailleurs : quelques caméras aux points sensibles, une meilleure coordination police-mairie, et un bilan dans un an.' },
+      { c: 'lib', t: 'Aider chacun à sécuriser son logement et laisser les copropriétés s\'offrir un gardiennage privé, plutôt qu\'alourdir les impôts locaux.' },
+      { c: 'dro', t: 'Renforcer la police municipale, installer la vidéoprotection et demander au parquet des peines réellement exécutées pour les auteurs.' },
+      { c: 'nat', t: 'Exiger la tolérance zéro : patrouilles renforcées, peines planchers pour les cambrioleurs et expulsion des délinquants étrangers condamnés.' }
+    ] },
+
+  { theme: 'Justice des mineurs', axes: ['jus', 'aut'],
+    t: 'Tu fais partie d\'une convention citoyenne sur la justice des mineurs. On vous présente le cas d\'Enzo, 16 ans, déscolarisé, qui en est à sa cinquième interpellation, dont un vol avec violence sur un livreur. Il a grandi dans un foyer instable. La convention doit recommander une réponse type pour ce genre de parcours.',
+    q: 'Que recommandes-tu ?',
+    o: [
+      { c: 'rad', t: 'Agir d\'abord sur ce qui l\'a mené là : un éducateur dédié, un logement stable, une formation rémunérée. La prison fabrique des récidivistes.' },
+      { c: 'lbt', t: 'Privilégier une justice réparatrice : rencontre avec la victime, réparation concrète, accompagnement par des proches plutôt que l\'enfermement.' },
+      { c: 'gau', t: 'Un placement en centre éducatif avec scolarité obligatoire et un suivi long, en donnant enfin aux juges des enfants les moyens de suivre.' },
+      { c: 'cen', t: 'Une réponse rapide et graduée : une sanction dans les semaines qui suivent, un travail d\'intérêt général et un contrat de formation.' },
+      { c: 'lib', t: 'Le tenir responsable de ses actes : indemniser la victime sur ses futurs revenus, et un apprentissage en entreprise pour qu\'il s\'en sorte.' },
+      { c: 'dro', t: 'Un centre éducatif fermé avec une discipline stricte, et responsabiliser les parents, y compris par la suspension des allocations.' },
+      { c: 'nat', t: 'Juger les récidivistes de 16 ans comme des majeurs, avec des peines planchers, pour que la sanction soit enfin dissuasive.' }
+    ] },
+
+  { theme: 'Accueil de réfugiés', axes: ['idn', 'geo'],
+    t: 'L\'État propose à ta commune de 3 000 habitants d\'accueillir quarante réfugiés, familles comprises, dans un ancien bâtiment public qu\'il rénoverait à ses frais. Le conseil municipal doit accepter ou non de mettre le bâtiment à disposition. Les avis sont partagés dans le village, et c\'est ta voix d\'élu qui va trancher.',
+    q: 'Comment votes-tu ?',
+    o: [
+      { c: 'rad', t: 'Pour, et exiger de l\'État des moyens pour tous : logement, école, emploi, pour les habitants comme pour les nouveaux venus.' },
+      { c: 'lbt', t: 'Pour, et appuyer le réseau d\'habitants bénévoles prêts à héberger et accompagner ces familles, sans condition.' },
+      { c: 'gau', t: 'Pour, avec des cours de français, un accès rapide au travail et un accompagnement social financé par l\'État.' },
+      { c: 'eco', t: 'Pour : ceux qui fuient la guerre ou les catastrophes doivent trouver refuge, et le village a besoin de familles pour garder son école.' },
+      { c: 'cen', t: 'Pour un accueil plus réduit, préparé avec les habitants et réparti équitablement entre les communes voisines.' },
+      { c: 'lib', t: 'Pour, si l\'accueil est tourné vers le travail : droit de travailler immédiat et lien direct avec les employeurs locaux qui recrutent.' },
+      { c: 'dro', t: 'Contre, tant que l\'État ne garantit ni la distinction entre réfugiés et migrants économiques, ni l\'intégration et le respect de nos règles.' },
+      { c: 'nat', t: 'Contre, et demander un référendum local : c\'est aux habitants de décider, et la priorité doit aller aux Français en difficulté.' }
+    ] },
+
+  { theme: 'Fin de vie', axes: ['soc'],
+    t: 'Ton père, 78 ans, est atteint d\'une maladie incurable qui progresse. Lucide, il te dit qu\'il ne veut pas vivre la phase finale et te demande de l\'aider à partir en Suisse. En France, la loi permet d\'arrêter les traitements et, dans certains cas, une sédation profonde jusqu\'au décès ; l\'aide active à mourir, elle, fait débat.',
+    q: 'Que fais-tu, et que défends-tu ?',
+    o: [
+      { c: 'rad', t: 'L\'accompagner, et me battre pour que ce droit existe en France : aujourd\'hui, seuls ceux qui peuvent payer la Suisse ont vraiment le choix.' },
+      { c: 'lbt', t: 'Respecter sa volonté et l\'accompagner, entouré des siens : c\'est à lui, ni au pouvoir médical ni à la loi, de décider de sa fin.' },
+      { c: 'gau', t: 'Défendre une aide à mourir strictement encadrée par un collège médical, et des soins palliatifs gratuits et accessibles partout.' },
+      { c: 'cen', t: 'Explorer d\'abord avec lui la sédation prévue par la loi, et soutenir une ouverture prudente de l\'aide à mourir, évaluée dans le temps.' },
+      { c: 'lib', t: 'L\'aider, et défendre le droit de tout adulte lucide de disposer de sa vie, par des directives écrites plutôt qu\'un comité qui juge ses raisons.' },
+      { c: 'dro', t: 'Lui proposer une unité de soins palliatifs et rester à ses côtés jusqu\'au bout : soulager toute douleur, oui ; provoquer la mort, non.' },
+      { c: 'nat', t: 'Refuser d\'ouvrir cette porte tant que des départements entiers manquent de soins palliatifs : les plus fragiles se sentiraient poussés à partir.' }
+    ] },
+
+  { theme: 'Grève des transports', axes: ['eco', 'aut'],
+    t: 'Les conducteurs de trains régionaux font grève depuis dix jours contre une réforme de leurs conditions de travail. Tu perds deux heures de plus chaque jour pour aller travailler, et ton employeur commence à s\'impatienter. La région lance une consultation des usagers et promet d\'en tenir compte.',
+    q: 'Quelle issue souhaites-tu ?',
+    o: [
+      { c: 'rad', t: 'Le retrait de la réforme : les grévistes défendent des droits qui protègent tous les salariés, moi compris, et je les soutiens jusqu\'au bout.' },
+      { c: 'lbt', t: 'Soutenir les grévistes et verser à leur caisse de grève : c\'est aux salariés eux-mêmes de fixer les conditions de leur travail.' },
+      { c: 'gau', t: 'Que la région rouvre vite une vraie négociation avec les syndicats, pour un compromis qui respecte à la fois les agents et les usagers.' },
+      { c: 'eco', t: 'Que la crise serve à relancer le train : plus de moyens pour le rail, un meilleur service et des conditions de travail dignes pour les agents.' },
+      { c: 'cen', t: 'Un médiateur indépendant, une pause de la réforme le temps de la concertation, et l\'indemnisation des abonnés pénalisés.' },
+      { c: 'lib', t: 'Ouvrir les lignes régionales à la concurrence : plusieurs opérateurs, c\'est moins de dépendance aux grèves et un meilleur service.' },
+      { c: 'dro', t: 'Un vrai service minimum garanti aux heures de pointe : le droit de grève ne doit pas empêcher les autres d\'aller travailler.' },
+      { c: 'nat', t: 'Que l\'État reprenne la main : un service garanti pour ceux qui paient leur billet, et aucune ligne cédée à des opérateurs étrangers.' }
+    ] },
+
+  { theme: 'École', axes: ['soc', 'idn', 'egl'],
+    t: 'Ton enfant entre au collège. Le principal propose d\'expérimenter une tenue unique pour tous les élèves, fournie gratuitement, afin de réduire les moqueries liées aux marques et d\'apaiser les tensions autour des tenues. Le conseil d\'administration vote la semaine prochaine, et tu y représentes les parents.',
+    q: 'Comment votes-tu ?',
+    o: [
+      { c: 'rad', t: 'Contre : ce n\'est pas l\'habit qui crée les inégalités. Mieux vaut financer cantine, fournitures et sorties gratuites pour tous.' },
+      { c: 'lbt', t: 'Contre : choisir ses vêtements fait partie de la construction de soi, et les élèves devraient participer aux règles qui les concernent.' },
+      { c: 'gau', t: 'Pour un essai d\'un an, gratuit et évalué, à condition d\'agir en parallèle contre le harcèlement avec du personnel formé.' },
+      { c: 'cen', t: 'Laisser chaque établissement choisir après consultation des familles et des élèves, et évaluer honnêtement les résultats.' },
+      { c: 'lib', t: 'Contre une obligation pour tous : proposer la tenue aux familles qui la souhaitent, et laisser chacun libre de son choix.' },
+      { c: 'dro', t: 'Pour : une tenue commune rappelle le respect du cadre scolaire, gomme les différences sociales et ramène le calme dans les classes.' },
+      { c: 'nat', t: 'Pour, et la généraliser : l\'école doit transmettre une appartenance commune à la nation, au-dessus de toutes les différences.' }
+    ] },
+
+  { theme: 'Héritage', axes: ['egl', 'eco', 'soc'],
+    t: 'Tes parents vous laissent, à ta sœur et à toi, leur maison estimée à 450 000 €. Après l\'abattement de 100 000 € par enfant, chacun devra payer environ 23 000 € de droits de succession. Ton député prépare un amendement sur la fiscalité des héritages et consulte ses électeurs.',
+    q: 'Que lui demandes-tu ?',
+    o: [
+      { c: 'rad', t: 'Taxer beaucoup plus fortement les très gros héritages, voire les plafonner, pour financer une dotation versée à chaque jeune à sa majorité.' },
+      { c: 'gau', t: 'Épargner les successions modestes et moyennes, mais relever l\'imposition des grandes fortunes transmises et fermer les niches fiscales.' },
+      { c: 'eco', t: 'Alléger la taxe quand on transmet des terres ou des forêts à ceux qui les entretiennent, et taxer davantage les patrimoines spéculatifs.' },
+      { c: 'cen', t: 'Relever l\'abattement pour les classes moyennes et, en échange, supprimer les exonérations qui profitent surtout aux gros patrimoines.' },
+      { c: 'lib', t: 'Supprimer les droits de succession en ligne directe : cet argent a déjà été taxé, et chacun doit pouvoir transmettre le fruit de son travail.' },
+      { c: 'dro', t: 'Alléger fortement l\'impôt sur les transmissions familiales : léguer sa maison à ses enfants, c\'est assurer la continuité de la famille.' },
+      { c: 'nat', t: 'Exonérer totalement la maison familiale transmise aux enfants, pour que les Français modestes puissent garder le bien de leurs parents.' }
+    ] },
+
+  { theme: 'Santé', axes: ['eco', 'egl', 'tec'],
+    t: 'Dans ton département, les urgences les plus proches ferment la nuit faute de médecins, et un habitant sur quatre n\'a plus de médecin traitant. L\'agence régionale de santé réunit un comité d\'usagers dont tu fais partie : elle veut une priorité claire pour l\'an prochain.',
+    q: 'Quelle priorité défends-tu ?',
+    o: [
+      { c: 'rad', t: 'Embaucher massivement à l\'hôpital public, rouvrir des lits et créer des centres de santé publics où les médecins sont salariés.' },
+      { c: 'lbt', t: 'Soutenir des centres de santé gérés ensemble par les habitants et les soignants, et redonner le pouvoir de décision à ceux qui soignent.' },
+      { c: 'gau', t: 'Réguler l\'installation des médecins dans les zones déjà bien pourvues, et revaloriser les salaires et les moyens de l\'hôpital public.' },
+      { c: 'eco', t: 'Miser sur la prévention et des maisons de santé rurales, avec des infirmiers aux compétences élargies, plutôt que sur des cabines de téléconsultation.' },
+      { c: 'cen', t: 'Déployer la téléconsultation et les assistants médicaux, et offrir des primes aux jeunes médecins qui s\'installent ici.' },
+      { c: 'lib', t: 'Libérer les soignants : moins de paperasse, plus de liberté tarifaire, et laisser cliniques et entreprises de santé innover pour soigner plus vite.' },
+      { c: 'dro', t: 'Demander aux jeunes médecins d\'exercer quelques années dans les zones sous-dotées, en contrepartie d\'études financées par la nation.' },
+      { c: 'nat', t: 'Ouvrir largement les études de médecine aux jeunes Français et réserver les premières installations aux territoires délaissés.' }
+    ] },
+
+  { theme: 'Intelligence artificielle', axes: ['tec', 'eco'],
+    t: 'Ta direction annonce qu\'un outil d\'intelligence artificielle va automatiser une grande partie du service client et de la comptabilité : trente postes sur cent vingt sont menacés d\'ici deux ans. Tu es élu au comité social et économique, et la direction attend l\'avis des représentants du personnel.',
+    q: 'Que proposes-tu ?',
+    o: [
+      { c: 'rad', t: 'Que les gains de productivité reviennent aux salariés : aucun licenciement et une réduction du temps de travail pour tous, à salaire égal.' },
+      { c: 'lbt', t: 'Que les salariés décident eux-mêmes, en assemblée, quels outils sont adoptés et comment le travail est réorganisé.' },
+      { c: 'gau', t: 'Négocier un accord : aucun départ contraint, des formations payées par l\'entreprise et un partage des gains réalisés grâce à l\'outil.' },
+      { c: 'eco', t: 'Interroger l\'outil lui-même : son coût énergétique, la qualité réelle du service rendu, et garder un contact humain avec les clients.' },
+      { c: 'cen', t: 'Accompagner la transition : former les salariés à piloter l\'outil, repositionner les postes et étaler le déploiement dans le temps.' },
+      { c: 'lib', t: 'Accepter l\'outil, qui rendra l\'entreprise plus compétitive, et négocier de bonnes indemnités et une aide à la reconversion.' },
+      { c: 'dro', t: 'Adopter l\'outil pour rester dans la course, mais réaffecter en priorité les salariés fidèles et expérimentés plutôt que les licencier.' },
+      { c: 'nat', t: 'Refuser l\'outil d\'un géant étranger qui aspire nos données : exiger une solution française et la protection des emplois d\'ici.' }
+    ] },
+
+  { theme: 'Énergie', axes: ['env', 'tec'],
+    t: 'Un opérateur veut installer six éoliennes de 180 mètres à deux kilomètres de ton village. Le parc couvrirait la consommation électrique d\'environ 15 000 foyers et apporterait des recettes fiscales régulières à la commune. Une consultation locale est organisée, et l\'avis des habitants pèsera sur la décision du préfet.',
+    q: 'Que votes-tu ?',
+    o: [
+      { c: 'rad', t: 'Pour, si le parc est public ou coopératif : l\'énergie est un bien commun, ses bénéfices ne doivent pas partir chez des actionnaires.' },
+      { c: 'lbt', t: 'Pour un parc plus petit, possédé et géré par les habitants eux-mêmes, et contre un projet imposé par un opérateur et le préfet.' },
+      { c: 'gau', t: 'Pour, avec une part des revenus reversée aux habitants et des tarifs d\'électricité réduits pour les riverains.' },
+      { c: 'eco', t: 'Pour : chaque mégawatt renouvelable compte face au climat, à condition de préserver oiseaux et haies, et d\'y associer un plan de sobriété.' },
+      { c: 'cen', t: 'Pour, si les distances et le paysage sont respectés : le pays a besoin à la fois du nucléaire et des renouvelables.' },
+      { c: 'lib', t: 'Laisser le projet se faire s\'il est rentable sans subvention, et à condition que l\'opérateur indemnise lui-même les riverains.' },
+      { c: 'dro', t: 'Contre : priorité au nucléaire, fiable et pilotable, et respect de l\'avis des élus locaux sur le paysage de leur commune.' },
+      { c: 'nat', t: 'Contre, et demander un moratoire sur l\'éolien : il défigure nos paysages, et la plupart des turbines sont fabriquées à l\'étranger.' }
+    ] },
+
+  { theme: 'Europe', axes: ['geo', 'env'],
+    t: 'L\'Union européenne adopte à la majorité une règle qui impose de réduire de moitié l\'usage de certains pesticides d\'ici 2030. Le gouvernement français avait voté contre, jugeant le calendrier trop brutal pour ses agriculteurs. Tu conseilles le ministre, qui doit décider comment appliquer ce texte.',
+    q: 'Que lui conseilles-tu ?',
+    o: [
+      { c: 'rad', t: 'L\'appliquer, mais faire payer la transition à l\'agro-industrie et à la grande distribution plutôt qu\'aux petits paysans.' },
+      { c: 'gau', t: 'L\'appliquer loyalement, avec un fonds européen d\'accompagnement et des prix planchers pour protéger le revenu des agriculteurs.' },
+      { c: 'eco', t: 'L\'appliquer, voire aller plus vite : la santé des sols, des abeilles et des riverains est en jeu, avec une aide forte à la conversion.' },
+      { c: 'cen', t: 'L\'appliquer, et négocier à Bruxelles des délais et des solutions de remplacement pour que personne ne reste sans alternative.' },
+      { c: 'lib', t: 'L\'appliquer en misant sur l\'innovation : autoriser les nouvelles techniques de sélection des plantes et l\'agriculture de précision.' },
+      { c: 'dro', t: 'L\'appliquer au minimum, sans aucune norme française en plus : nos agriculteurs ne doivent pas subir plus de contraintes que leurs voisins.' },
+      { c: 'nat', t: 'Refuser de l\'appliquer tel quel : la France doit reprendre la main sur sa politique agricole et faire primer ses propres choix.' }
+    ] },
+
+  { theme: 'Manifestation', axes: ['aut', 'jus'],
+    t: 'Tu participes à une manifestation déclarée contre une réforme. En fin de parcours, une centaine de personnes masquées brisent des vitrines, puis la police charge et gaze l\'ensemble du cortège, blessant plusieurs manifestants pacifiques. Le lendemain, une commission municipale t\'invite à témoigner et à dire ce qu\'il faudrait changer.',
+    q: 'Que dis-tu à la commission ?',
+    o: [
+      { c: 'rad', t: 'Que ces débordements naissent d\'une colère ignorée : il faut répondre aux revendications plutôt que durcir encore le maintien de l\'ordre.' },
+      { c: 'lbt', t: 'Que charger des manifestants pacifiques est inacceptable : je demande une enquête indépendante et l\'abandon des armes qui mutilent.' },
+      { c: 'gau', t: 'Qu\'il faut isoler les casseurs du cortège, adopter une doctrine de désescalade et rendre les policiers identifiables par leur matricule.' },
+      { c: 'eco', t: 'Que la non-violence doit primer des deux côtés : médiateurs, observateurs indépendants et désescalade pour que la rue reste un lieu de débat.' },
+      { c: 'cen', t: 'Qu\'il faut mieux séparer casseurs et manifestants : renseignement en amont, caméras-piétons pour les policiers, sanctions de part et d\'autre.' },
+      { c: 'lib', t: 'Que l\'État a failli deux fois, envers les commerçants et les manifestants : indemniser les victimes et juger casseurs comme policiers fautifs.' },
+      { c: 'dro', t: 'Que l\'ordre doit être tenu : interdire de manifestation les casseurs connus, les juger vite et soutenir les forces de l\'ordre en première ligne.' },
+      { c: 'nat', t: 'Qu\'il faut une fermeté totale : interdiction des cortèges à risque, dissolution des groupes violents et peines exemplaires pour les casseurs.' }
+    ] },
+
+  { theme: 'Industrie stratégique', axes: ['geo', 'eco', 'idn'],
+    t: 'Un groupe américain veut racheter une entreprise française de 8 000 salariés qui fabrique des turbines pour les centrales et des équipements pour la défense. Il promet de garder tous les sites cinq ans et d\'investir massivement. Le gouvernement peut bloquer l\'opération et consulte d\'abord les salariés, dont tu fais partie.',
+    q: 'Que votes-tu ?',
+    o: [
+      { c: 'rad', t: 'Contre, et réclamer la nationalisation avec les salariés associés aux décisions : une activité aussi vitale ne doit dépendre d\'aucun actionnaire.' },
+      { c: 'lbt', t: 'Contre, et proposer que les salariés reprennent l\'entreprise en coopérative pour décider eux-mêmes de leur avenir.' },
+      { c: 'gau', t: 'Contre la vente en l\'état : l\'État doit entrer au capital et garder un droit de veto sur les décisions stratégiques.' },
+      { c: 'eco', t: 'Contre, et réorienter l\'entreprise vers les renouvelables et les réseaux électriques, avec un contrôle public et des emplois ancrés ici.' },
+      { c: 'cen', t: 'Chercher d\'abord un partenaire industriel européen et, à défaut, accepter l\'offre avec des garanties contraignantes et contrôlées.' },
+      { c: 'lib', t: 'Pour : l\'investissement étranger apporte capitaux et débouchés, et l\'État n\'a pas à choisir les propriétaires des entreprises.' },
+      { c: 'dro', t: 'Pour, à condition que l\'État garde un droit de regard sur la défense, et que le siège et les brevets restent en France.' },
+      { c: 'nat', t: 'Contre : un savoir-faire lié au nucléaire et à la défense fait partie du patrimoine national et ne doit pas passer sous contrôle étranger.' }
+    ] }
+];
+
 // ---------- Banque de questions ----------
 // t = texte, w = poids par dimension
 const QUESTION_BANK = [
@@ -488,10 +769,19 @@ function seededOrder(n, seed) {
   return idx;
 }
 
-// Le test se déroule en deux parties : le cœur du test (ordre inchangé depuis la version à 201 affirmations),
-// puis les valeurs. Les identifiants sont stables : 0 → N−1 pour le cœur, puis les valeurs à la suite.
+// Le test se déroule en quatre parties : le cœur du test (ordre inchangé depuis la version à 201 affirmations),
+// les valeurs, « toi et les autres », puis les mises en situation. Les identifiants sont stables et
+// chronologiques : 0 → 200 pour le cœur, 201 → 230 pour les valeurs, puis les relations, puis les situations.
+// Ne jamais insérer de question au milieu : on ajoute toujours à la fin.
 const CORE_QUESTIONS = seededOrder(QUESTION_BANK.length, 0x9e3779b9).map(i => ({ id: i, module: 'core', ...QUESTION_BANK[i] }));
 const VALUE_QUESTIONS = seededOrder(VALUES_BANK.length, 0x85ebca6b).map(i => ({ id: QUESTION_BANK.length + i, module: 'values', ...VALUES_BANK[i] }));
-const QUESTIONS = CORE_QUESTIONS.concat(VALUE_QUESTIONS);
+const REL_FIRST_ID = QUESTION_BANK.length + VALUES_BANK.length;
+const REL_SLIDERS = REL_BANK.map((q, i) => ({ i, q })).filter(x => x.q.type !== 'choice');
+const REL_QUESTIONS = seededOrder(REL_SLIDERS.length, 0x27d4eb2f).map(k => REL_SLIDERS[k])
+  .concat(REL_BANK.map((q, i) => ({ i, q })).filter(x => x.q.type === 'choice'))
+  .map(({ i, q }) => ({ id: REL_FIRST_ID + i, module: 'rel', w: {}, ...q }));   // w vide : une question à choix ne charge aucun axe
+const SIT_FIRST_ID = REL_FIRST_ID + REL_BANK.length;
+const SIT_QUESTIONS = SITUATIONS_BANK.map((q, i) => ({ id: SIT_FIRST_ID + i, module: 'sit', type: 'choice', w: {}, ...q }));
+const QUESTIONS = CORE_QUESTIONS.concat(VALUE_QUESTIONS, REL_QUESTIONS, SIT_QUESTIONS);
 
-window.PRISME_DATA = { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, VALUE_QUESTIONS };
+window.PRISME_DATA = { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, VALUE_QUESTIONS, REL_QUESTIONS, SIT_QUESTIONS, REL_DIMS, LOVE_WAYS, CAMPS };

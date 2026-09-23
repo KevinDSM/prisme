@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Prisme — cartographie de ce que tu penses vraiment</title>
-  <meta name="description" content="Un test politique en profondeur : 231 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, ton profil DISC en couleurs. Compare-toi à tes amis.">
+  <meta name="description" content="Un test politique et psychologique en profondeur : 24 axes, tes fondements moraux, ton profil DISC, tes valeurs, ta façon d'aimer et quinze mises en situation. Compare-toi à tes amis.">
   <meta name="theme-color" content="#f5efe4">
   <meta http-equiv="Cache-Control" content="no-cache">
   <script>try { if (localStorage.getItem('prisme.theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
   <meta property="og:title" content="Prisme — cartographie de ce que tu penses vraiment">
-  <meta property="og:description" content="231 curseurs, 24 axes politiques, méta-politiques et de personnalité, tes fondements moraux, ton profil DISC et tes valeurs. Puis compare-toi à tes amis.">
+  <meta property="og:description" content="24 axes, tes fondements moraux, ton profil DISC, tes valeurs, ta façon d'aimer et quinze mises en situation : ce que tu dis, et ce que tu ferais. Puis compare-toi à tes amis.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=49">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=50">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=49">
+  <link rel="stylesheet" href="css/style.css?v=50">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -76,6 +76,16 @@
         <p>Famille politique, tempérament, archétype de personnalité, <strong>profil DISC</strong> en couleurs et <strong>boussole de valeurs</strong> — plus tes 16 qualités, expliquées.</p>
       </article>
       <article class="intro-card">
+        <span class="intro-card-num">15</span>
+        <h3>situations</h3>
+        <p>Une usine qui ferme, un père en fin de vie, une grève qui dure… Tu choisis ce que tu <strong>ferais</strong>, et on le compare à ce que tu <strong>dis</strong>.</p>
+      </article>
+      <article class="intro-card">
+        <span class="intro-card-num">2</span>
+        <h3>cartes intimes</h3>
+        <p>Comment tu t'<strong>attaches</strong> et comment tu te <strong>disputes</strong>, ta façon d'aimer et ton rôle chez tes proches.</p>
+      </article>
+      <article class="intro-card">
         <span class="intro-card-num">∞</span>
         <h3>amis</h3>
         <p>Ton cercle d'amis sur une carte, le <strong>palmarès</strong> du groupe (le pilier de confiance, le capitaine…), vos affinités et ce qui vous sépare.</p>
@@ -85,7 +95,7 @@
     <div class="intro-actions">
       <button id="btn-start" class="btn btn-primary">
         <span>Commencer</span>
-        <small>231 curseurs · ~23 min</small>
+        <small>269 questions · ~35 min · pause possible</small>
       </button>
       <button id="btn-resume" class="btn btn-ghost" hidden>
         <span>Reprendre</span>
@@ -93,7 +103,7 @@
       </button>
       <button id="btn-upgrade" class="btn btn-primary btn-upgrade" hidden>
         <span>Nouveau : compléter mon profil</span>
-        <small>nouveaux curseurs · sans refaire le test</small>
+        <small>nouvelles questions · sans refaire le test</small>
       </button>
       <button id="btn-circle-make" class="btn btn-ghost" type="button">
         <span>Créer un cercle</span>
@@ -140,7 +150,7 @@
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <span class="t-dark">Sombre</span><span class="t-light">Clair</span>
         </button>
-        <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">231</span></div>
+        <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">269</span></div>
       </div>
     </div>
     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -151,8 +161,11 @@
       <article id="q-card" class="q-card">
         <p class="q-kicker">Dans quelle mesure es-tu d'accord ?</p>
         <h2 id="q-text" class="q-text"></h2>
+        <p id="q-situation-q" class="q-situation-q" hidden></p>
 
-        <div class="slider-wrap">
+        <div id="q-choices" class="q-choices"></div>
+
+        <div class="slider-wrap" id="q-slider-block">
           <div id="slider-bubble" class="slider-bubble">Neutre</div>
           <input id="slider" class="slider" type="range" min="-100" max="100" step="1" value="0" aria-label="Degré d'accord">
           <div class="slider-ticks" aria-hidden="true">
@@ -329,6 +342,19 @@
         <ul id="cmp-qual-bars" class="found-cmp qual-cmp"></ul>
       </article>
 
+      <article class="res-card" id="cmp-rel" hidden>
+        <p class="card-kicker">Dans la vie</p>
+        <h2>À deux, au quotidien</h2>
+        <p class="group-intro">Les deux cartes de « toi et les autres », avec vos deux points, et ce que la rencontre de vos deux styles produit.</p>
+        <div id="cmp-rel-body"></div>
+      </article>
+
+      <article class="res-card" id="cmp-sit" hidden>
+        <p class="card-kicker">Face au réel</p>
+        <h2>Les mêmes situations, vos deux choix</h2>
+        <div id="cmp-sit-body"></div>
+      </article>
+
       <article class="res-card dumbbell-card">
         <p class="card-kicker">Face à face</p>
         <h2>Tous les axes, côte à côte</h2>
@@ -432,6 +458,27 @@
         </div>
       </div>
     </section>
+    <section class="res-section" id="sit-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Face au réel">Face au réel</h2>
+        <p>Quinze situations concrètes, et pour chacune la réponse que tu as choisie. Chaque réponse appartenait à une famille politique — sans que tu le saches en répondant. On peut donc comparer ce que tu <b>dis</b> (tes curseurs) et ce que tu <b>ferais</b> (tes choix).</p>
+      </div>
+      <div id="sit-hero" class="sit-hero"></div>
+      <article class="res-card sit-card">
+        <p class="card-kicker">Tes choix, camp par camp</p>
+        <h2>Pour qui tu as voté sans le savoir</h2>
+        <p class="group-intro">Chaque pastille est une situation, rangée dans le camp de la réponse choisie (survole-la pour la relire). Dessous, la règle gauche-droite : le losange, c'est où te placent tes curseurs ; le rond, où te placent tes choix.</p>
+        <div id="sit-camps"></div>
+      </article>
+      <article class="res-card sit-card">
+        <p class="card-kicker">Ce que tu dis, ce que tu ferais</p>
+        <h2>Thème par thème</h2>
+        <p class="group-intro">Pour chaque thème touché par les situations : <span class="db-leg me"></span> ta position dans les curseurs, <span class="db-leg them"></span> la position moyenne des réponses que tu as choisies. Le nombre à droite est l'écart, sur 100.</p>
+        <p id="sit-gap-text" class="sit-gap-text"></p>
+        <div id="sit-dumbbell"></div>
+      </article>
+      <details id="sit-review" class="sit-review"></details>
+    </section>
     <section class="res-section" id="blind-section" hidden>
       <div class="section-head">
         <h2 data-nav="Angles morts">Tes angles morts</h2>
@@ -522,6 +569,31 @@
         </article>
         <div id="values-cards" class="val-cards"></div>
       </div>
+    </section>
+    <section class="res-section" id="rel-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Toi et les autres">Toi et les autres</h2>
+        <p>Comment tu t'attaches, comment tu te disputes, comment tu montres que tu tiens aux gens. Rien de politique ici : c'est la partie la plus intime du rapport. Ce sont des tendances, pas des diagnostics — elles bougent avec les relations et avec le temps.</p>
+      </div>
+      <div class="rel-grid">
+        <article class="res-card rel-card" id="rel-attach"></article>
+        <article class="res-card rel-card" id="rel-conflict"></article>
+      </div>
+      <div class="rel-grid rel-lower">
+        <article class="res-card">
+          <p class="card-kicker">Ta façon d'aimer</p>
+          <h2>Ce que tu donnes, ce qui te touche</h2>
+          <div id="rel-love"></div>
+        </article>
+        <div class="rel-side">
+          <article class="res-card rel-role" id="rel-role"></article>
+          <article class="res-card">
+            <p class="card-kicker">Quatre curseurs de plus</p>
+            <div id="rel-bars" class="rel-bars"></div>
+          </article>
+        </div>
+      </div>
+      <p class="rel-source">Les deux cartes s'appuient sur des modèles reconnus : l'attachement adulte à deux dimensions (Brennan, Clark et Shaver, dans la lignée de Bowlby) et les cinq façons de gérer un désaccord (Thomas et Kilmann). Les façons d'aimer reprennent une idée populaire, les « langages de l'amour » : à lire comme une piste, pas comme une science.</p>
     </section>
     <section class="res-section" id="qualities-section" hidden>
       <div class="section-head">
@@ -743,6 +815,16 @@
         <p id="g-gov-note" class="group-intro"></p>
         <div id="g-gov" class="awards govs"></div>
       </article>
+      <article class="res-card group-card" id="g-sit-card-group" hidden>
+        <p class="card-kicker">Le cercle face au réel</p>
+        <h2 data-nav="Face au réel">Si le cercle devait décider</h2>
+        <p class="group-intro">Les quinze situations et, pour chacune, la réponse la plus choisie dans le cercle : son programme, mesure par mesure. La barre montre comment le cercle s'est partagé, de la gauche vers la droite ; une pastille par personne, survole-la pour voir qui a choisi quoi.</p>
+        <div id="g-sit-facts" class="stats-grid gsit-facts"></div>
+        <ol id="g-sit-prog" class="gsit-prog"></ol>
+        <h3 class="gsub">Chacun, entre ce qu'il dit et ce qu'il ferait</h3>
+        <p class="group-intro">Le losange : où les curseurs de chacun le placent, de la gauche à la droite. Le rond : où ses choix en situation le placent.</p>
+        <div id="g-sit-people" class="gsit-people"></div>
+      </article>
       <div class="res-act" data-act="Le cercle en caractère">
         <p class="act-n">II</p>
         <p class="act-t">Le cercle en caractère</p>
@@ -763,6 +845,30 @@
         <div id="g-circle-disc-wheel" class="disc-wheel"></div>
         <ul id="g-circle-disc-list" class="circle-disc-list"></ul>
         <p id="g-circle-disc-notes" class="circle-disc-notes"></p>
+      </article>
+      <article class="res-card group-card" id="g-rel-card-group" hidden>
+        <p class="card-kicker">Le cercle et les autres</p>
+        <h2 data-nav="Toi et les autres">Comment chacun aime et se dispute</h2>
+        <p class="group-intro">Ce que chacun fait face à un désaccord, ce qui lui fait plaisir, et son rôle chez ses proches. La façon de s'attacher, plus intime, n'apparaît qu'en totaux, sans les noms.</p>
+        <div class="grel-top">
+          <div id="g-rel-map" class="grel-map"></div>
+          <div>
+            <h3 class="gsub">Face à un désaccord</h3>
+            <ul id="g-rel-styles" class="grel-list"></ul>
+          </div>
+        </div>
+        <h3 class="gsub">Ce qui fait plaisir à chacun</h3>
+        <div id="g-rel-love" class="gl-wrap"></div>
+        <div class="grel-bottom">
+          <div>
+            <h3 class="gsub">Chez les proches, chacun son rôle</h3>
+            <ul id="g-rel-roles" class="grel-list"></ul>
+          </div>
+          <div>
+            <h3 class="gsub">Le climat du cercle</h3>
+            <div id="g-rel-climate"></div>
+          </div>
+        </div>
       </article>
       <article class="res-card group-card" id="g-strips-card" hidden>
         <p class="card-kicker">Tout le monde, ligne par ligne</p>
@@ -876,8 +982,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=49"></script>
-  <script src="js/profiles.js?v=49"></script>
-  <script src="js/app.js?v=49"></script>
+  <script src="js/questions.js?v=50"></script>
+  <script src="js/profiles.js?v=50"></script>
+  <script src="js/app.js?v=50"></script>
 </body>
 </html>

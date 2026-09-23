@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  const { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS } = window.PRISME_DATA;
+  const { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, REL_QUESTIONS, SIT_QUESTIONS, REL_DIMS, LOVE_WAYS, CAMPS } = window.PRISME_DATA;
   const {
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED,
@@ -80,7 +80,7 @@
       </article>
       <article class="gcard">
         <h4>8 · Trois temps</h4>
-        <p>Le rapport est rangé en trois actes, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits, les signatures, le résumé. <b>I · Ce que tu penses</b> : la politique — axes, méta-politique, hémicycle, angles morts, curseurs tranchés, sujets de cœur. <b>II · Qui tu es</b> : le caractère — personnalité, fondements moraux, traits, DISC, valeurs, qualités. <b>III · Pour le plaisir</b> : le personnage, l'animal, le film et le morceau. La page de cercle suit les mêmes trois temps, puis les profils un par un.</p>
+        <p>Le rapport est rangé en trois actes, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits, les signatures, le résumé. <b>I · Ce que tu penses</b> : la politique — axes, méta-politique, hémicycle, face au réel, angles morts, curseurs tranchés, sujets de cœur. <b>II · Qui tu es</b> : le caractère — personnalité, fondements moraux, traits, DISC, valeurs, « toi et les autres », qualités. <b>III · Pour le plaisir</b> : le personnage, l'animal, le film et le morceau. La page de cercle suit les mêmes trois temps, puis les profils un par un.</p>
       </article>
     </div>`);
 
@@ -243,6 +243,33 @@
     <p class="gtext">Dans un cercle, tout le monde est assis dans le même hémicycle : on voit d'un coup d'œil s'il y aurait une majorité, qui est le plus à gauche, le plus à droite, et qui siège le plus près du perchoir.</p>`);
 
   /* ---------------------------------------------------------
+     Face au réel : les mises en situation
+     --------------------------------------------------------- */
+  const SITS = (SIT_QUESTIONS || []).slice().sort((a, b) => a.id - b.id);
+  section('situations', 'Face au réel', 'Les quinze mises en situation', `
+    <p class="gtext">Les curseurs mesurent ce que tu <b>penses</b> d'une affirmation générale. Les mises en situation mesurent ce que tu <b>ferais</b> devant un cas précis : une usine qui ferme, un père qui demande à partir en Suisse, un récidiviste de seize ans, une grève qui dure. Chaque situation propose six à huit réponses concrètes ; <b>chacune appartient à un camp politique</b>, jamais affiché pendant le test. L'ordre des réponses est mélangé d'une situation à l'autre, pour que « la réponse de gauche » ne soit jamais au même endroit.</p>
+    <p class="gtext">Chaque réponse a été écrite comme la <b>meilleure version</b> de l'argument de son camp : raisonnable, sans caricature, signée sans rougir par quelqu'un de ce bord. Les ${CAMPS.length} camps, de gauche à droite :</p>
+    <div class="gchips">${CAMPS.map(c => `<span class="gchip" style="border-color:${c.color};color:${label(c.color)}">${esc(c.label)}</span>`).join('')}</div>
+    <h3 class="gsub">Ce qui est calculé</h3>
+    <ul class="glist">
+      <li><b>Ce que tu ferais, thème par thème.</b> Chaque situation met en jeu un à trois axes politiques (l'usine : l'économie et la souveraineté ; la manifestation : l'autorité et la justice…). Chaque camp a une position sur ces axes. Ta position « en actes » sur un axe est la moyenne des positions des camps que tu as choisis dans les situations qui le touchent. On la compare à ta position « en paroles », celle de tes curseurs : c'est le graphique « thème par thème ».</li>
+      <li><b>Le score d'accord entre ce que tu dis et ce que tu ferais</b> : 100 moins l'écart moyen entre les deux, sur l'ensemble des axes touchés.</li>
+      <li><b>La réponse que tes curseurs laissaient prévoir</b> : dans chaque situation, celle dont le camp est le plus proche de tes curseurs sur les axes en jeu. Le rapport compte combien de fois tu l'as choisie, et la montre quand ce n'est pas le cas.</li>
+      <li><b>Pour qui tu as voté sans le savoir</b> : tes choix rangés par camp, et la règle gauche-droite où le losange marque ta place selon tes curseurs (la même que dans l'hémicycle) et le rond ta place selon tes choix.</li>
+    </ul>
+    <h3 class="gsub">Les cinq profils face au réel</h3>
+    <div class="gcards">
+      <article class="gcard"><h4>Fidèle à ta ligne</h4><p>Au moins 55 % de tes réponses sont celles que tes curseurs laissaient prévoir.</p></article>
+      <article class="gcard"><h4>Plus à gauche (ou à droite) en actes qu'en paroles</h4><p>Tes choix te placent à au moins dix points de ta place d'après tes curseurs, d'un côté ou de l'autre. C'est très fréquent : devant un cas précis, on ne raisonne pas comme devant une affirmation générale.</p></article>
+      <article class="gcard"><h4>À la carte</h4><p>Tes choix puisent dans cinq camps ou plus : tu juges au cas par cas.</p></article>
+      <article class="gcard"><h4>Le cap et les ajustements</h4><p>Tout le reste : tes choix suivent ta ligne, avec des écarts ponctuels.</p></article>
+    </div>
+    <p class="gtext">À deux, la comparaison compte les situations où vous avez fait exactement le même choix et montre celles où vos réponses s'éloignent le plus. Dans un cercle, <b>« si le cercle devait décider »</b> donne pour chaque situation la réponse la plus choisie — le programme du cercle — avec la façon dont il s'est partagé, ce qui divise et ce qui rassemble le plus, les « jumeaux de situation » et, pour chacun, l'écart entre ce qu'il dit et ce qu'il ferait.</p>
+    <p class="gtext">Une réserve honnête : un camp est une simplification, et une réponse peut plaire à des gens de plusieurs bords. C'est pourquoi le résultat est une <b>tendance sur quinze choix</b>, jamais le verdict d'une seule réponse.</p>
+    <h3 class="gsub">Les quinze situations</h3>
+    <ol class="glist">${SITS.map(q => `<li><b>${esc(q.theme)}</b> — ${esc(q.q)}</li>`).join('')}</ol>`);
+
+  /* ---------------------------------------------------------
      10. DISC
      --------------------------------------------------------- */
   function discWheelLegend() {
@@ -350,6 +377,28 @@
     <ul class="glist">
       ${Object.entries(VALUE_TENSIONS).map(([k, t]) => `<li><b>${esc(k.split('+').map(id => VALUES.find(v => v.id === id).label).join(' et '))}.</b> ${esc(t)}</li>`).join('')}
     </ul>`);
+
+
+  /* ---------------------------------------------------------
+     Toi et les autres
+     --------------------------------------------------------- */
+  section('relations', 'Toi et les autres', 'Attachement, désaccords, façons d\'aimer', `
+    <p class="gtext">${REL_QUESTIONS.length} questions sur la vie avec les autres : le couple, la famille, les amis, les proches. Rien de politique. Elles mesurent <b>${REL_DIMS.length} dimensions</b> de 0 à 100 et deux choix :</p>
+    <table class="gtable">
+      <tr><th>Dimension</th><th>Score bas</th><th>Score haut</th></tr>
+      ${REL_DIMS.map(d => `<tr><td><b style="color:${label(d.color)}">${esc(d.label)}</b></td><td>${esc(d.low)}</td><td>${esc(d.high)}</td></tr>`).join('')}
+    </table>
+    <h3 class="gsub">La carte de l'attachement</h3>
+    <p class="gtext">Deux dimensions, reprises des travaux sur l'attachement adulte (Brennan, Clark et Shaver, dans la lignée de Bowlby) : le <b>besoin d'être rassuré</b> quand l'autre s'éloigne, et le <b>besoin d'espace</b> quand il se rapproche. Coupées à 50, elles donnent quatre styles : <b>confiant</b> (peu des deux), <b>en demande</b> (besoin d'être rassuré), <b>indépendant</b> (besoin d'espace) et <b>partagé</b> (les deux à la fois). Le rapport précise si c'est à peine, plutôt ou nettement le cas, selon la distance au centre. C'est une tendance, qui bouge avec les relations et le temps — pas un diagnostic.</p>
+    <h3 class="gsub">La carte des désaccords</h3>
+    <p class="gtext">Le modèle de Thomas et Kilmann croise <b>s'affirmer</b> (défendre ce qu'on pense) et <b>préserver le lien</b> (que l'autre s'y retrouve). Cinq façons de se disputer en sortent : <b>le bâtisseur</b> (les deux hauts : on cherche ensemble), <b>le défenseur</b> (on s'affirme), <b>l'arrangeant</b> (on cède pour la paix), <b>l'esquive</b> (on laisse passer) et, quand les deux restent à moins de 12 points du centre, <b>le négociateur</b> (chacun fait un pas). Aucune n'est la bonne : chacune a son moment.</p>
+    <h3 class="gsub">Les façons d'aimer</h3>
+    <p class="gtext">Deux questions à choix : ce qui te vient naturellement pour montrer que tu tiens à quelqu'un, et ce qui te fait le plus sentir qu'on tient à toi. Cinq réponses, inspirées des « langages de l'amour » — une idée populaire plus qu'une science, à lire comme une piste. Quand les deux diffèrent, le rapport signale le malentendu classique : on donne ce qu'on aimerait recevoir.</p>
+    <div class="gchips">${LOVE_WAYS.map(w => `<span class="gchip">${w.icon} ${esc(w.label)}</span>`).join('')}</div>
+    <h3 class="gsub">Ton rôle chez les tiens</h3>
+    <p class="gtext">Calculé sans question de plus, en croisant ces dimensions avec ton DISC, ta morale et tes valeurs : <b>le pilier</b>, <b>le confident</b>, <b>l'organisateur</b>, <b>le boute-en-train</b>, <b>le médiateur</b>, <b>l'électron libre</b> ou <b>le protecteur</b>.</p>
+    <h3 class="gsub">À deux et dans un cercle</h3>
+    <p class="gtext">À deux, les deux cartes portent vos deux points, avec ce que la rencontre de vos styles produit (le fameux duo « en demande » et « indépendant », deux défenseurs…) et ce qui fait plaisir à chacun. Dans un cercle : qui fait quoi face à un désaccord, ce qui touche chacun, le rôle de chacun chez ses proches, et le <b>climat du cercle</b>. L'attachement étant la donnée la plus intime, le cercle ne le montre <b>qu'en totaux, sans les noms</b>. Et les phrases de ce chapitre ne sont jamais citées mot pour mot dans le rapport.</p>`);
 
   const SRC = { axis: AXES, found: FOUNDATIONS, trait: TRAITS, disc: DISC };
   function compName([src, id, dir]) {
@@ -553,10 +602,10 @@
      --------------------------------------------------------- */
   section('liens', 'Les coulisses', 'Liens, versions et confidentialité', `
     <div class="gcards">
-      <article class="gcard"><h4>Ce que contient un lien</h4><p>Tes ${AXES.length} scores d'axes, ${FOUNDATIONS.length} fondements, ${TRAITS.length} traits, ${DISC.length} couleurs DISC, 4 statistiques de style, tes sujets de cœur, le nombre d'affirmations traitées et tes quatre réponses les plus poussées — le tout compressé en une soixantaine de caractères. Ton prénom n'y figure que si tu l'as donné, en clair après <code>&amp;n=</code>.</p></article>
+      <article class="gcard"><h4>Ce que contient un lien</h4><p>Un socle fixe : tes ${AXES.length} scores d'axes, ${FOUNDATIONS.length} fondements, ${TRAITS.length} traits, ${DISC.length} couleurs DISC, 4 statistiques de style, tes sujets de cœur, le nombre de réponses et tes quatre réponses les plus poussées. Puis des <b>tiroirs</b>, un par module fait : tes ${VALUES.length} valeurs, tes ${REL_DIMS.length} dimensions de « toi et les autres » avec tes deux façons d'aimer, et tes ${SIT_QUESTIONS.length} choix en situation (deux par octet). Un module pas fait ne prend aucune place, et un module ajouté plus tard n'aura besoin que d'un nouveau tiroir. Le tout tient en environ 120 caractères. Ton prénom n'y figure que si tu l'as donné, en clair après <code>&amp;n=</code>.</p></article>
       <article class="gcard"><h4>Ce qui n'y est pas</h4><p>Tes réponses détaillées ne quittent jamais ton navigateur. Aucun serveur ne reçoit quoi que ce soit : le site est un simple ensemble de fichiers. Si tu perds le lien, le résultat est perdu — il est donc gardé aussi dans ton navigateur, avec ton cercle.</p></article>
       <article class="gcard"><h4>La pause et le code de reprise</h4><p>Pendant le test, le bouton <b>Pause</b> donne un code (et un lien) de reprise. Ta progression est de toute façon gardée sur l'appareil ; le code sert à reprendre <b>ailleurs</b> ou à ne rien perdre. Il contient chacune de tes réponses, les cœurs et la question où tu t'es arrêté : colle-le sur l'accueil, dans « J'ai un code de reprise », et tu repars exactement du même endroit.</p></article>
-      <article class="gcard"><h4>Compléter un ancien profil</h4><p>Quand le test s\'enrichit, on ne recommence pas. En ouvrant ou en collant son ancien lien sur l\'accueil, on se voit proposer « Compléter mon profil » : on ne répond qu\'aux affirmations ajoutées depuis son passage. Tout ce que l\'ancien lien contient est conservé tel quel ; ce qui lui manque (valeurs, DISC, nouveaux axes selon son ancienneté) est calculé à partir des nouvelles réponses.</p></article>
+      <article class="gcard"><h4>Compléter un ancien profil</h4><p>Quand le test s\'enrichit, on ne recommence pas. En ouvrant ou en collant son ancien lien sur l\'accueil, on se voit proposer « Compléter mon profil » : on ne répond qu\'aux affirmations ajoutées depuis son passage. Tout ce que l\'ancien lien contient est conservé tel quel ; ce qui lui manque (valeurs, DISC, nouveaux axes, « toi et les autres », mises en situation, selon son ancienneté) est calculé à partir des seules nouvelles réponses. Un profil de la version précédente n\'a que ${REL_QUESTIONS.length + SIT_QUESTIONS.length} questions à rattraper.</p></article>
       <article class="gcard"><h4>Les anciennes versions</h4><p>Le test a grandi : les liens créés avec une version précédente restent lisibles. Les axes ou le DISC qu'ils ne contiennent pas sont simplement ignorés, et les comparaisons ne portent que sur ce que les deux liens ont en commun.</p></article>
       <article class="gcard"><h4>Un cercle à versions mélangées</h4><p>Un ancien profil rejoint un cercle sans rien casser : il compte partout où il a les réponses, et nulle part ailleurs. Les moyennes du groupe s'ajustent d'elles-mêmes — une statistique de valeurs affichera « 1 sur 2 » là où les autres disent « 1 sur 3 ». Le cercle le dit en toutes lettres sous « le cercle en bref », et chaque personne concernée porte une étiquette (« sans les valeurs ») : ce n'est pas un bug, c'est une absence de données. Son <b>prénom brille</b> — en tête de cercle, sur sa pastille, avec un bouton « mise à jour » à côté ; plus bas, dans la liste des profils, avec la mention « mise à jour disponible ». En cliquant, on part directement répondre aux seules affirmations qui manquent, et on revient au cercle à la fin avec le profil déjà échangé — il ne reste qu'à recopier la nouvelle URL. Si la personne a fait la mise à jour de son côté, <b>« Mettre à jour »</b> dans son volet échange son ancien lien contre le nouveau, à la même place et sous le même prénom.</p></article>
       <article class="gcard"><h4>Les limites</h4><p>Prisme n'est pas un outil scientifique validé : les profils types, seuils et textes ont été écrits pour aider à se comprendre et à discuter, pas pour trancher qui a raison. Un score dit ce que tu as répondu un jour donné ; il ne dit pas qui tu es pour toujours.</p></article>

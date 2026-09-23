@@ -6,7 +6,10 @@
 (function () {
   'use strict';
 
-  const { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, VALUE_QUESTIONS } = window.PRISME_DATA;
+  const { AXES, FOUNDATIONS, TRAITS, DISC, VALUES, QUESTIONS, VALUE_QUESTIONS, REL_QUESTIONS, SIT_QUESTIONS, REL_DIMS, LOVE_WAYS, CAMPS } = window.PRISME_DATA;
+  const QUESTION_BY_ID = new Map(QUESTIONS.map(q => [q.id, q]));
+  // les situations dans l'ordre de leurs identifiants : c'est l'ordre des réponses dans le lien
+  const SITS = SIT_QUESTIONS.slice().sort((a, b) => a.id - b.id);
   const {
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
@@ -42,7 +45,12 @@
         'aff', 'loc', 'rsk', 'ord', 'thr', 'col', 'tmp', 'cmp', 'opn'],
   };
   AXES_BY_VERSION[5] = AXES_BY_VERSION[4];
-  const CURRENT_VERSION = 5;
+  AXES_BY_VERSION[6] = AXES_BY_VERSION[4];
+  /* Version 6 : un socle fixe, puis des « tiroirs » optionnels, un par module
+     ([étiquette, longueur, contenu]). Un module pas fait ne coûte rien, et un module
+     ajouté plus tard n'a besoin que d'une nouvelle étiquette — pas d'une nouvelle version. */
+  const CURRENT_VERSION = 6;
+  const TIROIR = { values: 1, rel: 2, sit: 3 };
   const DISC_SINCE_VERSION = 4;
   const VALUES_SINCE_VERSION = 5;
 
@@ -94,10 +102,23 @@
   // chronologiques : tout ce qui a un identifiant supérieur ou égal est nouveau pour cette personne.
   const QUESTIONS_BY_VERSION = { 1: 96, 2: 141, 3: 171, 4: 201 };
 
+  /* Les modules qu'on peut rattraper sans refaire le test. Un lien des versions 1 à 4 reçoit
+     tout ce qui est apparu depuis (identifiants chronologiques) ; à partir de la version 5,
+     chaque module manquant apporte ses seules questions. */
+  const MODULES = [
+    { id: 'values', questions: VALUE_QUESTIONS, has: r => !!r.values, label: 'ta boussole de valeurs' },
+    { id: 'rel', questions: REL_QUESTIONS, has: r => !!r.rel, label: 'ton chapitre « toi et les autres » (attachement, disputes, façons d\'aimer)' },
+    { id: 'sit', questions: SIT_QUESTIONS, has: r => !!r.sit, label: 'tes quinze mises en situation (ce que tu dis contre ce que tu ferais)' },
+  ];
+  function missingModules(r) {
+    return r ? MODULES.filter(m => !m.has(r)) : [];
+  }
   function missingQuestions(base) {
-    const r = decodeResult(base);
-    const seen = r ? QUESTIONS_BY_VERSION[r.version] : undefined;
-    return seen === undefined ? VALUE_QUESTIONS : QUESTIONS.filter(q => q.id >= seen);
+    const r = typeof base === 'string' ? decodeResult(base) : base;
+    if (!r) return [];
+    const seen = QUESTIONS_BY_VERSION[r.version];
+    if (seen !== undefined) return QUESTIONS.filter(q => q.id >= seen);
+    return missingModules(r).flatMap(m => m.questions);
   }
   function listFor(mode, base) {
     return mode === 'values' ? missingQuestions(base) : QUESTIONS;
@@ -416,7 +437,7 @@
     if (progressOpen) {
       btn.hidden = false;
       btn.querySelector('span').textContent = progress.mode === 'values' ? 'Reprendre la mise à jour' : 'Reprendre';
-      info.textContent = `${progress.index}/${listFor(progress.mode, progress.base).length} curseurs déjà réglés`;
+      info.textContent = `${progress.index}/${listFor(progress.mode, progress.base).length} questions déjà répondues`;
       btn.onclick = () => { setState(progress.index, progress.answers, progress.mode, progress.base); startQuiz(); };
     } else if (mine) {
       btn.hidden = false;
@@ -516,29 +537,81 @@
     $('q-text').textContent = q.t;
     const p = Math.round((state.index / list.length) * 100);
     const kicker = document.querySelector('.q-kicker');
-    kicker.textContent = q.module === 'values' ? 'Tes valeurs · à quel point cette phrase te ressemble ?' : 'Dans quelle mesure es-tu d\'accord ?';
-    kicker.classList.toggle('is-values', q.module === 'values');
-    if (q.module === 'values' && state.index > 0 && list[state.index - 1].module !== 'values' && dir !== 'back') {
-      toast(`Dernière partie : tes valeurs (${VALUE_QUESTIONS.length} curseurs). Ici, pas d'opinion : dis simplement si la phrase te ressemble.`);
+    const isChoice = q.type === 'choice';
+    kicker.textContent = q.module === 'values' ? 'Tes valeurs · à quel point cette phrase te ressemble ?'
+      : q.module === 'rel' ? (isChoice ? 'Toi et les autres · une seule réponse' : 'Toi et les autres · à quel point cette phrase te ressemble ?')
+      : q.module === 'sit' ? `Mise en situation ${SITS.indexOf(q) + 1} sur ${SITS.length} · ${q.theme || 'que fais-tu ?'}`
+      : 'Dans quelle mesure es-tu d\'accord ?';
+    kicker.classList.toggle('is-values', q.module === 'values' || q.module === 'rel');
+    kicker.classList.toggle('is-sit', q.module === 'sit');
+    const prevModule = state.index > 0 ? list[state.index - 1].module : null;
+    if (state.index > 0 && prevModule !== q.module && dir !== 'back') {
+      const left = list.slice(state.index).some(x => x.module !== q.module);
+      const when = left ? 'Partie suivante' : 'Dernière partie';
+      if (q.module === 'values') toast(`${when} : tes valeurs (${VALUE_QUESTIONS.length} curseurs). Ici, pas d'opinion : dis simplement si la phrase te ressemble.`);
+      if (q.module === 'rel') toast(`${when} : toi et les autres (${REL_QUESTIONS.length} questions). Comment tu aimes, tu te disputes, tu tiens aux tiens. Rien de tout ça n'est politique.`);
+      if (q.module === 'sit') toast(`${when} : ${SITS.length} mises en situation. Pas de bonne réponse : choisis ce que tu ferais vraiment, pas ce qu'il faudrait dire.`);
     }
+    $('q-situation-q').textContent = q.module === 'sit' && q.q ? q.q : '';
+    $('q-situation-q').hidden = !(q.module === 'sit' && q.q);
+    $('q-card').classList.toggle('is-choice', isChoice);
+    $('q-card').classList.toggle('is-sit', q.module === 'sit');
+    $('q-slider-block').hidden = isChoice;
+    document.querySelector('.quiz-hint').textContent = isChoice
+      ? `Touches 1 à ${q.o.length} pour choisir · Entrée ou double-clic pour valider`
+      : 'Flèches ← → pour ajuster · Entrée pour valider · H pour le cœur';
+    heart.closest('.heart-toggle').hidden = isChoice || q.module === 'rel';
     $('progress-fill').style.width = p + '%';
     document.querySelector('.progress').setAttribute('aria-valuenow', p);
 
     const saved = state.answers[q.id];
-    slider.value = saved ? saved.v : 0;
-    heart.checked = !!(saved && saved.h);
     touched = false;
-    paintSlider();
+    if (isChoice) {
+      choice = saved && saved.c !== undefined ? saved.c : null;
+      renderChoices(q);
+    } else {
+      $('q-choices').innerHTML = '';
+      slider.value = saved && saved.v !== undefined ? saved.v : 0;
+      heart.checked = !!(saved && saved.h);
+      paintSlider();
+    }
 
     $('btn-prev').disabled = state.index === 0;
     $('btn-next').querySelector('span').textContent = state.index === list.length - 1 ? 'Voir mon profil' : 'Suivant';
-    slider.focus({ preventScroll: true });
+    if (isChoice) {
+      const first = $('q-choices').querySelector('.q-choice.is-on') || $('q-choices').querySelector('.q-choice');
+      if (first) first.focus({ preventScroll: true });
+    } else slider.focus({ preventScroll: true });
+  }
+
+  /* Les réponses à choix. Pour les situations, l'ordre est mélangé — toujours le même pour
+     une situation donnée, mais jamais le même d'une situation à l'autre : « la réponse de
+     gauche » n'est jamais au même endroit. Le lien garde l'index d'origine, pas la position. */
+  let choice = null;
+  function choiceOrder(q) {
+    return q.module === 'sit' ? seededOrder(q.o.length, (q.id * 2654435761) >>> 0) : q.o.map((o, i) => i);
+  }
+  function renderChoices(q) {
+    $('q-choices').innerHTML = choiceOrder(q).map((i, k) =>
+      `<button type="button" class="q-choice${choice === i ? ' is-on' : ''}" data-choice="${i}" aria-pressed="${choice === i}"><span class="q-choice-n">${k + 1}</span><span class="q-choice-t">${esc(q.o[i].t)}</span></button>`).join('');
+  }
+  function pickChoice(i) {
+    choice = i;
+    touched = true;
+    $('q-choices').querySelectorAll('.q-choice').forEach(b => {
+      const on = Number(b.dataset.choice) === i;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on);
+    });
   }
 
   function commitCurrent(skip) {
     const q = quizList()[state.index];
     if (skip) {
       state.answers[q.id] = null;
+    } else if (q.type === 'choice') {
+      // « Suivant » sans rien choisir vaut « Passer »
+      state.answers[q.id] = choice === null ? null : { c: choice };
     } else {
       let v = Number(slider.value);
       if (Math.abs(v) < 6) v = 0;
@@ -585,7 +658,10 @@
       ...base,
       axes,
       disc: base.disc || part.disc,
-      values: part.values,
+      // on ne remplace jamais un module déjà fait par un module vide
+      values: part.values || base.values,
+      rel: part.rel || base.rel || null,
+      sit: part.sit || base.sit || null,
       heartAxes: base.heartAxes.concat(newHearts),
       stats: { intensity: mix('intensity'), nuance: mix('nuance'), radical: mix('radical'), coherence: base.stats.coherence },
       answered: nb + np,
@@ -602,6 +678,8 @@
     { test: r => !r.known.has('egl'), label: "l'axe égalité", short: "sans l'égalité", where: "la ligne égalité" },
     { test: r => !r.disc, label: "le profil DISC", short: "sans le DISC", where: "les couleurs du cercle" },
     { test: r => !r.values, label: "les valeurs", short: "sans les valeurs", where: "la boussole de valeurs et les dix lignes de valeurs" },
+    { test: r => !r.rel, label: "le chapitre « toi et les autres »", short: "sans les relations", where: "les disputes, les façons d'aimer et le climat du cercle" },
+    { test: r => !r.sit, label: "les mises en situation", short: "sans les situations", where: "le cercle face au réel" },
   ];
 
   function gapsOf(r) {
@@ -637,17 +715,23 @@
     const m = groupMembers.find(x => x.code === code);
     const who = m && m.name ? m.name : 'ce profil';
     const nq = missingQuestions(code).length;
-    const mins = Math.max(3, Math.round(nq / 9));
+    const mins = minutesFor(missingQuestions(code));
     const ok = confirm(`Compléter le profil de ${who} ?\n\n`
-      + `${nq} curseurs, environ ${mins} minutes. Les réponses déjà données sont gardées : le test n'est pas à refaire.\n\n`
+      + `${nq} questions, environ ${mins} minutes. Les réponses déjà données sont gardées : le test n'est pas à refaire.\n\n`
       + `À la fin, on revient à ce cercle avec le profil à jour.`);
     if (!ok) return;
     store(STORAGE_BACK, { code, title: circleName, members: groupMembers.map(x => ({ code: x.code, name: x.name })) });
     startUpgrade(code);
   }
 
+  // ~9 curseurs à la minute ; une question à choix se lit plus longuement
+  function minutesFor(list) {
+    const choices = list.filter(q => q.type === 'choice').length;
+    return Math.max(3, Math.round((list.length - choices) / 9 + choices * 0.45));
+  }
+
   function canUpgrade(r) {
-    return !!r && !r.values && QUESTIONS_BY_VERSION[r.version] !== undefined;
+    return !!r && missingQuestions(r).length > 0;
   }
 
   function startUpgrade(code) {
@@ -698,6 +782,11 @@
       if (Math.abs(Number(slider.value)) < 6) { slider.value = 0; paintSlider(); }
     });
     $('btn-next').onclick = () => goNext(false);
+    $('q-choices').addEventListener('click', e => {
+      const b = e.target.closest('[data-choice]');
+      if (b) pickChoice(Number(b.dataset.choice));
+    });
+    $('q-choices').addEventListener('dblclick', e => { if (e.target.closest('[data-choice]')) goNext(false); });
     $('btn-skip').onclick = () => goNext(true);
     $('btn-prev').onclick = goPrev;
     $('btn-quit').onclick = openPause;
@@ -721,11 +810,23 @@
       if (!$('pause-modal').hidden) { if (e.key === 'Escape') closePause(); return; }
       if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
       if (e.key === 'Enter') {
+        if (e.target.closest && e.target.closest('[data-choice]')) {
+          e.preventDefault();
+          pickChoice(Number(e.target.closest('[data-choice]').dataset.choice));
+          goNext(false);
+          return;
+        }
         if (e.target.closest && e.target.closest('button')) return;
         e.preventDefault();
         goNext(false);
       }
       else if (e.key === 'Backspace' && e.target !== slider) { e.preventDefault(); goPrev(); }
+      else if (quizList()[state.index].type === 'choice') {
+        // 1 à 8 : choisir la réponse affichée à cette place
+        const k = Number(e.key);
+        const btns = $('q-choices').querySelectorAll('.q-choice');
+        if (k >= 1 && k <= btns.length) { e.preventDefault(); pickChoice(Number(btns[k - 1].dataset.choice)); btns[k - 1].focus(); }
+      }
       else if (e.key.toLowerCase() === 'h') { heart.checked = !heart.checked; touched = true; }
       else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target !== slider) {
         e.preventDefault();
@@ -755,7 +856,8 @@
     const hearts = new Array(Math.ceil(n / 8)).fill(0);
     for (let id = 0; id < n; id++) {
       const a = answers[id];
-      bytes.push(a === undefined ? 254 : a === null ? 255 : clamp(Math.round(a.v), -100, 100) + 100);
+      // une réponse à choix s'écrit par son numéro (0 à 7) : le type de la question lève l'ambiguïté
+      bytes.push(a === undefined ? 254 : a === null ? 255 : a.c !== undefined ? a.c : clamp(Math.round(a.v), -100, 100) + 100);
       if (a && a.h) hearts[id >> 3] |= 1 << (id & 7);
     }
     return bytesToB64(bytes.concat(hearts));
@@ -782,6 +884,12 @@
       if (b === 254) continue;
       count++;
       if (b === 255) { answers[id] = null; continue; }
+      const q = QUESTION_BY_ID.get(id);
+      if (q && q.type === 'choice') {
+        if (b >= q.o.length) return null;
+        answers[id] = { c: b };
+        continue;
+      }
       if (b > 200) return null;
       answers[id] = { v: b - 100, h: !!(bytes[5 + n + (id >> 3)] & (1 << (id & 7))) };
     }
@@ -859,6 +967,7 @@
     TRAITS.forEach(t => dims[t.id] = { num: 0, den: 0, contribs: [] });
     DISC.forEach(x => dims[x.id] = { num: 0, den: 0, contribs: [] });
     VALUES.forEach(x => dims[x.id] = { num: 0, den: 0, contribs: [] });
+    REL_DIMS.forEach(x => dims[x.id] = { num: 0, den: 0, contribs: [] });
 
     const hearts = {};
     AXES.forEach(a => hearts[a.id] = 0);
@@ -868,14 +977,15 @@
 
     QUESTIONS.forEach(q => {
       const a = answers[q.id];
-      if (!a) return;
+      if (!a || q.type === 'choice') return;
       answered += 1;
       const v = a.v / 100;
       const av = Math.abs(v);
       sumAbs += av;
       if (av <= 0.25) nuanced += 1;
       if (av >= 0.75) radical += 1;
-      if (av >= 0.7) strongest.push({ id: q.id, v: a.v, h: a.h });
+      // les phrases sur la vie intime ne sont jamais citées mot pour mot dans le rapport
+      if (av >= 0.7 && q.module !== 'rel') strongest.push({ id: q.id, v: a.v, h: a.h });
       const hf = a.h ? 1.5 : 1;
       Object.entries(q.w).forEach(([dim, w]) => {
         const d = dims[dim];
@@ -924,6 +1034,25 @@
       });
     }
 
+    /* Les deux modules récents n'existent que si on les a traversés (une réponse, ou un
+       « passer ») : c'est ce qui distingue « pas encore fait » de « fait, sans avis ». */
+    let rel = null;
+    if (REL_QUESTIONS.some(q => answers[q.id] !== undefined)) {
+      rel = {};
+      REL_DIMS.forEach(x => {
+        const d = dims[x.id];
+        rel[x.id] = d.den ? clamp((d.num / d.den + 1) / 2, 0, 1) : 0.5;
+      });
+      REL_QUESTIONS.filter(q => q.type === 'choice').forEach(q => {
+        const a = answers[q.id];
+        rel[q.key] = a && a.c !== undefined ? a.c : null;
+      });
+    }
+    let sit = null;
+    if (SITS.some(q => answers[q.id] !== undefined)) {
+      sit = SITS.map(q => { const a = answers[q.id]; return a && a.c !== undefined ? a.c : null; });
+    }
+
     const stats = {
       intensity: answered ? sumAbs / answered : 0,
       nuance: answered ? nuanced / answered : 0,
@@ -937,7 +1066,7 @@
     strongest.sort((x, y) => (Number(y.h) - Number(x.h)) || (Math.abs(y.v) - Math.abs(x.v)));
     const extremes = strongest.slice(0, EXTREMES_KEPT).map(e => ({ id: e.id, v: e.v }));
 
-    return { axes, found, traits, disc, values, stats, heartAxes, answered, extremes };
+    return { axes, found, traits, disc, values, rel, sit, stats, heartAxes, answered, extremes };
   }
 
   /* ---------------------------------------------------------
@@ -968,7 +1097,10 @@
     return bytes;
   }
 
-  // Version 4 : [4, 24 axes, 6 fondements, 3 traits, 4 scores DISC, 4 stats, 3 octets de cœurs, nb répondu, 4 × (question, valeur)]
+  /* Version 6 : [6, 24 axes, 6 fondements, 3 traits, 4 DISC, 4 stats, 3 octets de cœurs,
+     nb répondu (2 octets), 4 × (question sur 2 octets, valeur)], puis les tiroirs :
+       1 = valeurs (10 octets), 2 = toi et les autres (8 dimensions + 1 octet : donner / attendre),
+       3 = situations (un choix de 0 à 7 par demi-octet, 15 = pas de réponse). */
   function encodeResult(r) {
     const ids = AXES_BY_VERSION[CURRENT_VERSION];
     const bytes = [CURRENT_VERSION];
@@ -976,17 +1108,84 @@
     FOUNDATIONS.forEach(f => bytes.push(Math.round(r.found[f.id] * 100)));
     TRAITS.forEach(t => bytes.push(Math.round(r.traits[t.id] * 100)));
     DISC.forEach(x => bytes.push(Math.round(r.disc[x.id] * 100)));
-    VALUES.forEach(x => bytes.push(r.values ? Math.round(r.values[x.id] * 100) : 255)); // 255 = valeurs non mesurées
     bytes.push(Math.round(r.stats.intensity * 100), Math.round(r.stats.nuance * 100), Math.round(r.stats.radical * 100), Math.round(r.stats.coherence * 100));
     let mask = 0;
     ids.forEach((id, i) => { if (r.heartAxes.includes(id)) mask |= (1 << i); });
     bytes.push(mask & 255, (mask >> 8) & 255, (mask >> 16) & 255);
-    bytes.push(Math.min(255, r.answered || 0));
+    const n = Math.min(65535, r.answered || 0);
+    bytes.push(n & 255, n >> 8);
     for (let i = 0; i < EXTREMES_KEPT; i++) {
       const e = r.extremes[i];
-      bytes.push(e ? e.id + 1 : 0, e ? e.v + 100 : 0);
+      const id = e ? e.id + 1 : 0;
+      bytes.push(id & 255, id >> 8, e ? e.v + 100 : 0);
+    }
+    const drawer = (tag, payload) => bytes.push(tag, payload.length, ...payload);
+    if (r.values) drawer(TIROIR.values, VALUES.map(x => Math.round(r.values[x.id] * 100)));
+    if (r.rel) {
+      const nib = v => (v === null || v === undefined ? 15 : v);
+      drawer(TIROIR.rel, REL_DIMS.map(x => Math.round(r.rel[x.id] * 100)).concat((nib(r.rel.give) << 4) | nib(r.rel.want)));
+    }
+    if (r.sit) {
+      const packed = [];
+      for (let k = 0; k < SITS.length; k += 2) {
+        const a = r.sit[k], b = r.sit[k + 1];
+        packed.push(((a === null || a === undefined ? 15 : a) << 4) | (b === null || b === undefined ? 15 : b));
+      }
+      drawer(TIROIR.sit, packed);
     }
     return bytesToB64(bytes);
+  }
+
+  function decodeV6(bytes) {
+    const ids = AXES_BY_VERSION[6];
+    const core = 1 + ids.length + FOUNDATIONS.length + TRAITS.length + DISC.length + 4 + 3 + 2 + EXTREMES_KEPT * 3;
+    if (bytes.length < core) return null;
+    let i = 1;
+    const axes = {}, found = {}, traits = {}, disc = {};
+    AXES.forEach(a => axes[a.id] = 0);
+    ids.forEach(id => axes[id] = clamp((bytes[i++] - 100) / 100, -1, 1));
+    FOUNDATIONS.forEach(f => found[f.id] = clamp(bytes[i++] / 100, 0, 1));
+    TRAITS.forEach(t => traits[t.id] = clamp(bytes[i++] / 100, 0, 1));
+    DISC.forEach(x => disc[x.id] = clamp(bytes[i++] / 100, 0, 1));
+    const stats = { intensity: bytes[i++] / 100, nuance: bytes[i++] / 100, radical: bytes[i++] / 100, coherence: bytes[i++] / 100 };
+    const mask = bytes[i] | (bytes[i + 1] << 8) | (bytes[i + 2] << 16);
+    i += 3;
+    const heartAxes = ids.filter((id, k) => mask & (1 << k));
+    const answered = bytes[i] | (bytes[i + 1] << 8);
+    i += 2;
+    const extremes = [];
+    for (let k = 0; k < EXTREMES_KEPT; k++) {
+      const id = (bytes[i] | (bytes[i + 1] << 8)) - 1, v = bytes[i + 2] - 100;
+      i += 3;
+      if (id >= 0 && id < QUESTIONS.length) extremes.push({ id, v });
+    }
+    // les tiroirs : un tiroir inconnu (ajouté par une version future) est simplement sauté
+    let values = null, rel = null, sit = null;
+    while (i + 1 < bytes.length) {
+      const tag = bytes[i], len = bytes[i + 1];
+      const p = bytes.slice(i + 2, i + 2 + len);
+      i += 2 + len;
+      if (p.length < len) break;
+      if (tag === TIROIR.values && len >= VALUES.length) {
+        values = {};
+        VALUES.forEach((x, k) => values[x.id] = clamp(p[k] / 100, 0, 1));
+      } else if (tag === TIROIR.rel && len >= REL_DIMS.length + 1) {
+        rel = {};
+        REL_DIMS.forEach((x, k) => rel[x.id] = clamp(p[k] / 100, 0, 1));
+        const g = p[REL_DIMS.length] >> 4, w = p[REL_DIMS.length] & 15;
+        rel.give = g < LOVE_WAYS.length ? g : null;
+        rel.want = w < LOVE_WAYS.length ? w : null;
+      } else if (tag === TIROIR.sit) {
+        sit = SITS.map((q, k) => {
+          const byte = p[k >> 1];
+          if (byte === undefined) return null;
+          const c = k % 2 ? byte & 15 : byte >> 4;
+          return c < q.o.length ? c : null;
+        });
+      }
+    }
+    const known = new Set(ids);
+    return { version: 6, axes, found, traits, disc, values, rel, sit, stats, heartAxes, answered, extremes, known, partial: false };
   }
 
   const decodeCache = new Map();
@@ -1002,6 +1201,7 @@
     const bytes = b64ToBytes(code);
     if (!bytes || bytes.length < 2) return null;
     const version = bytes[0];
+    if (version === 6) return decodeV6(bytes);
     const ids = AXES_BY_VERSION[version];
     if (!ids) return null;
     const maskBytes = version === 1 ? 2 : 3;
@@ -1041,7 +1241,7 @@
       if (id >= 0 && id < QUESTIONS.length) extremes.push({ id, v });
     }
     const known = new Set(ids);
-    return { version, axes, found, traits, disc, values, stats, heartAxes, answered, extremes, known, partial: !known.has('aff') };
+    return { version, axes, found, traits, disc, values, rel: null, sit: null, stats, heartAxes, answered, extremes, known, partial: !known.has('aff') };
   }
 
   /* ---------------------------------------------------------
@@ -1895,18 +2095,18 @@
     const box = $('values-teaser');
     const r = cur.r;
     const n = missingQuestions(cur.code).length;
-    const minutes = Math.max(3, Math.round(n / 9));
+    const minutes = minutesFor(missingQuestions(cur.code));
     const gains = [];
     if (r.partial) gains.push('tes 9 axes de personnalité et ton archétype');
     if (!r.known.has('egl')) gains.push('l\'axe égalité');
     if (!r.disc) gains.push('ton profil DISC en couleurs');
-    gains.push('ta boussole de valeurs');
+    missingModules(r).forEach(m => gains.push(m.label));
     const what = joinFr(gains);
-    const small = `<small>${n} curseurs · ~${minutes} min</small>`;
+    const small = `<small>${n} questions · ~${minutes} min</small>`;
     box.innerHTML = cur.isMine
-      ? `<p><b>Ton profil peut être complété.</b> Le test s'est enrichi depuis ton passage : il te manque ${esc(what)}, ainsi que tes 16 qualités. <b>Tu ne refais pas le test</b> : tes réponses précédentes sont gardées, tu ne réponds qu'aux ${n} nouvelles affirmations.</p>
+      ? `<p><b>Ton profil peut être complété.</b> Le test s'est enrichi depuis ton passage : il te manque ${esc(what)}. <b>Tu ne refais pas le test</b> : tes réponses précédentes sont gardées, tu ne réponds qu'aux ${n} nouvelles questions.</p>
         <button class="btn btn-primary" type="button" data-upgrade="mine"><span>Compléter mon profil</span>${small}</button>`
-      : `<p><b>Ce profil peut être complété.</b> Il lui manque ${esc(what)}. Si c'est le tien, inutile de refaire le test : tes réponses précédentes sont gardées, tu ne réponds qu'aux ${n} nouvelles affirmations.</p>
+      : `<p><b>Ce profil peut être complété.</b> Il lui manque ${esc(what)}. Si c'est le tien, inutile de refaire le test : tes réponses précédentes sont gardées, tu ne réponds qu'aux ${n} nouvelles questions.</p>
         <button class="btn btn-primary" type="button" data-upgrade="claim"><span>C'est mon profil : le compléter</span>${small}</button>`;
   }
 
@@ -3130,6 +3330,8 @@
 
     if (!silent) resetCard('');
     renderAssembly(cur);
+    renderSitSection(cur);
+    renderRelSection(cur);
     renderQualities(r);
     renderLife(r);
     renderCast(cur);
@@ -3559,6 +3761,7 @@
     }
 
     renderCompareExtras(a, b, meLabel, name);
+    renderCompareModules(a, b, meLabel, name);
 
     // Listes d'accords et de désaccords
     const agree = rows.filter(r => r.d < 0.3 && Math.sign(r.m) === Math.sign(r.t) && Math.abs(r.m) >= 0.2)
@@ -4323,6 +4526,8 @@
     renderRobot(people, 'g-');
     renderGroupAssembly(people, 'g-');
     renderGovernment(people, 'g-');
+    renderGroupSit(people);
+    renderGroupRel(people);
     renderGroupCast(people, 'g-');
     renderGroupPick(people, 'g-', 'animal');
     renderGroupPick(people, 'g-', 'film');
@@ -4372,10 +4577,10 @@
     const gaps = gapsOf(r);
     if (!gaps.length) return '';
     const nq = canUpgrade(r) ? missingQuestions(member.code).length : 0;
-    const minutes = Math.max(3, Math.round(nq / 9));
+    const minutes = nq ? minutesFor(missingQuestions(member.code)) : 0;
     return `<div class="person-note">
       <p>Ce test a été fait avant l'ajout ${gapWhat(gaps)} : ce profil ne compte pas dans ${gapWhere(gaps)}. Partout ailleurs, il compte normalement.</p>
-      ${nq ? `<p>Si c'est le tien, inutile de refaire le test : ${nq} curseurs suffisent, environ ${minutes} minutes. Ouvre ce profil seul pour le compléter — ou envoie le lien à ${esc(name)}, puis remplace-le ici avec sa nouvelle URL.</p>
+      ${nq ? `<p>Si c'est le tien, inutile de refaire le test : ${nq} questions suffisent, environ ${minutes} minutes. Ouvre ce profil seul pour le compléter — ou envoie le lien à ${esc(name)}, puis remplace-le ici avec sa nouvelle URL.</p>
         <button class="btn btn-ghost btn-sm" type="button" data-copy-update="${member.code}">Copier le lien de mise à jour</button>` : ''}
     </div>`;
   }
@@ -4762,6 +4967,445 @@
   }
 
 
+
+  /* =========================================================
+     « Face au réel » : quinze mises en situation
+     Chaque réponse appartient à un camp, qui a une position sur les axes que la
+     situation met en jeu. On peut donc comparer, axe par axe, ce que la personne
+     dit (ses curseurs) et ce qu'elle ferait (ses choix).
+     ========================================================= */
+  const CAMP_BY_ID = new Map(CAMPS.map(c => [c.id, c]));
+  const campT = c => leftRightOf(c.v, id => c.v[id] !== undefined).t;
+  const CAMPS_LR = CAMPS.slice().sort((a, b) => campT(a) - campT(b));
+  const SIT_AXES = AXES.filter(a => a.group === 'politique' && SITS.some(q => q.axes.includes(a.id)));
+
+  function sitChoices(r) {
+    if (!r || !r.sit) return [];
+    return SITS.map((q, k) => {
+      const c = r.sit[k];
+      if (c === null || c === undefined || !q.o[c]) return null;
+      return { q, k, c, opt: q.o[c], camp: CAMP_BY_ID.get(q.o[c].c) };
+    }).filter(Boolean);
+  }
+
+  // La réponse que les curseurs laissaient prévoir : celle dont le camp est le plus proche, sur les axes en jeu
+  function predictedOption(r, q) {
+    const axes = q.axes.filter(id => r.known.has(id));
+    if (!axes.length) return null;
+    let best = null;
+    q.o.forEach((o, i) => {
+      const camp = CAMP_BY_ID.get(o.c);
+      const d = axes.reduce((s, id) => s + Math.abs(r.axes[id] - camp.v[id]), 0) / axes.length;
+      if (!best || d < best.d) best = { i, d, camp };
+    });
+    return best;
+  }
+
+  function actedAxes(r) {
+    const acc = {};
+    sitChoices(r).forEach(x => x.q.axes.forEach(id => { (acc[id] = acc[id] || []).push(x.camp.v[id]); }));
+    const out = {};
+    Object.entries(acc).forEach(([id, list]) => { out[id] = { v: meanOf(list), n: list.length }; });
+    return out;
+  }
+
+  function sitSummary(r) {
+    const picks = sitChoices(r);
+    if (picks.length < 5) return null;
+    const counts = new Map(CAMPS.map(c => [c.id, 0]));
+    picks.forEach(x => counts.set(x.camp.id, counts.get(x.camp.id) + 1));
+    const byCamp = CAMPS_LR.map(c => ({ c, n: counts.get(c.id) }));
+    const ranked = byCamp.slice().sort((a, b) => b.n - a.n);
+    const acted = actedAxes(r);
+    const saidT = leftRightOf(r.axes, id => r.known.has(id)).t;
+    const doneT = meanOf(picks.map(x => campT(x.camp)));
+    let predicted = 0;
+    picks.forEach(x => { const p = predictedOption(r, x.q); if (p && p.i === x.c) predicted++; });
+    const gaps = SIT_AXES.filter(a => acted[a.id] && r.known.has(a.id))
+      .map(a => ({ a, said: r.axes[a.id], done: acted[a.id].v, n: acted[a.id].n, d: acted[a.id].v - r.axes[a.id] }))
+      .sort((x, y) => Math.abs(y.d) - Math.abs(x.d));
+    const coherence = gaps.length ? clamp(1 - meanOf(gaps.map(g => Math.abs(g.d))) / 1.2, 0, 1) : null;
+    return { picks, byCamp, ranked, acted, saidT, doneT, predicted, gaps, coherence, distinct: byCamp.filter(x => x.n).length };
+  }
+
+  function sitTitle(s) {
+    const n = s.picks.length, shift = s.doneT - s.saidT;
+    const concrete = 'C\'est fréquent : devant un cas précis, avec des visages et des conséquences, on ne raisonne pas comme devant une affirmation générale.';
+    if (s.predicted >= Math.ceil(n * 0.55)) return { t: 'Fidèle à ta ligne', d: `${s.predicted} fois sur ${n}, tu as choisi exactement la réponse que tes curseurs laissaient prévoir. Ce que tu dis et ce que tu ferais se tiennent : tes idées ne restent pas théoriques.` };
+    if (shift <= -0.1) return { t: 'Plus à gauche en actes qu\'en paroles', d: `Face aux situations, tu choisis plus souvent des réponses de gauche que tes curseurs ne le laissaient prévoir. ${concrete}` };
+    if (shift >= 0.1) return { t: 'Plus à droite en actes qu\'en paroles', d: `Face aux situations, tu choisis plus souvent des réponses de droite que tes curseurs ne le laissaient prévoir. ${concrete}` };
+    if (s.distinct >= 5) return { t: 'À la carte', d: `Tu as puisé dans ${s.distinct} camps différents sur ${n} situations : face au concret, tu juges au cas par cas, sans t'enfermer dans une famille.` };
+    return { t: 'Le cap et les ajustements', d: 'Tes choix suivent globalement ta ligne, avec des écarts ponctuels : face au concret, tu gardes ton cap mais tu adaptes la réponse à la situation.' };
+  }
+
+  const sitToken = x => `<span class="sit-token" style="--c:${x.camp.color}" title="${esc(`${x.k + 1}. ${x.q.theme} : ${x.opt.t}`)}">${x.k + 1}</span>`;
+
+  function sitCampsHtml(s) {
+    return `<div class="sit-camps" role="list">${s.byCamp.map(({ c, n }) => `
+      <div class="sit-camp${n ? '' : ' is-empty'}" style="--c:${c.color}" role="listitem">
+        <div class="sit-camp-stack">${s.picks.filter(x => x.camp === c).map(sitToken).join('')}</div>
+        <div class="sit-camp-n">${n}</div>
+        <div class="sit-camp-name">${esc(c.label)}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  // La règle gauche-droite : où les curseurs placent la personne, où ses choix la placent
+  function sitScaleHtml(marks) {
+    return `<div class="sit-scale"><div class="sit-scale-track"></div>${marks.map(m =>
+      `<span class="sit-mark ${m.cls}" style="--t:${clamp(m.t, 0, 1).toFixed(3)}${m.color ? `;--c:${m.color}` : ''}" title="${esc(m.title || m.label)}"><i></i><b>${esc(m.label)}</b></span>`).join('')}
+      <span class="sit-scale-l">gauche</span><span class="sit-scale-r">droite</span></div>`;
+  }
+
+  function sitDumbbellHtml(gaps, saidLabel, doneLabel) {
+    return `<div class="dumbbell sit-db">${gaps.map(g => {
+      const m = 50 + g.said * 50, t = 50 + g.done * 50;
+      const cls = Math.abs(g.d) >= 0.6 ? 'hot' : Math.abs(g.d) < 0.25 ? 'cool' : '';
+      return `<div class="db-row ${cls}">
+          <span class="db-l">${esc(g.a.left)}</span>
+          <div class="db-track"><span class="db-seg" style="left:${Math.min(m, t)}%;width:${Math.abs(m - t)}%"></span><span class="db-dot them" style="left:${t}%" title="${esc(doneLabel)} : ${esc(nuancedLabel(g.a, g.done))} (${g.n} situation${g.n > 1 ? 's' : ''})"></span><span class="db-dot me" style="left:${m}%" title="${esc(saidLabel)} : ${esc(nuancedLabel(g.a, g.said))}"></span></div>
+          <span class="db-r">${esc(g.a.right)}</span>
+          <span class="db-gap">${Math.round(Math.abs(g.d) * 50)}</span>
+        </div>`;
+    }).join('')}</div>`;
+  }
+
+  function renderSitSection(cur) {
+    const r = cur.r, s = sitSummary(r);
+    $('sit-section').hidden = !s;
+    if (!s) return;
+    const t = sitTitle(s);
+    const saidB = blocOf(s.saidT), doneB = blocOf(s.doneT);
+    const g0 = s.gaps[0];
+    const big = g0 && Math.abs(g0.d) >= 0.5
+      ? `Le plus grand écart porte sur ${esc(theme(g0.a.id))} : dans tes curseurs, tu es ${esc(nuancedLabel(g0.a, g0.said).toLowerCase())} ; dans les situations, tes choix sont ${esc(nuancedLabel(g0.a, g0.done).toLowerCase())}.`
+      : 'Aucun écart spectaculaire : sur chaque thème, tes choix restent dans le voisinage de tes curseurs.';
+    $('sit-hero').innerHTML = `
+      <div class="sit-score">
+        ${ringSvg(s.coherence)}
+        <div class="sit-score-txt"><b>${pct(s.coherence)}<small> %</small></b><span>d'accord entre ce que tu dis et ce que tu ferais</span></div>
+      </div>
+      <div class="sit-main">
+        <p class="card-kicker">Ton profil face au réel</p>
+        <h3 class="disc-title">${esc(t.t)}</h3>
+        <p class="disc-desc">${esc(t.d)}</p>
+        <p class="disc-desc">Tes curseurs te placent <b>${esc(saidB.bench)}</b> ; tes choix en situation, <b>${esc(doneB.bench)}</b>. ${s.predicted} réponse${s.predicted > 1 ? 's' : ''} sur ${s.picks.length} ${s.predicted > 1 ? 'sont' : 'est'} celle${s.predicted > 1 ? 's' : ''} que tes curseurs laissaient prévoir.</p>
+      </div>`;
+    $('sit-camps').innerHTML = sitCampsHtml(s) + sitScaleHtml([
+      { cls: 'said', t: s.saidT, label: 'tes curseurs', title: `Tes curseurs : ${saidB.label}` },
+      { cls: 'done', t: s.doneT, label: 'tes choix', title: `Tes choix : ${doneB.label}` },
+    ]);
+    $('sit-gap-text').innerHTML = big;
+    $('sit-dumbbell').innerHTML = s.gaps.length ? sitDumbbellHtml(s.gaps, 'Ce que tu dis', 'Ce que tu ferais') : '';
+    $('sit-review').innerHTML = `<summary>Revoir tes ${s.picks.length} réponses, et le camp de chacune<span class="chev" aria-hidden="true"></span></summary>
+      <ol class="sit-rv">${s.picks.map(x => {
+        const p = predictedOption(r, x.q);
+        return `<li style="--c:${x.camp.color}">
+          <p class="sit-rv-k">${x.k + 1}. ${esc(x.q.theme)} <span class="sit-rv-camp">${esc(x.camp.label)}</span></p>
+          <p class="sit-rv-choice">${esc(x.opt.t)}</p>
+          ${p && p.i !== x.c
+            ? `<p class="sit-rv-pred">Tes curseurs penchaient plutôt pour : « ${esc(x.q.o[p.i].t)} » <em>(${esc(p.camp.label)})</em></p>`
+            : '<p class="sit-rv-pred is-ok">C\'est la réponse que tes curseurs laissaient prévoir.</p>'}
+        </li>`;
+      }).join('')}</ol>`;
+  }
+
+  // Un anneau de score (même style que l'affinité)
+  function ringSvg(v) {
+    const c = 2 * Math.PI * 52, off = c * (1 - clamp(v || 0, 0, 1));
+    return `<svg class="sit-ring" viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" cx="60" cy="60" r="52" style="stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${off.toFixed(1)}"/></svg>`;
+  }
+
+  /* =========================================================
+     « Toi et les autres » : attachement, désaccords, façons d'aimer, rôle chez les siens
+     ========================================================= */
+  const ATTACH = {
+    secure: { id: 'secure', name: 'Confiant', tag: 'L\'attachement serein', color: '#2fb67c',
+      desc: 'Tu fais confiance sans t\'accrocher. Quand l\'autre s\'éloigne quelques jours, tu n\'en fais pas une histoire ; quand il se rapproche, tu ne te sens pas envahi. C\'est le style le plus répandu, et le plus reposant pour ceux qui t\'entourent : on sait où on en est avec toi.',
+      tip: 'Ton calme rassure les plus inquiets : tu peux être leur point d\'appui, sans t\'oublier pour autant.' },
+    anxious: { id: 'anxious', name: 'En demande', tag: 'Un cœur qui a besoin de signes', color: '#e76f51',
+      desc: 'Tu t\'attaches fort et vite, et tu as besoin de sentir que c\'est réciproque. Un message sans réponse peut tourner longtemps dans ta tête. Ce n\'est pas un défaut : c\'est une grande sensibilité au lien, qui fait de toi quelqu\'un de très présent pour les autres.',
+      tip: 'Dire simplement ton besoin (« j\'ai besoin d\'un petit signe ») marche mieux que l\'attendre en silence. Et avec toi, les autres gagnent à être clairs et réguliers.' },
+    avoidant: { id: 'avoidant', name: 'Indépendant', tag: 'Proche, à bonne distance', color: '#4d7ea8',
+      desc: 'Tu tiens aux gens à ta façon : sans fusion, sans trop de mots, avec beaucoup d\'autonomie. Quand une relation devient pressante, tu prends de l\'air. Tu es solide et rarement dans le drame — parfois difficile à lire pour ceux qui ont besoin de démonstrations.',
+      tip: 'Un petit signe de temps en temps coûte peu et rassure beaucoup. Et avec toi, les autres gagnent à laisser de l\'espace plutôt qu\'à insister.' },
+    fearful: { id: 'fearful', name: 'Partagé', tag: 'Envie de proximité, peur d\'y aller', color: '#9b5de5',
+      desc: 'Tu as besoin des autres et, en même temps, la proximité t\'inquiète : tu te rapproches, puis tu recules. C\'est un tiraillement fréquent chez ceux qui ont beaucoup donné ou beaucoup été déçus. Il s\'apaise très bien dans des relations stables, où l\'on peut vérifier que la confiance tient.',
+      tip: 'Avancer par petits pas, et nommer le tiraillement quand il arrive. Avec toi, les autres gagnent à être patients et constants.' },
+  };
+  const attachOf = rel => ATTACH[rel.anx >= 0.5 ? (rel.avo >= 0.5 ? 'fearful' : 'anxious') : (rel.avo >= 0.5 ? 'avoidant' : 'secure')];
+  const attachHow = rel => { const d = Math.max(Math.abs(rel.anx - 0.5), Math.abs(rel.avo - 0.5)); return d < 0.1 ? 'à peine' : d < 0.25 ? 'plutôt' : 'nettement'; };
+
+  const CONFLICT = {
+    build: { id: 'build', name: 'Le bâtisseur', tag: 'On trouve ensemble', color: '#2fb67c',
+      desc: 'Dans un désaccord, tu dis ce que tu penses et tu tiens à ce que l\'autre s\'y retrouve aussi. Tu préfères une discussion longue à une solution bâclée. C\'est la façon la plus constructive de se disputer — et la plus coûteuse en temps et en énergie.',
+      tip: 'Tous les désaccords ne méritent pas une heure de discussion : garde cette énergie pour ceux qui comptent.' },
+    defend: { id: 'defend', name: 'Le défenseur', tag: 'On sait ce que tu penses', color: '#d1495b',
+      desc: 'Quand tu es sûr de toi, tu défends ta position jusqu\'au bout. Tu es franc, tu ne laisses pas pourrir les situations, et on sait toujours où on en est avec toi. Le revers : l\'autre peut sortir de la discussion avec l\'impression d\'avoir perdu.',
+      tip: 'Demander « et pour toi, qu\'est-ce qui compte là-dedans ? » désamorce beaucoup, sans rien lâcher sur le fond.' },
+    yield: { id: 'yield', name: 'L\'arrangeant', tag: 'La paix d\'abord', color: '#f4a261',
+      desc: 'Pour toi, le lien compte plus que d\'avoir raison. Tu cèdes volontiers, tu arrondis les angles, tu fais baisser la température. On t\'aime pour ça ; le risque, c\'est de ravaler trop souvent ce que tu voulais vraiment.',
+      tip: 'Dire une fois, calmement, ce que tu veux : ceux qui t\'aiment préfèrent le savoir.' },
+    avoid: { id: 'avoid', name: 'L\'esquive', tag: 'Ça passera', color: '#8d99ae',
+      desc: 'Les disputes t\'épuisent, alors tu les contournes : tu changes de sujet, tu laisses du temps, tu attends que ça retombe. Souvent, ça marche — beaucoup de conflits se règlent seuls. Mais certains, laissés de côté, reviennent plus gros.',
+      tip: 'Repérer les deux ou trois sujets qui ne passeront pas tout seuls, et les aborder à froid.' },
+    deal: { id: 'deal', name: 'Le négociateur', tag: 'Chacun fait un pas', color: '#00a6c4',
+      desc: 'Tu cherches vite le terrain d\'entente : chacun lâche un peu, et on avance. C\'est efficace, juste, et ça évite les blocages. Parfois, personne n\'obtient vraiment ce qu\'il voulait.',
+      tip: 'Sur les sujets importants, prendre le temps de chercher mieux qu\'un compromis.' },
+  };
+  function conflictOf(rel) {
+    if (Math.abs(rel.ass - 0.5) < 0.12 && Math.abs(rel.coo - 0.5) < 0.12) return CONFLICT.deal;
+    return CONFLICT[rel.ass >= 0.5 ? (rel.coo >= 0.5 ? 'build' : 'defend') : (rel.coo >= 0.5 ? 'yield' : 'avoid')];
+  }
+
+  const ROLES_CLOSE = [
+    { id: 'pilier', name: 'Le pilier', desc: 'Quand ça tangue, c\'est vers toi qu\'on se tourne : tu restes calme, tu ne juges pas, et tu es encore là le lendemain.',
+      f: r => [[1 - r.rel.anx, 1], [r.disc ? r.disc.ste : 0.5, 1], [r.rel.par, 0.6], [1 - r.rel.exp, 0.4]] },
+    { id: 'confident', name: 'Le confident', desc: 'On te raconte ce qu\'on ne dit à personne. Tu écoutes vraiment, tu gardes les secrets, et tu te souviens de ce qui compte pour chacun.',
+      f: r => [[1 - r.rel.avo, 1], [r.rel.coo, 0.8], [r.found.care, 1], [1 - r.rel.cer, 0.6]] },
+    { id: 'orga', name: 'L\'organisateur', desc: 'Les anniversaires, les week-ends, les retrouvailles : sans toi, la moitié ne se ferait jamais. Tu tiens le calendrier affectif de tout le monde.',
+      f: r => [[r.disc ? r.disc.con : 0.5, 0.8], [(r.axes.ord + 1) / 2, 1], [r.rel.cer, 0.8], [r.rel.fam, 0.4]] },
+    { id: 'ambiance', name: 'Le boute-en-train', desc: 'Tu mets l\'ambiance, tu fais rire, tu embarques tout le monde. Une soirée sans toi, ça se sent.',
+      f: r => [[r.disc ? r.disc.inf : 0.5, 1], [r.rel.exp, 1], [r.rel.cer, 1], [1 - r.rel.avo, 0.4]] },
+    { id: 'mediateur', name: 'Le médiateur', desc: 'Quand deux proches se fâchent, c\'est toi qui recolles les morceaux, sans prendre parti. Tu comprends chacun, et chacun le sent.',
+      f: r => [[r.rel.coo, 1], [1 - Math.abs(r.rel.ass - 0.55) * 2, 0.6], [(1 - r.axes.cfl) / 2, 1], [r.rel.par, 0.6]] },
+    { id: 'libre', name: 'L\'électron libre', desc: 'Tu vas et tu viens, tu tiens à ta liberté — et c\'est justement pour ça qu\'on savoure chaque moment passé avec toi.',
+      f: r => [[r.rel.avo, 1], [r.values ? r.values.vsd : 0.5, 0.8], [1 - r.rel.fam, 0.8], [r.values ? r.values.vst : 0.5, 0.5]] },
+    { id: 'protecteur', name: 'Le protecteur', desc: 'Personne ne touche aux tiens. Tu défends ta famille et tes amis bec et ongles, parfois avant même qu\'ils le demandent.',
+      f: r => [[r.rel.ass, 1], [r.rel.fam, 1], [r.found.loy, 1], [r.rel.anx, 0.3]] },
+  ];
+  function roleCloseOf(r) {
+    return ROLES_CLOSE.map(x => {
+      const parts = x.f(r);
+      const w = parts.reduce((s, p) => s + p[1], 0);
+      return { x, s: parts.reduce((s, p) => s + p[0] * p[1], 0) / w };
+    }).sort((a, b) => b.s - a.s)[0].x;
+  }
+
+  /* Deux cartes à deux dimensions : l'attachement (besoin d'espace → , besoin d'être rassuré ↑)
+     et le désaccord (s'affirmer → , préserver le lien ↑). Les points sont les personnes. */
+  function relMapSvg(kind, points) {
+    const S = 300, P = 34, W = S - 2 * P;
+    const X = v => P + clamp(v, 0, 1) * W, Y = v => P + (1 - clamp(v, 0, 1)) * W;
+    const att = kind === 'attach';
+    let labels = '';
+    const zones = att
+      ? [[ATTACH.anxious, 0, 0], [ATTACH.fearful, 1, 0], [ATTACH.secure, 0, 1], [ATTACH.avoidant, 1, 1]]
+      : [[CONFLICT.yield, 0, 0], [CONFLICT.build, 1, 0], [CONFLICT.avoid, 0, 1], [CONFLICT.defend, 1, 1]];
+    const half = W / 2;
+    let svg = `<svg class="relmap" viewBox="0 0 ${S} ${S}" role="img" aria-label="${att ? 'Carte de l\'attachement' : 'Carte des désaccords'}">`;
+    zones.forEach(([z, cx, cy]) => {
+      svg += `<rect x="${P + cx * half}" y="${P + cy * half}" width="${half}" height="${half}" fill="${z.color}" fill-opacity="0.1"/>`;
+      const tx = P + cx * half + (cx ? half - 8 : 8), ty = P + cy * half + (cy ? half - 10 : 18);
+      labels += `<text x="${tx}" y="${ty}" text-anchor="${cx ? 'end' : 'start'}" class="relmap-zone" fill="${z.color}">${esc(z.name)}</text>`;
+    });
+    if (!att) svg += `<circle cx="${P + half}" cy="${P + half}" r="${W * 0.12}" fill="${CONFLICT.deal.color}" fill-opacity="0.12" stroke="${CONFLICT.deal.color}" stroke-dasharray="3 3" stroke-opacity="0.6"/>`;
+    if (!att) labels += `<text x="${P + half}" y="${P + half + W * 0.12 + 13}" text-anchor="middle" class="relmap-zone" fill="${CONFLICT.deal.color}">${esc(CONFLICT.deal.name)}</text>`;
+    svg += `<rect x="${P}" y="${P}" width="${W}" height="${W}" class="relmap-frame"/>`;
+    svg += `<line x1="${P + half}" y1="${P}" x2="${P + half}" y2="${P + W}" class="relmap-axis"/><line x1="${P}" y1="${P + half}" x2="${P + W}" y2="${P + half}" class="relmap-axis"/>`;
+    const xl = att ? ['aime la proximité', 'a besoin d\'air'] : ['laisse tomber', 's\'affirme'];
+    const yl = att ? ['serein', 'a besoin d\'être rassuré'] : ['tient à avoir raison', 'tient au lien'];
+    svg += `<text x="${P}" y="${S - 10}" class="relmap-lbl">← ${esc(xl[0])}</text><text x="${P + W}" y="${S - 10}" text-anchor="end" class="relmap-lbl">${esc(xl[1])} →</text>`;
+    svg += `<text transform="translate(${P - 9},${P + W}) rotate(-90)" class="relmap-lbl">${esc(yl[0])}</text><text transform="translate(${P - 9},${P}) rotate(-90)" text-anchor="end" class="relmap-lbl">${esc(yl[1])} →</text>`;
+    points.forEach(p => {
+      const x = X(att ? p.rel.avo : p.rel.ass), y = Y(att ? p.rel.anx : p.rel.coo);
+      svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.big ? 9 : 7}" fill="${p.color || 'var(--ink)'}" class="relmap-dot"><title>${esc(p.label || '')}</title></circle>`;
+      // près du bord droit, le prénom passe à gauche du point
+      const left = x > S - 80;
+      if (p.label && p.showLabel) svg += `<text x="${(left ? x - 13 : x + 13).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${left ? 'end' : 'start'}" class="relmap-name">${esc(p.label)}</text>`;
+    });
+    return svg + labels + '</svg>';
+  }
+
+  function relBarsHtml(rel) {
+    return ['exp', 'par', 'cer', 'fam'].map(id => {
+      const d = REL_DIMS.find(x => x.id === id);
+      return `<div class="rel-row" style="--c:${d.color}">
+        <span class="rel-row-l">${esc(d.low)}</span>
+        <div class="rel-row-track"><span class="rel-row-dot" style="left:${pct(rel[id])}%" title="${esc(d.label)} : ${pct(rel[id])}"></span></div>
+        <span class="rel-row-r">${esc(d.high)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function loveHtml(rel, whoGive, whoWant) {
+    const g = rel.give !== null && rel.give !== undefined ? LOVE_WAYS[rel.give] : null;
+    const w = rel.want !== null && rel.want !== undefined ? LOVE_WAYS[rel.want] : null;
+    if (!g && !w) return '';
+    const card = (k, x, text) => x ? `<article class="love-card"><p class="love-k">${esc(k)}</p><span class="love-ico" aria-hidden="true">${x.icon}</span><h4>${esc(x.label)}</h4><p>${esc(text)}</p></article>` : '';
+    let note = '';
+    if (g && w) note = g === w
+      ? `Tu donnes comme tu aimes recevoir : ${esc(g.desc)}. Ça aide à te comprendre avec ceux qui fonctionnent pareil — mais tout le monde ne parle pas cette langue-là, et ceux qui t'aiment te le montrent peut-être autrement.`
+      : `Tu montres ton affection par ${esc(g.label.toLowerCase())}, mais ce qui te touche le plus, c'est ${esc(w.label.toLowerCase())}. Attention au malentendu classique : on donne ce qu'on aimerait recevoir. Dire aux tiens ce qui compte pour toi leur rend service.`;
+    return `<div class="love">${card(whoGive, g, g ? g.give : '')}${g && w ? '<span class="love-arrow" aria-hidden="true">⇄</span>' : ''}${card(whoWant, w, w ? w.want : '')}</div>${note ? `<p class="love-note">${note}</p>` : ''}`;
+  }
+
+  function renderRelSection(cur) {
+    const r = cur.r;
+    $('rel-section').hidden = !r.rel;
+    if (!r.rel) return;
+    const rel = r.rel, a = attachOf(rel), c = conflictOf(rel), role = roleCloseOf(r);
+    const me = [{ rel, color: 'var(--ink)', big: true, label: 'Toi' }];
+    $('rel-attach').innerHTML = `
+      <p class="card-kicker">Ta façon de t'attacher</p>
+      ${relMapSvg('attach', me)}
+      <h3 class="rel-style" style="--c:${a.color}">${esc(a.name)}<small>${esc(attachHow(rel))}</small></h3>
+      <p class="rel-tag">${esc(a.tag)}</p>
+      <p>${esc(a.desc)}</p>
+      <p class="rel-tip"><b>Ce qui aide :</b> ${esc(a.tip)}</p>`;
+    $('rel-conflict').innerHTML = `
+      <p class="card-kicker">Ta façon de te disputer</p>
+      ${relMapSvg('conflict', me)}
+      <h3 class="rel-style" style="--c:${c.color}">${esc(c.name)}</h3>
+      <p class="rel-tag">${esc(c.tag)}</p>
+      <p>${esc(c.desc)}</p>
+      <p class="rel-tip"><b>À essayer :</b> ${esc(c.tip)}</p>`;
+    $('rel-love').innerHTML = loveHtml(rel, 'Ce que tu donnes', 'Ce qui te touche') || '<p class="rel-empty">Pas de réponse aux deux questions sur les façons d\'aimer.</p>';
+    $('rel-bars').innerHTML = relBarsHtml(rel);
+    $('rel-role').innerHTML = `<p class="card-kicker">Chez les tiens, tu es</p><h3 class="rel-role-name">${esc(role.name)}</h3><p>${esc(role.desc)}</p>`;
+  }
+
+  /* À deux : les deux cartes, et ce que la rencontre des deux styles produit */
+  function attachPairText(A, B) {
+    const ids = [A.id, B.id].sort().join('+');
+    if (ids === 'secure+secure') return 'Deux styles confiants : vous pouvez vous éloigner et vous retrouver sans drame. C\'est la base la plus reposante qui soit.';
+    if (ids === 'anxious+avoidant') return 'Le piège classique : plus l\'un cherche la proximité, plus l\'autre a besoin d\'air — et chacun lit dans le comportement de l\'autre la confirmation de sa crainte. Le nommer suffit souvent à le désamorcer : un signe régulier d\'un côté, un peu d\'espace accordé de l\'autre.';
+    if (ids === 'anxious+anxious') return 'Deux personnes qui ont besoin de signes : beaucoup de chaleur, et parfois des malentendus qui s\'emballent vite. Se rassurer l\'un l\'autre, explicitement, marche très bien entre vous.';
+    if (ids === 'avoidant+avoidant') return 'Deux indépendants : une relation légère, sans étouffement… et le risque de laisser la distance s\'installer sans que personne ne fasse le premier pas.';
+    if (ids.includes('fearful')) return 'L\'un de vous oscille entre besoin de proximité et peur d\'y aller : la constance compte plus que les grandes déclarations. Des petits signes réguliers valent mieux qu\'un grand geste.';
+    return 'L\'un de vous deux est confiant : c\'est souvent lui qui stabilise le duo quand l\'autre doute ou prend ses distances.';
+  }
+  function conflictPairText(A, B) {
+    const ids = [A.id, B.id].sort().join('+');
+    const T = {
+      'defend+defend': 'Deux défenseurs : les désaccords font des étincelles. Se donner une règle (« on en reparle à froid ») change tout.',
+      'defend+yield': 'L\'un s\'affirme, l\'autre cède : ça roule en apparence, mais celui qui cède peut accumuler. À l\'un de demander, à l\'autre d\'oser dire.',
+      'avoid+defend': 'L\'un fonce, l\'autre esquive : plus l\'un insiste, plus l\'autre se ferme. Choisir le bon moment compte autant que le fond.',
+      'avoid+avoid': 'Deux esquiveurs : peu de disputes, mais des sujets qui s\'accumulent sous le tapis. Un rendez-vous régulier pour « ce qui ne va pas » vous ferait du bien.',
+      'yield+yield': 'Deux arrangeants : une grande douceur… et des décisions que personne n\'ose vraiment prendre.',
+      'build+build': 'Deux bâtisseurs : vous aimez régler les choses à fond, ensemble. Vos disputes sont longues, mais elles mènent quelque part.',
+    };
+    return T[ids] || (A.id === B.id ? 'Vous vous disputez de la même façon : vous vous comprenez, pour le meilleur (même rythme) et pour le pire (mêmes angles morts).'
+      : 'Vos façons de gérer un désaccord sont différentes, et plutôt complémentaires : l\'un apporte ce qui manque à l\'autre.');
+  }
+
+  function renderCompareModules(a, b, meLabel, name) {
+    const both = a.rel && b.rel;
+    $('cmp-rel').hidden = !both;
+    if (both) {
+      const pts = [{ rel: b.rel, color: 'var(--accent)', label: name, showLabel: true }, { rel: a.rel, color: 'var(--ink)', label: meLabel, showLabel: true, big: true }];
+      const A1 = attachOf(a.rel), B1 = attachOf(b.rel), A2 = conflictOf(a.rel), B2 = conflictOf(b.rel);
+      const lw = x => (x !== null && x !== undefined ? LOVE_WAYS[x] : null);
+      const aw = lw(a.rel.want), bw = lw(b.rel.want), ag = lw(a.rel.give), bg = lw(b.rel.give);
+      const you = meLabel.toLowerCase() === 'toi';
+      const love = [];
+      if (bw) love.push(`<li><b>Pour faire plaisir à ${esc(name)}</b><span>${esc(bw.label.toLowerCase())} : ${esc(bw.desc)}${ag === bw ? ' — et bonne nouvelle, c\'est déjà ce que ' + (you ? 'tu donnes' : esc(meLabel) + ' donne') + ' naturellement.' : '.'}</span></li>`);
+      if (aw) love.push(`<li><b>Pour faire plaisir ${you ? 'à toi' : 'à ' + esc(meLabel)}</b><span>${esc(aw.label.toLowerCase())} : ${esc(aw.desc)}${bg === aw ? ' — et c\'est déjà ce que ' + esc(name) + ' donne naturellement.' : '.'}</span></li>`);
+      $('cmp-rel-body').innerHTML = `
+        <div class="rel-duo">
+          <div>${relMapSvg('attach', pts)}<p class="rel-duo-k">L'attachement : <b>${esc(A1.name)}</b> et <b>${esc(B1.name)}</b></p><p>${esc(attachPairText(A1, B1))}</p></div>
+          <div>${relMapSvg('conflict', pts)}<p class="rel-duo-k">Les désaccords : <b>${esc(A2.name)}</b> et <b>${esc(B2.name)}</b></p><p>${esc(conflictPairText(A2, B2))}</p></div>
+        </div>
+        ${love.length ? `<ul class="rel-love-duo">${love.join('')}</ul>` : ''}`;
+    }
+    const sa = sitSummary(a), sb = sitSummary(b);
+    $('cmp-sit').hidden = !(sa && sb);
+    if (sa && sb) {
+      const pairs = SITS.map((q, k) => ({ q, k, x: a.sit[k], y: b.sit[k] })).filter(p => p.x !== null && p.y !== null && p.x !== undefined && p.y !== undefined);
+      const same = pairs.filter(p => p.x === p.y);
+      const diff = pairs.filter(p => p.x !== p.y)
+        .map(p => ({ ...p, d: Math.abs(campT(CAMP_BY_ID.get(p.q.o[p.x].c)) - campT(CAMP_BY_ID.get(p.q.o[p.y].c))) }))
+        .sort((u, v) => v.d - u.d);
+      $('cmp-sit-body').innerHTML = `
+        <p class="cmp-sit-lead"><b>${same.length} fois sur ${pairs.length}</b>, vous avez fait exactement le même choix.${same.length ? ` Notamment : ${esc(joinFr(same.slice(0, 3).map(p => p.q.theme.toLowerCase())))}.` : ''}</p>
+        ${sitScaleHtml([
+          { cls: 'said', t: sa.saidT, label: meLabel + ' (curseurs)', color: 'var(--ink)' },
+          { cls: 'done', t: sa.doneT, label: meLabel + ' (choix)', color: 'var(--ink)' },
+          { cls: 'said them', t: sb.saidT, label: name + ' (curseurs)', color: 'var(--accent)' },
+          { cls: 'done them', t: sb.doneT, label: name + ' (choix)', color: 'var(--accent)' },
+        ])}
+        ${diff.length ? `<p class="rel-duo-k">Là où vos choix s'éloignent le plus</p><ul class="cmp-sit-list">${diff.slice(0, 4).map(p => `
+          <li><p class="sit-rv-k">${esc(p.q.theme)}</p>
+            <p><b>${esc(meLabel)} :</b> ${esc(p.q.o[p.x].t)} <em>(${esc(CAMP_BY_ID.get(p.q.o[p.x].c).label)})</em></p>
+            <p><b>${esc(name)} :</b> ${esc(p.q.o[p.y].t)} <em>(${esc(CAMP_BY_ID.get(p.q.o[p.y].c).label)})</em></p></li>`).join('')}</ul>` : ''}`;
+    }
+  }
+
+  /* =========================================================
+     Dans un cercle
+     ========================================================= */
+  function renderGroupSit(people) {
+    const withSit = people.filter(p => sitSummary(p.r));
+    const card = $('g-sit-card-group');
+    card.hidden = withSit.length < 2;
+    if (withSit.length < 2) return;
+    const N = withSit.length;
+    // le programme du cercle : pour chaque situation, la réponse la plus choisie
+    const rows = SITS.map((q, k) => {
+      const votes = withSit.map(p => ({ p, c: p.r.sit[k] })).filter(v => v.c !== null && v.c !== undefined);
+      if (!votes.length) return null;
+      const byOpt = new Map();
+      votes.forEach(v => byOpt.set(v.c, (byOpt.get(v.c) || []).concat(v.p)));
+      const opts = [...byOpt.entries()].map(([c, ps]) => ({ c, ps, camp: CAMP_BY_ID.get(q.o[c].c) })).sort((x, y) => y.ps.length - x.ps.length);
+      const tie = opts.length > 1 && opts[1].ps.length === opts[0].ps.length;
+      return { q, k, votes, opts, top: opts[0], tie, share: opts[0].ps.length / votes.length };
+    }).filter(Boolean);
+    const seg = o => `<span class="gsit-seg" style="flex:${o.ps.length};--c:${o.camp.color}" title="${esc(o.camp.label + ' : ' + o.ps.map(p => p.name).join(', '))}">${o.ps.map(p => `<i style="background:${p.color}"></i>`).join('')}</span>`;
+    $('g-sit-prog').innerHTML = rows.map(x => `
+      <li class="gsit-row">
+        <p class="gsit-theme">${x.k + 1}. ${esc(x.q.theme)}${x.share === 1 && x.votes.length > 1 ? '<span class="gsit-badge">unanime</span>' : x.tie ? '<span class="gsit-badge is-tie">à égalité</span>' : ''}</p>
+        <p class="gsit-win">${esc(x.q.o[x.top.c].t)} <small style="--c:${x.top.camp.color}">${esc(x.top.camp.label)} · ${x.top.ps.length} sur ${x.votes.length}</small></p>
+        <div class="gsit-bar">${x.opts.slice().sort((u, v) => campT(u.camp) - campT(v.camp)).map(seg).join('')}</div>
+      </li>`).join('');
+    const divisive = rows.slice().sort((a, b) => a.share - b.share || b.opts.length - a.opts.length)[0];
+    const united = rows.slice().sort((a, b) => b.share - a.share)[0];
+    let twins = null;
+    for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+      const both = SITS.map((q, k) => [withSit[i].r.sit[k], withSit[j].r.sit[k]]).filter(([x, y]) => x !== null && y !== null && x !== undefined && y !== undefined);
+      const same = both.filter(([x, y]) => x === y).length;
+      if (!twins || same > twins.same) twins = { a: withSit[i], b: withSit[j], same, of: both.length };
+    }
+    $('g-sit-facts').innerHTML = `
+      <div class="stat"><div class="stat-name">Ce qui divise le plus</div><div class="stat-val sm">${esc(divisive.q.theme)}</div><div class="stat-desc">${divisive.opts.length} réponses différentes pour ${divisive.votes.length} personnes</div></div>
+      <div class="stat"><div class="stat-name">Ce qui rassemble le plus</div><div class="stat-val sm">${esc(united.q.theme)}</div><div class="stat-desc">${united.top.ps.length} sur ${united.votes.length} ont fait le même choix</div></div>
+      ${twins ? `<div class="stat"><div class="stat-name">Jumeaux de situation</div><div class="stat-val sm">${esc(twins.a.name)} et ${esc(twins.b.name)}</div><div class="stat-desc">le même choix ${twins.same} fois sur ${twins.of}</div></div>` : ''}`;
+    // chacun, entre ce qu'il dit et ce qu'il ferait
+    $('g-sit-people').innerHTML = withSit.map(p => {
+      const s = sitSummary(p.r), shift = s.doneT - s.saidT;
+      const txt = Math.abs(shift) < 0.06 ? 'paroles et actes se rejoignent' : shift < 0 ? `plus à gauche en actes (${Math.round(-shift * 100)})` : `plus à droite en actes (${Math.round(shift * 100)})`;
+      return `<div class="gsit-person">${whoChip(p)}${sitScaleHtml([
+        { cls: 'said', t: s.saidT, label: '', title: `${p.name} : curseurs`, color: p.color },
+        { cls: 'done', t: s.doneT, label: '', title: `${p.name} : choix`, color: p.color },
+      ])}<span class="gsit-shift">${esc(txt)}</span></div>`;
+    }).join('');
+  }
+
+  function renderGroupRel(people) {
+    const withRel = people.filter(p => p.r.rel);
+    const card = $('g-rel-card-group');
+    card.hidden = withRel.length < 2;
+    if (withRel.length < 2) return;
+    const pts = withRel.map(p => ({ rel: p.r.rel, color: p.color, label: p.name }));
+    $('g-rel-map').innerHTML = relMapSvg('conflict', pts);
+    $('g-rel-styles').innerHTML = withRel.map(p => { const c = conflictOf(p.r.rel); return `<li>${whoChip(p)}<b style="--c:${c.color}">${esc(c.name)}</b><span>${esc(c.tag)}</span></li>`; }).join('');
+    const lw = x => (x !== null && x !== undefined ? LOVE_WAYS[x] : null);
+    $('g-rel-love').innerHTML = `<table class="gl-table"><thead><tr><th></th><th>Montre son affection par</th><th>Ce qui le touche</th></tr></thead><tbody>${withRel.map(p => {
+      const g = lw(p.r.rel.give), w = lw(p.r.rel.want);
+      return `<tr><th>${whoChip(p)}</th><td>${g ? `<span class="gl-ico">${g.icon}</span>${esc(g.label)}` : '—'}</td><td>${w ? `<span class="gl-ico">${w.icon}</span>${esc(w.label)}` : '—'}</td></tr>`;
+    }).join('')}</tbody></table>`;
+    $('g-rel-roles').innerHTML = withRel.map(p => `<li>${whoChip(p)}<b>${esc(roleCloseOf(p.r).name)}</b></li>`).join('');
+    // le climat : l'attachement ne s'affiche qu'en totaux, jamais nominativement
+    const counts = Object.values(ATTACH).map(a => ({ a, n: withRel.filter(p => attachOf(p.r.rel) === a).length }));
+    const n = withRel.length;
+    const c = id => counts.find(x => x.a.id === id).n;
+    const advice = [];
+    if (c('anxious') + c('fearful') >= 2) advice.push('Plusieurs personnes ici ont besoin de signes réguliers : un message, une nouvelle, un « bien arrivé ». Ça ne coûte rien et ça compte beaucoup.');
+    if (c('avoidant') + c('fearful') >= 2) advice.push('Plusieurs ont besoin d\'air : un silence de leur part n\'est pas un désintérêt.');
+    if (c('anxious') >= 1 && c('avoidant') >= 1) advice.push('Le cercle mélange des gens qui ont besoin de proximité et d\'autres qui ont besoin d\'espace : c\'est le terrain du malentendu classique (« il ne répond jamais » / « elle me relance tout le temps »). Le savoir, c\'est déjà l\'éviter.');
+    if (c('secure') >= Math.ceil(n / 2)) advice.push('Un cercle plutôt serein : on peut se perdre de vue quelques semaines sans que personne s\'en inquiète, et se retrouver comme si de rien n\'était.');
+    $('g-rel-climate').innerHTML = `<div class="gclim">${counts.map(x => `
+      <div class="gclim-row" style="--c:${x.a.color}"><span class="gclim-name">${esc(x.a.name)}</span><span class="gclim-bar"><i style="width:${(x.n / n * 100).toFixed(0)}%"></i></span><span class="gclim-n">${x.n}</span></div>`).join('')}</div>
+      <p class="gclim-note">${esc(advice.join(' ') || 'Des façons de s\'attacher variées, sans tendance dominante : chacun a son rythme.')}</p>`;
+  }
 
   /* ---------------------------------------------------------
      Les « listes plates » : animal, film, musique.
@@ -5328,7 +5972,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 49;
+  const BUILD = 50;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -5354,6 +5998,8 @@
   collapsify('screen-group');
   initQuiz();
   initResults();
+  // le moteur de calcul, en lecture : pour les tests automatiques (aucune donnée n'y transite)
+  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress });
   initGroup();
   initCircleByUrl();
   window.addEventListener('hashchange', route);
