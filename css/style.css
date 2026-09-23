@@ -2434,3 +2434,4 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .gsit-person .sit-scale { --pad: 10px; }
 .relmap-zone { paint-order: stroke; stroke: rgba(var(--panel-rgb), 0.9); stroke-width: 3px; }
 .gsit-win small { color: color-mix(in srgb, var(--c) var(--label-mix), var(--label-toward)); }
+.sit-db .db-row.is-thin { opacity: 0.5; }

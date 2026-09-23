@@ -4988,22 +4988,33 @@
     }).filter(Boolean);
   }
 
-  // La réponse que les curseurs laissaient prévoir : celle dont le camp est le plus proche, sur les axes en jeu
+  /* La position d'une réponse : celle qu'elle exprime (o.p), sur les seuls axes où elle prend
+     parti. Une réponse ne prend jamais la position moyenne de son camp sur un axe dont elle ne
+     parle pas : choisir la réponse souverainiste n'a rien à dire de ton libéralisme. */
+  const optPos = (q, o) => o.p || Object.fromEntries(q.axes.map(id => [id, CAMP_BY_ID.get(o.c).v[id]]));
+
+  // La réponse que les curseurs laissaient prévoir : la plus proche d'eux, sur les axes de la situation
   function predictedOption(r, q) {
     const axes = q.axes.filter(id => r.known.has(id));
     if (!axes.length) return null;
     let best = null;
     q.o.forEach((o, i) => {
-      const camp = CAMP_BY_ID.get(o.c);
-      const d = axes.reduce((s, id) => s + Math.abs(r.axes[id] - camp.v[id]), 0) / axes.length;
-      if (!best || d < best.d) best = { i, d, camp };
+      const p = optPos(q, o);
+      const d = axes.reduce((s, id) => s + Math.abs(r.axes[id] - (p[id] || 0)), 0) / axes.length;
+      if (!best || d < best.d) best = { i, d, camp: CAMP_BY_ID.get(o.c) };
     });
     return best;
+  }
+  function optDist(r, q, o) {
+    const axes = q.axes.filter(id => r.known.has(id)), p = optPos(q, o);
+    return axes.length ? axes.reduce((s, id) => s + Math.abs(r.axes[id] - (p[id] || 0)), 0) / axes.length : 0;
   }
 
   function actedAxes(r) {
     const acc = {};
-    sitChoices(r).forEach(x => x.q.axes.forEach(id => { (acc[id] = acc[id] || []).push(x.camp.v[id]); }));
+    sitChoices(r).forEach(x => Object.entries(optPos(x.q, x.opt)).forEach(([id, v]) => {
+      if (Math.abs(v) >= 0.15) (acc[id] = acc[id] || []).push(v);
+    }));
     const out = {};
     Object.entries(acc).forEach(([id, list]) => { out[id] = { v: meanOf(list), n: list.length }; });
     return out;
@@ -5019,17 +5030,23 @@
     const acted = actedAxes(r);
     const saidT = leftRightOf(r.axes, id => r.known.has(id)).t;
     const doneT = meanOf(picks.map(x => campT(x.camp)));
+    // « prévisible » : la réponse choisie est la plus proche des curseurs, ou à un souffle d'elle
     let predicted = 0;
-    picks.forEach(x => { const p = predictedOption(r, x.q); if (p && p.i === x.c) predicted++; });
+    picks.forEach(x => { const p = predictedOption(r, x.q); if (p && (p.i === x.c || optDist(r, x.q, x.opt) - p.d <= 0.12)) predicted++; });
     const gaps = SIT_AXES.filter(a => acted[a.id] && r.known.has(a.id))
       .map(a => ({ a, said: r.axes[a.id], done: acted[a.id].v, n: acted[a.id].n, d: acted[a.id].v - r.axes[a.id] }))
       .sort((x, y) => Math.abs(y.d) - Math.abs(x.d));
-    const coherence = gaps.length ? clamp(1 - meanOf(gaps.map(g => Math.abs(g.d))) / 1.2, 0, 1) : null;
+    // chaque prise de position pèse pareil : un thème touché une seule fois ne vaut pas un thème touché sept fois
+    const w = gaps.reduce((t, g) => t + g.n, 0);
+    const coherence = w ? clamp(1 - gaps.reduce((t, g) => t + g.n * Math.abs(g.d), 0) / w / 1.6, 0, 1) : null;
     return { picks, byCamp, ranked, acted, saidT, doneT, predicted, gaps, coherence, distinct: byCamp.filter(x => x.n).length };
   }
 
   function sitTitle(s) {
-    const n = s.picks.length, shift = s.doneT - s.saidT;
+    // on ne peut pas être plus à droite que la réponse la plus à droite (ni plus à gauche que la plus à gauche) :
+    // les curseurs sont ramenés dans l'étendue des camps avant de comparer
+    const lo = campT(CAMPS_LR[0]), hi = campT(CAMPS_LR[CAMPS_LR.length - 1]);
+    const n = s.picks.length, shift = s.doneT - clamp(s.saidT, lo, hi);
     const concrete = 'C\'est fréquent : devant un cas précis, avec des visages et des conséquences, on ne raisonne pas comme devant une affirmation générale.';
     if (s.predicted >= Math.ceil(n * 0.55)) return { t: 'Fidèle à ta ligne', d: `${s.predicted} fois sur ${n}, tu as choisi exactement la réponse que tes curseurs laissaient prévoir. Ce que tu dis et ce que tu ferais se tiennent : tes idées ne restent pas théoriques.` };
     if (shift <= -0.1) return { t: 'Plus à gauche en actes qu\'en paroles', d: `Face aux situations, tu choisis plus souvent des réponses de gauche que tes curseurs ne le laissaient prévoir. ${concrete}` };
@@ -5059,7 +5076,7 @@
   function sitDumbbellHtml(gaps, saidLabel, doneLabel) {
     return `<div class="dumbbell sit-db">${gaps.map(g => {
       const m = 50 + g.said * 50, t = 50 + g.done * 50;
-      const cls = Math.abs(g.d) >= 0.6 ? 'hot' : Math.abs(g.d) < 0.25 ? 'cool' : '';
+      const cls = (Math.abs(g.d) >= 0.6 ? 'hot' : Math.abs(g.d) < 0.25 ? 'cool' : '') + (g.n < 2 ? ' is-thin' : '');
       return `<div class="db-row ${cls}">
           <span class="db-l">${esc(g.a.left)}</span>
           <div class="db-track"><span class="db-seg" style="left:${Math.min(m, t)}%;width:${Math.abs(m - t)}%"></span><span class="db-dot them" style="left:${t}%" title="${esc(doneLabel)} : ${esc(nuancedLabel(g.a, g.done))} (${g.n} situation${g.n > 1 ? 's' : ''})"></span><span class="db-dot me" style="left:${m}%" title="${esc(saidLabel)} : ${esc(nuancedLabel(g.a, g.said))}"></span></div>
@@ -5075,9 +5092,9 @@
     if (!s) return;
     const t = sitTitle(s);
     const saidB = blocOf(s.saidT), doneB = blocOf(s.doneT);
-    const g0 = s.gaps[0];
+    const g0 = s.gaps.find(g => g.n >= 2) || s.gaps[0];
     const big = g0 && Math.abs(g0.d) >= 0.5
-      ? `Le plus grand écart porte sur ${esc(theme(g0.a.id))} : dans tes curseurs, tu es ${esc(nuancedLabel(g0.a, g0.said).toLowerCase())} ; dans les situations, tes choix sont ${esc(nuancedLabel(g0.a, g0.done).toLowerCase())}.`
+      ? `Le plus grand écart porte sur ${esc(theme(g0.a.id))} (${g0.n} situation${g0.n > 1 ? 's' : ''}) — dans tes curseurs : <b>${esc(nuancedLabel(g0.a, g0.said).toLowerCase())}</b> ; dans tes choix : <b>${esc(nuancedLabel(g0.a, g0.done).toLowerCase())}</b>.`
       : 'Aucun écart spectaculaire : sur chaque thème, tes choix restent dans le voisinage de tes curseurs.';
     $('sit-hero').innerHTML = `
       <div class="sit-score">
@@ -5370,7 +5387,7 @@
       ${twins ? `<div class="stat"><div class="stat-name">Jumeaux de situation</div><div class="stat-val sm">${esc(twins.a.name)} et ${esc(twins.b.name)}</div><div class="stat-desc">le même choix ${twins.same} fois sur ${twins.of}</div></div>` : ''}`;
     // chacun, entre ce qu'il dit et ce qu'il ferait
     $('g-sit-people').innerHTML = withSit.map(p => {
-      const s = sitSummary(p.r), shift = s.doneT - s.saidT;
+      const s = sitSummary(p.r), shift = s.doneT - clamp(s.saidT, campT(CAMPS_LR[0]), campT(CAMPS_LR[CAMPS_LR.length - 1]));
       const txt = Math.abs(shift) < 0.06 ? 'paroles et actes se rejoignent' : shift < 0 ? `plus à gauche en actes (${Math.round(-shift * 100)})` : `plus à droite en actes (${Math.round(shift * 100)})`;
       return `<div class="gsit-person">${whoChip(p)}${sitScaleHtml([
         { cls: 'said', t: s.saidT, label: '', title: `${p.name} : curseurs`, color: p.color },
@@ -5972,7 +5989,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 50;
+  const BUILD = 51;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
