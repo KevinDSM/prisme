@@ -2046,20 +2046,23 @@
        Un titre va à qui a le score le plus haut — mais les seize qualités sont
        des composites bâtis sur les mêmes axes : un profil tranché en rafle une
        moitié à lui seul. Deux garde-fous : les titres viennent aussi d'autres
-       familles de mesures (traits, morale, cœurs, position politique), qui ne
-       bougent pas ensemble ; et un ex aequo au score affiché est un vrai ex
-       aequo, donc il revient à qui a le moins de titres — sans ça, c'est
-       l'ordre du tableau qui tranchait, pas le test. */
+       familles de mesures (traits, morale, cœurs, position politique, DISC,
+       valeurs, caractère), qui ne bougent pas ensemble ; et trois points
+       d'écart ou moins valent une égalité, qui revient à qui a le moins de
+       titres — moins qu'une réponse ne fait bouger un score. */
     const awards = [];
+    let awardCat = 'Les qualités';
     const titleCount = new Map(people.map(p => [p, 0]));
     const give = (title, sub, ranked, fmt, text, nextWord) => {
       if (ranked.length < 2) return;
-      const top = String(fmt(ranked[0].v));
-      const tied = ranked.filter(x => String(fmt(x.v)) === top);
+      // à trois points près, c'est une égalité : le titre revient à qui en a le moins
+      const num = x => parseFloat(fmt(x.v));
+      const tied = ranked.filter(x => num(ranked[0]) - num(x) <= 3);
       const w = tied.reduce((a, b) => (titleCount.get(b.p) < titleCount.get(a.p) ? b : a));
       const next = ranked.find(x => x.p !== w.p);
       titleCount.set(w.p, titleCount.get(w.p) + 1);
-      awards.push({ title, sub, p: w.p, score: top, text: text(w), next: `${nextWord || 'devant'} ${next.p.name} (${fmt(next.v)})` });
+      const close = num(next) >= num(w);
+      awards.push({ cat: awardCat, title, sub, p: w.p, score: String(fmt(w.v)), text: text(w), next: `${close ? 'à un cheveu de' : nextWord || 'devant'} ${next.p.name} (${fmt(next.v)})` });
     };
     const rank = fn => people.map((p, i) => ({ p, v: fn(p, i) }))
       .filter(x => x.v !== null && x.v !== undefined && !Number.isNaN(x.v))
@@ -2076,6 +2079,7 @@
     });
 
     // Style de réponse et place dans le groupe
+    awardCat = 'Le style et la place dans le groupe';
     give("Le plus tranché", "pousse ses curseurs à fond", rank(p => p.r.stats.radical), asPct,
       x => `${pct(x.v)} % de ses curseurs sont aux extrêmes : avec ${x.p.me ? 'toi' : x.p.name}, on sait à quoi s'en tenir.`);
     give("Le plus nuancé", "pèse le pour et le contre", rank(p => p.r.stats.nuance), asPct,
@@ -2089,6 +2093,7 @@
       'ensuite');
 
     // Les trois traits : une autre famille de mesures, qui ne suit pas les qualités
+    awardCat = 'La manière de penser';
     give("Le funambule", "avance sans filet", rank(p => p.r.traits.inc), asPct,
       x => `${pct(x.v)} % de tolérance à l'incertitude : les questions sans réponse ne l'empêchent pas de dormir.`);
     give("L'inébranlable", "ne doute pas de sa boussole", rank(p => p.r.traits.dog), asPct,
@@ -2097,6 +2102,7 @@
       x => `${pct(x.v)} % d'engagement : ses idées ne restent pas à la maison.`);
 
     // Les fondements moraux que les seize qualités ne couvrent pas déjà
+    awardCat = 'La boussole morale';
     give("L'arbitre", "ne supporte pas le passe-droit", rank(p => p.r.found.fair), v => pct(v),
       x => `L'équité pèse ${pct(x.v)} sur 100 dans sa morale : la règle vaut pour tout le monde, à commencer par les siens.`);
     give("Le garant de l'ordre", "les règles existent pour une raison", rank(p => p.r.found.auth), v => pct(v),
@@ -2105,6 +2111,7 @@
       x => `Le sacré pèse ${pct(x.v)} sur 100 dans sa morale : certaines choses ne se monnaient pas, même pour une bonne raison.`);
 
     // Ce qui tient à cœur, et la place sur l'échiquier
+    awardCat = 'La politique';
     const heartRank = rank(p => p.r.heartAxes.length);
     if (heartRank.length && heartRank[0].v > 0) {
       give("Le passionné", "a le plus de sujets qui lui tiennent à cœur", heartRank, v => String(v),
@@ -2121,14 +2128,71 @@
         x => `${pct(x.v)} sur 100 vers la droite, tous axes politiques confondus : personne ne siège plus loin de ce côté de l'hémicycle.`);
     }
 
-    $(pre + 'awards').innerHTML = awards.map((a, k) => `
-      <article class="award ${a.p.me ? 'is-me' : ''}" style="--d:${Math.min(k, 10) * 40}ms">
+    /* D'autres familles de mesures encore : les couleurs DISC, les dix valeurs
+       et le caractère au quotidien. Elles bougent indépendamment des qualités,
+       si bien que les titres se répartissent sur plus de monde. Les titres à
+       deux pôles ne sont décernés que si quelqu'un penche vraiment de ce côté. */
+    awardCat = 'Les couleurs DISC';
+    const discOf = id => p => (p.r.disc ? p.r.disc[id] : null);
+    give('Le fonceur', 'décide vite et avance', rank(discOf('dom')), v => pct(v),
+      x => `Rouge ${pct(x.v)} au DISC : quand ça traîne, c'est cette personne qui tranche et qui y va.`);
+    give('L\'enthousiaste', 'embarque tout le monde avec lui', rank(discOf('inf')), v => pct(v),
+      x => `Jaune ${pct(x.v)} au DISC : l'énergie qui lance les projets et les soirées.`);
+    give('Le roc tranquille', 'ne s\'affole jamais', rank(discOf('ste')), v => pct(v),
+      x => `Vert ${pct(x.v)} au DISC : patient, constant, présent — le calme dont le groupe a besoin quand ça chauffe.`);
+    give('Le perfectionniste', 'vérifie deux fois plutôt qu\'une', rank(discOf('con')), v => pct(v),
+      x => `Bleu ${pct(x.v)} au DISC : la précision, la méthode, et les détails que personne n'avait vus.`);
+
+    awardCat = 'Ce qui fait avancer';
+    const valOf = id => p => (p.r.values ? p.r.values[id] : null);
+    [
+      ['vsd', 'Le franc-tireur', 'fait les choses à sa manière', 'penser et décider par soi-même passe avant le reste'],
+      ['vst', 'L\'aventurier', 's\'ennuie dès que ça ronronne', 'la nouveauté et les défis sont un carburant, la routine un poison'],
+      ['vhe', 'L\'épicurien', 'sait profiter de la vie', 'le plaisir n\'est pas une récompense, c\'est une partie du programme'],
+      ['vac', 'L\'ambitieux', 'vise la marche du dessus', 'réussir et que ça se voie compte vraiment'],
+      ['vpo', 'L\'influent', 'aime avoir la main', 'avoir du poids sur les décisions et les moyens d\'agir, c\'est ce qui motive'],
+      ['vse', 'Le prévoyant', 'a toujours un plan B', 'la stabilité et la protection des siens passent avant l\'aventure'],
+      ['vco', 'Le bon élève', 'respecte les règles et les gens', 'ne pas déranger, tenir parole et faire ce qui est attendu'],
+      ['vtr', 'Le gardien des traditions', 'fidèle à ce qui a été transmis', 'ce qu\'on a reçu mérite d\'être gardé et transmis à son tour'],
+      ['vbe', 'L\'ange gardien', 'veille sur les siens', 'le bien-être des proches passe avant presque tout'],
+      ['vun', 'Le citoyen du monde', 'pense à la planète entière', 'la justice, la tolérance et la nature valent pour tout le monde, pas seulement pour les siens'],
+    ].forEach(([id, title, sub, why]) => give(title, sub, rank(valOf(id)), v => pct(v),
+      x => `La valeur « ${VALUES.find(v => v.id === id).label.toLowerCase()} » pèse ${pct(x.v)} sur 100 chez ${x.p.me ? 'toi' : 'cette personne'} : ${why}.`));
+
+    awardCat = 'Le caractère au quotidien';
+    const axisOf = (id, sign) => p => (p.r.known.has(id) ? sign * p.r.axes[id] : null);
+    [
+      ['tmp', 1, 'Le visionnaire', 'pense à dans dix ans'],
+      ['tmp', -1, 'Le carpe diem', 'vit l\'instant présent'],
+      ['ord', 1, 'L\'organisé', 'a un plan pour tout'],
+      ['ord', -1, 'L\'improvisateur', 'on verra bien sur place'],
+      ['aff', 1, 'La tête froide', 'réfléchit avant de ressentir'],
+      ['aff', -1, 'Le cœur qui décide', 'écoute d\'abord ce qu\'il ressent'],
+      ['cmp', 1, 'Le compétiteur', 'joue pour gagner'],
+      ['col', 1, 'L\'esprit d\'équipe', 'pense « nous » avant « je »'],
+      ['opn', -1, 'Le globe-trotter', 'se sent chez lui partout'],
+      ['opn', 1, 'L\'enraciné', 'tient à son coin de terre'],
+    ].forEach(([id, sign, title, sub]) => {
+      const axis = axisById(id);
+      const ranked = rank(axisOf(id, sign));
+      if (!axis || ranked.length < 2 || ranked[0].v < 0.15) return;
+      give(title, sub, ranked, v => pct(v),
+        x => `${nuancedLabel(axis, sign * x.v)} (${pct(x.v)}) : personne dans le cercle ne va plus loin de ce côté.`);
+    });
+
+    // rangés par famille, dans l'ordre où elles ont été décernées
+    const cats = [];
+    awards.forEach(a => { if (!cats.includes(a.cat)) cats.push(a.cat); });
+    let k = 0;
+    $(pre + 'awards').innerHTML = cats.map(c => `
+      <h3 class="award-cat">${esc(c)}</h3>` + awards.filter(a => a.cat === c).map(a => `
+      <article class="award ${a.p.me ? 'is-me' : ''}" style="--d:${Math.min(k++, 10) * 40}ms">
         <p class="award-title">${esc(a.title)}</p>
         <p class="award-sub">${esc(a.sub)}</p>
         <div class="award-who">${who(a.p)}<span class="award-score">${esc(String(a.score))}</span></div>
         <p class="award-text">${esc(a.text)}</p>
         <p class="award-next">${esc(a.next)}</p>
-      </article>`).join('');
+      </article>`).join('')).join('');
 
     // Médailles par personne
     const medals = people.map(p => ({ p, n: awards.filter(a => a.p === p).length })).sort((x, y) => y.n - x.n);
@@ -2701,14 +2765,66 @@
       : 'Un portefeuille par personne, attribué à celui ou celle qui s\'y distingue le plus par rapport au reste du cercle.';
   }
 
-  function renderClans(people, pre) {
-    const card = $(pre + 'clans-card');
-    card.hidden = people.length < 3;
-    if (people.length < 3) return;
+  /* Les clans, sous trois regards
+     Un même cercle ne se découpe pas pareil selon ce qu'on regarde : on peut
+     voter pareil et ne pas avoir le même caractère, ou tenir aux mêmes choses
+     sans partager les mêmes idées. Chaque regard a ses dimensions, son affinité
+     et ses noms de clans ; le découpage, lui, suit la même méthode partout. */
+  const CLAN_EXTRA_NAMES = {
+    dom: ['Les conciliants', 'Les meneurs'], inf: ['Les discrets', 'Les enthousiastes'],
+    ste: ['Les impatients', 'Les piliers calmes'], con: ['Les spontanés', 'Les perfectionnistes'],
+    vsd: ['Les suiveurs heureux', 'Les francs-tireurs'], vst: ['Les amateurs de calme', 'Les aventuriers'],
+    vhe: ['Les ascètes', 'Les bons vivants'], vac: ['Les sans-pression', 'Les ambitieux'],
+    vpo: ['Les désintéressés', 'Les influents'], vse: ['Les téméraires', 'Les prévoyants'],
+    vco: ['Les non-conformistes', 'Les respectueux'], vtr: ['Les défricheurs', 'Les gardiens des traditions'],
+    vbe: ['Les autonomes', 'Les anges gardiens'], vun: ['Les ancrés', 'Les humanistes'],
+    care: ['Les pragmatiques du cœur', 'Les protecteurs'], fair: ['Les souples', 'Les justes'],
+    loy: ['Les libres penseurs', 'Les loyaux'], auth: ['Les frondeurs', 'Les garants du cadre'],
+    sanc: ['Les désacralisants', 'Les gardiens du sacré'], lib: ['Les partisans du cadre', 'Les insoumis'],
+  };
+
+  function clanDims(lens, people) {
+    const all = (test) => people.every(test);
+    if (lens === 'idees' || lens === 'caractere') {
+      const want = lens === 'idees' ? (a => a.group !== 'psyche') : (a => a.group === 'psyche');
+      const dims = AXES.filter(a => want(a) && all(p => p.r.known.has(a.id))).map(a => ({
+        id: a.id, names: CLAN_NAMES[a.id], theme: cap(theme(a.id)),
+        v: p => (p.r.axes[a.id] + 1) / 2,
+        say: m => nuancedLabel(a, m * 2 - 1).toLowerCase(),
+      }));
+      if (lens === 'caractere' && all(p => p.r.disc)) DISC.forEach(d => dims.push({
+        id: d.id, names: CLAN_EXTRA_NAMES[d.id], theme: `Le ${d.color.toLowerCase()} du DISC`,
+        v: p => p.r.disc[d.id], say: m => `${d.color.toLowerCase()} ${pct(m)} au DISC`,
+      }));
+      return dims;
+    }
+    const dims = FOUNDATIONS.map(f => ({
+      id: f.id, names: CLAN_EXTRA_NAMES[f.id], theme: `Le fondement « ${f.label.toLowerCase()} »`,
+      v: p => p.r.found[f.id], say: m => `${f.label.toLowerCase()} ${pct(m)}`,
+    }));
+    if (all(p => p.r.values)) VALUES.forEach(x => dims.push({
+      id: x.id, names: CLAN_EXTRA_NAMES[x.id], theme: `La valeur « ${x.label.toLowerCase()} »`,
+      v: p => p.r.values[x.id], say: m => `« ${x.label.toLowerCase()} » ${pct(m)}`,
+    }));
+    return dims;
+  }
+
+  function clansFor(people, lens) {
     const n = people.length;
+    const dims = clanDims(lens, people);
+    if (dims.length < 4) return null;
     const aff = people.map(() => new Array(n).fill(1));
-    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const ideas = sharedAxes(people[i].r, people[j].r).filter(x => x.group !== 'psyche');
-      aff[i][j] = aff[j][i] = ideas.length ? axisAffinity(people[i].r, people[j].r, ideas) : affinityBetween(people[i].r, people[j].r).total; // les clans se forment sur les idées et la manière, pas sur le caractère
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      let a;
+      if (lens === 'idees') {
+        // les clans d'idées se forment sur les idées et la manière, pas sur le caractère
+        const ideas = sharedAxes(people[i].r, people[j].r).filter(x => x.group !== 'psyche');
+        a = ideas.length ? axisAffinity(people[i].r, people[j].r, ideas) : affinityBetween(people[i].r, people[j].r).total;
+      } else {
+        const d = meanOf(dims.map(x => Math.abs(x.v(people[i]) - x.v(people[j]))));
+        a = clamp(1 - d / 0.7, 0, 1);
+      }
+      aff[i][j] = aff[j][i] = a;
     }
     const link = (A, B) => meanOf(A.flatMap(i => B.map(j => aff[i][j])));
 
@@ -2744,7 +2860,8 @@
       return total / n;
     };
     const combos = (k, from = 0, acc = []) => (k === 0 ? [acc] : everyone.slice(from, n - k + 1).flatMap(i => combos(k - 1, i + 1, acc.concat(i))));
-    const maxK = n >= 9 ? 4 : n >= 6 ? 3 : 2;
+    // à partir de six, trois clans sont possibles ; à partir de huit, quatre
+    const maxK = n >= 8 ? 4 : n >= 6 ? 3 : 2;
     let bestSplit = null;
     if (n === 3) {
       // à trois : le duo le plus proche, et la troisième personne en solo
@@ -2755,39 +2872,69 @@
       combos(k).forEach(heads => {
         const groups = split(heads);
         const biggest = Math.max(...groups.map(g => g.length)) / n;
-        // À qualité égale on préfère le découpage le plus simple et le moins déséquilibré
-        const score = contrast(groups) - 0.02 * (k - 2) - 0.08 * (biggest - 1 / k);
+        // les clans déséquilibrés sont pénalisés ; plus de clans, à qualité voisine, dit plus de choses sur le cercle
+        const c = contrast(groups);
+        // un découpage avec une personne isolée ne gagne que faute de mieux, et sans bonus
+        const score = c < 0 ? c - k : c + CLAN_SPLIT_BONUS * (k - 2) - 0.08 * (biggest - 1 / k);
         if (!bestSplit || score > bestSplit.score) bestSplit = { groups, score };
       });
     }
     const clusters = bestSplit.groups.slice().sort((x, y) => y.length - x.length);
 
-    const shared = AXES.filter(a => people.every(p => p.r.known.has(a.id)));
+    /* Les sous-groupes : un clan de quatre personnes ou plus se coupe à son tour
+       en deux, s'il y a une vraie ligne de partage à l'intérieur. Les deux moitiés
+       sont nommées par la dimension qui les sépare le plus : les deux pôles. */
+    const subGroups = (idx, taken) => {
+      if (idx.length < 4) return null;
+      let best = null;
+      for (let a = 0; a < idx.length; a++) for (let b = a + 1; b < idx.length; b++) {
+        const g = [[idx[a]], [idx[b]]];
+        idx.forEach(i => { if (i !== idx[a] && i !== idx[b]) g[aff[i][idx[a]] >= aff[i][idx[b]] ? 0 : 1].push(i); });
+        const sc = contrast(g);
+        if (!best || sc > best.sc) best = { g, sc };
+      }
+      if (!best || best.sc <= 0.02) return null;
+      const [A, B] = best.g;
+      const cuts = dims.map(d => ({ d, g: meanOf(A.map(i => d.v(people[i]))) - meanOf(B.map(i => d.v(people[i]))) }))
+        .sort((p, q) => Math.abs(q.g) - Math.abs(p.g));
+      // pas deux fois le même nom sur la page : on saute les dimensions déjà prises par un clan
+      const cut = cuts.find(x => !taken.has(x.d.names[0]) && !taken.has(x.d.names[1])) || cuts[0];
+      const coh = g => meanOf(g.flatMap((i, k) => g.slice(k + 1).map(j => aff[i][j])));
+      return [
+        { idx: A, label: cut.d.names[cut.g > 0 ? 1 : 0], coh: coh(A) },
+        { idx: B, label: cut.d.names[cut.g > 0 ? 0 : 1], coh: coh(B) },
+      ];
+    };
+
     const usedNames = new Set();
     const clans = clusters.map(idx => {
       const inside = idx.map(i => people[i]), outside = people.filter((p, i) => !idx.includes(i));
-      const stats = shared.map(a => {
-        const mIn = meanOf(inside.map(p => p.r.axes[a.id])), mOut = meanOf(outside.map(p => p.r.axes[a.id]));
-        const sd = Math.sqrt(meanOf(inside.map(p => (p.r.axes[a.id] - mIn) ** 2)));
-        return { a, mIn, mOut, sd, gap: mIn - mOut };
+      const stats = dims.map(d => {
+        const mIn = meanOf(inside.map(d.v)), mOut = meanOf(outside.map(d.v));
+        const sd = Math.sqrt(meanOf(inside.map(p => (d.v(p) - mIn) ** 2)));
+        return { d, mIn, mOut, sd, gap: mIn - mOut };
       });
       const distinct = stats.slice().sort((x, y) => Math.abs(y.gap) - Math.abs(x.gap));
-      const pick = distinct.find(s => !usedNames.has(CLAN_NAMES[s.a.id][s.gap < 0 ? 0 : 1])) || distinct[0];
-      const label = CLAN_NAMES[pick.a.id][pick.gap < 0 ? 0 : 1];
+      const nameOf = st => st.d.names[st.gap < 0 ? 0 : 1];
+      const pick = distinct.find(st => !usedNames.has(nameOf(st))) || distinct[0];
+      const label = nameOf(pick);
       usedNames.add(label);
-      const glue = stats.filter(s => Math.abs(s.mIn) >= 0.3 && s.sd <= 0.3).sort((x, y) => Math.abs(y.mIn) - Math.abs(x.mIn)).slice(0, 3);
+      const glue = stats.filter(st => Math.abs(st.mIn - 0.5) >= 0.15 && st.sd <= 0.15).sort((x, y) => Math.abs(y.mIn - 0.5) - Math.abs(x.mIn - 0.5)).slice(0, 3);
       const cohesion = idx.length > 1 ? meanOf(idx.flatMap((i, k) => idx.slice(k + 1).map(j => aff[i][j]))) : null;
       return { idx, inside, label: idx.length === 1 ? `${inside[0].me ? 'Toi' : inside[0].name}, en solo` : label, distinct: distinct.slice(0, 2), glue, cohesion };
     });
+    clans.forEach(c => { c.sub = subGroups(c.idx, usedNames); });
 
-    $(pre + 'clans').innerHTML = clans.map((c, k) => `
+    const cards = clans.map((c, k) => `
       <article class="clan" style="--c:${FRIEND_COLORS[(k * 3 + 1) % FRIEND_COLORS.length]}">
-        <div class="clan-head"><h4>${esc(c.label)}</h4>${c.cohesion !== null ? `<span class="pct">${pct(c.cohesion)} %<small> d'accord entre eux</small></span>` : ''}</div>
+        <div class="clan-head"><h4>${esc(c.label)}</h4>${c.cohesion !== null ? `<span class="pct">${pct(c.cohesion)} %<small> de proximité</small></span>` : ''}</div>
         <div class="clan-people">${c.inside.map(whoChip).join('')}</div>
         ${c.inside.length > 1
-          ? `<p><b>Ce qui les soude :</b> ${c.glue.length ? 'le même penchant — ' + esc(joinFr(c.glue.map(s => nuancedLabel(s.a, s.mIn).toLowerCase()))) : 'une ressemblance d\'ensemble plus qu\'un sujet précis'}.</p>`
+          ? `<p><b>Ce qui les soude :</b> ${c.glue.length ? 'le même penchant — ' + esc(joinFr(c.glue.map(st => st.d.say(st.mIn)))) : 'une ressemblance d\'ensemble plus qu\'un point précis'}.</p>`
           : '<p>Ne ressemble vraiment à aucun des groupes : une voix à part, qui peut faire pencher la balance.</p>'}
-        <p><b>Ce qui ${c.inside.length > 1 ? 'les' : 'le'} distingue du reste du cercle :</b> ${esc(c.distinct.map(s => `${cap(theme(s.a.id))} — ici : ${nuancedLabel(s.a, s.mIn).toLowerCase()} ; ailleurs : ${nuancedLabel(s.a, s.mOut).toLowerCase()}`).join('. ') )}.</p>
+        <p><b>Ce qui ${c.inside.length > 1 ? 'les' : 'le'} distingue du reste du cercle :</b> ${esc(c.distinct.map(st => `${st.d.theme} — ici : ${st.d.say(st.mIn)} ; ailleurs : ${st.d.say(st.mOut)}`).join('. '))}.</p>
+        ${c.sub ? `<div class="clan-sub"><p class="clan-sub-k">Et à l'intérieur, deux sous-groupes</p>${c.sub.map(g => `
+          <div class="clan-sub-row"><b>${esc(g.label)}</b><span class="clan-sub-who">${g.idx.map(i => whoChip(people[i])).join('')}</span><small>${pct(g.coh)} %</small></div>`).join('')}</div>` : ''}
       </article>`).join('');
 
     // Le pont et la ligne de fracture
@@ -2799,18 +2946,47 @@
         const a = meanOf(o.idx.map(j => aff[i][j]));
         if (!bridge || a > bridge.a) bridge = { i, from: c, to: o, a };
       })));
-      notes.push(`<b>Le pont :</b> ${whoChip(people[bridge.i])} — la personne la plus proche d'un autre groupe que le sien (${pct(bridge.a)} % d'affinité avec « ${esc(bridge.to.label)} »). Si les clans se parlent, c'est par elle.`);
+      notes.push(`<b>Le pont :</b> ${whoChip(people[bridge.i])} — la personne la plus proche d'un autre groupe que le sien (${pct(bridge.a)} % avec « ${esc(bridge.to.label)} »). Si les clans se parlent, c'est par elle.`);
       let worst = null;
       for (let a = 0; a < clans.length; a++) for (let b = a + 1; b < clans.length; b++) {
         const l = link(clans[a].idx, clans[b].idx);
         if (!worst || l < worst.l) worst = { a, b, l };
       }
       const A = clans[worst.a], B = clans[worst.b];
-      const split = shared.map(x => ({ x, g: meanOf(A.inside.map(p => p.r.axes[x.id])) - meanOf(B.inside.map(p => p.r.axes[x.id])) })).sort((p, q) => Math.abs(q.g) - Math.abs(p.g))[0];
-      notes.push(`<b>La ligne de fracture :</b> entre « ${esc(A.label)} » et « ${esc(B.label)} » (${pct(worst.l)} % d'affinité${worst.l < 0.6 ? ' seulement' : ''})${split ? `, surtout sur ${esc(theme(split.x.id))}` : ''}.`);
+      const cut = dims.map(d => ({ d, g: meanOf(A.inside.map(d.v)) - meanOf(B.inside.map(d.v)) })).sort((p, q) => Math.abs(q.g) - Math.abs(p.g))[0];
+      notes.push(`<b>La ligne de fracture :</b> entre « ${esc(A.label)} » et « ${esc(B.label)} » (${pct(worst.l)} %${worst.l < 0.6 ? ' seulement' : ''})${cut ? `, surtout sur ${esc(cut.d.theme.charAt(0).toLowerCase() + cut.d.theme.slice(1))}` : ''}.`);
     }
-    $(pre + 'clans-notes').innerHTML = notes.map(x => `<span>${x}</span>`).join('');
+    return { count: clans.length, subs: clans.filter(c => c.sub).length * 2, html: `<div class="clans">${cards}</div><p class="circle-disc-notes">${notes.map(x => `<span>${x}</span>`).join('')}</p>` };
   }
+
+  let CLAN_SPLIT_BONUS = 0.08;
+
+  const CLAN_LENSES = [
+    { id: 'idees', label: 'Par les idées', intro: 'D\'après les idées et la façon d\'aborder la politique : ceux qui votent et débattent de la même manière.' },
+    { id: 'caractere', label: 'Par le caractère', intro: 'D\'après le tempérament au quotidien et les couleurs DISC : ceux qui réagissent, s\'organisent et décident de la même manière.' },
+    { id: 'valeurs', label: 'Par les valeurs', intro: 'D\'après les dix valeurs et la boussole morale : ceux qui tiennent aux mêmes choses, quelles que soient leurs idées.' },
+  ];
+
+  function renderClans(people, pre) {
+    const card = $(pre + 'clans-card');
+    card.hidden = people.length < 3;
+    if (people.length < 3) return;
+    const views = CLAN_LENSES.map(l => ({ l, res: clansFor(people, l.id) })).filter(x => x.res);
+    $(pre + 'clans-tabs').innerHTML = views.map((x, k) => `<button type="button" class="clan-tab${k ? '' : ' is-on'}" data-clan-lens="${x.l.id}" aria-pressed="${k ? 'false' : 'true'}">${esc(x.l.label)}<small>${x.res.count} clans${x.res.subs ? ` · ${x.res.subs} sous-groupes` : ''}</small></button>`).join('');
+    $(pre + 'clans').innerHTML = views.map((x, k) => `
+      <div class="clan-view" data-clan-view="${x.l.id}"${k ? ' hidden' : ''}>
+        <p class="clan-intro">${esc(x.l.intro)}</p>
+        ${x.res.html}
+      </div>`).join('');
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-clan-lens]');
+    if (!b) return;
+    const box = b.closest('.res-card');
+    box.querySelectorAll('[data-clan-lens]').forEach(x => { x.classList.toggle('is-on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    box.querySelectorAll('[data-clan-view]').forEach(v => { v.hidden = v.dataset.clanView !== b.dataset.clanLens; });
+  });
 
   /* ---------------------------------------------------------
      Comparaison : valeurs et qualités face à face
@@ -5152,7 +5328,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 48;
+  const BUILD = 49;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
