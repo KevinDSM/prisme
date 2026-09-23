@@ -479,9 +479,10 @@
     ['Un pays', (window.PRISME_COUNTRIES || { COUNTRIES: [] }).COUNTRIES, 'le tempérament que le pays renvoie : son rapport au temps, à la règle, à l\'accueil et à la fête'],
     ['Une sucrerie', (window.PRISME_SWEETS || { SWEETS: [] }).SWEETS, 'se partager ou se cacher, fondre ou résister, piquer ou réconforter'],
     ['Une spécialité de médecine', (window.PRISME_SPECIALTIES || { SPECIALTIES: [] }).SPECIALTIES, 'ce que le métier réclame : l\'urgence ou le temps long, le geste ou le diagnostic, la relation au patient'],
+    ['Une maladie', (window.PRISME_AILMENTS || { AILMENTS: [] }).AILMENTS, 'uniquement des petits maux sans gravité : arriver sans prévenir ou s\'incruster, se transmettre à tout le monde ou rester discret, revenir chaque printemps'],
   ];
   section('etsi', 'Le sur-mesure', 'Et si tu étais…', `
-    <p class="gtext">Six listes de plus, calculées exactement comme les animaux ou les plats et rangées en accordéon en bas du rapport : on clique sur une liste pour découvrir la sienne, avec le pourcentage, le <b>pourquoi toi</b> et les trois suivantes. Rien ne dépend de tes goûts : c'est chaque fois le <b>tempérament</b> de l'entrée qui est comparé au tien. Les végétaux donnent en plus le meilleur de chaque famille (arbres, fleurs, plantes et herbes). Dans un cercle, chaque liste donne une entrée différente à chacun : la grille des programmes, le circuit touristique, le jardin, le tour du monde, le paquet de bonbons et l'hôpital du cercle.</p>
+    <p class="gtext">Sept listes de plus, calculées exactement comme les animaux ou les plats et rangées en accordéon en bas du rapport : on clique sur une liste pour découvrir la sienne, avec le pourcentage, le <b>pourquoi toi</b> et les trois suivantes. Rien ne dépend de tes goûts : c'est chaque fois le <b>tempérament</b> de l'entrée qui est comparé au tien. Les végétaux donnent en plus le meilleur de chaque famille (arbres, fleurs, plantes et herbes). Dans un cercle, chaque liste donne une entrée différente à chacun : la grille des programmes, le circuit touristique, le jardin, le tour du monde, le paquet de bonbons, l'hôpital et l'infirmerie du cercle.</p>
     ${MORE.map(([t, list, what]) => `
       <h4 class="gsub4">${esc(t)} <small>${list.length}</small></h4>
       <p class="gtext">Ce qui est comparé : ${esc(what)}.</p>
