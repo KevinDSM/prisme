@@ -472,6 +472,21 @@
       <h4 class="gsub4">${esc(d.name)} <small>${d.roles.length} postes</small></h4>
       <div class="gchips">${d.roles.map(r => `<span class="gchip">${esc(r.name)}</span>`).join('')}</div>`).join('')}`);
 
+  const MORE = [
+    ['Une émission de télé', (window.PRISME_TVSHOWS || { TVSHOWS: [] }).TVSHOWS, 'le rythme, le rapport à la compétition, au public et à la sincérité'],
+    ['Un monument', (window.PRISME_MONUMENTS || { MONUMENTS: [] }).MONUMENTS, 'imposer ou se faire discret, durer ou étonner, être l\'œuvre d\'un seul ou de plusieurs siècles'],
+    ['Un végétal', (window.PRISME_PLANTS || { PLANTS: [] }).PLANTS, 'la manière de pousser, de résister, de s\'étendre ou de fleurir'],
+    ['Un pays', (window.PRISME_COUNTRIES || { COUNTRIES: [] }).COUNTRIES, 'le tempérament que le pays renvoie : son rapport au temps, à la règle, à l\'accueil et à la fête'],
+    ['Une sucrerie', (window.PRISME_SWEETS || { SWEETS: [] }).SWEETS, 'se partager ou se cacher, fondre ou résister, piquer ou réconforter'],
+    ['Une spécialité de médecine', (window.PRISME_SPECIALTIES || { SPECIALTIES: [] }).SPECIALTIES, 'ce que le métier réclame : l\'urgence ou le temps long, le geste ou le diagnostic, la relation au patient'],
+  ];
+  section('etsi', 'Le sur-mesure', 'Et si tu étais…', `
+    <p class="gtext">Six listes de plus, calculées exactement comme les animaux ou les plats et rangées en accordéon en bas du rapport : on clique sur une liste pour découvrir la sienne, avec le pourcentage, le <b>pourquoi toi</b> et les trois suivantes. Rien ne dépend de tes goûts : c'est chaque fois le <b>tempérament</b> de l'entrée qui est comparé au tien. Les végétaux donnent en plus le meilleur de chaque famille (arbres, fleurs, plantes et herbes). Dans un cercle, chaque liste donne une entrée différente à chacun : la grille des programmes, le circuit touristique, le jardin, le tour du monde, le paquet de bonbons et l'hôpital du cercle.</p>
+    ${MORE.map(([t, list, what]) => `
+      <h4 class="gsub4">${esc(t)} <small>${list.length}</small></h4>
+      <p class="gtext">Ce qui est comparé : ${esc(what)}.</p>
+      <div class="gchips">${list.map(x => `<span class="gchip">${esc(x.name)}</span>`).join('')}</div>`).join('')}`);
+
   /* ---------------------------------------------------------
      11. Signatures
      --------------------------------------------------------- */

@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=46">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=47">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=46">
+  <link rel="stylesheet" href="css/style.css?v=47">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -557,7 +557,7 @@
     <section class="res-section" id="cast-section" hidden>
       <div class="section-head">
         <h2 data-nav="Personnages">Quel personnage serais-tu ?</h2>
-        <p>D'après ton profil psychologique — tes qualités, tes couleurs DISC, tes valeurs, ton caractère — et pas tes opinions. Quarante-cinq univers et plus de onze cents personnages : clique sur une famille, puis sur un univers, pour découvrir le tien et pourquoi c'est lui.</p>
+        <p>D'après ton profil psychologique — tes qualités, tes couleurs DISC, tes valeurs, ton caractère — et pas tes opinions. Quarante-huit univers et plus de douze cents personnages : clique sur une famille, puis sur un univers, pour découvrir le tien et pourquoi c'est lui.</p>
       </div>
       <div id="cast" class="cast"></div>
     </section>
@@ -601,6 +601,14 @@
         <p>Une grande entreprise internationale, ses quinze directions et ses soixante-dix postes. Chaque poste est noté sur le <b>tempérament</b> qu'il réclame, jamais sur le diplôme : on peut tomber sur « contrôle de gestion » sans avoir jamais ouvert un tableur.</p>
       </div>
       <div id="poste-card" class="animal-wrap"></div>
+    </section>
+
+    <section class="res-section" id="more-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Et si tu étais">Et si tu étais…</h2>
+        <p>Une émission de télé, un monument, un végétal, un pays, une sucrerie, une spécialité de médecine. Toujours le même principe : pas ce que tu préfères, mais ce dont le tempérament ressemble au tien. Clique pour découvrir chacun.</p>
+      </div>
+      <div id="more-picks" class="cast"></div>
     </section>
 
     <footer class="res-foot">
@@ -817,6 +825,12 @@
         <p class="group-intro">Si le cercle montait une entreprise, voici comment les postes se répartiraient : une direction par encadré, chacun à son poste, avec ce qui l'y amène. Deux personnes ne peuvent pas occuper le même poste : le plus proche est servi en premier, les suivants prennent le poste restant qui leur va le mieux.</p>
         <div id="g-org"></div>
       </article>
+      <article class="res-card group-card" id="g-more-card-group" hidden>
+        <p class="card-kicker">Et si le cercle était…</p>
+        <h2 data-nav="Et si le cercle">Six listes de plus</h2>
+        <p class="group-intro">Une émission, un monument, un végétal, un pays, une sucrerie et une spécialité de médecine par personne, et à chaque fois une différente pour chacun. Clique sur une liste pour voir qui est quoi.</p>
+        <div id="g-more" class="cast"></div>
+      </article>
     </section>
 
     <div class="res-act" data-act="Un par un">
@@ -862,8 +876,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=46"></script>
-  <script src="js/profiles.js?v=46"></script>
-  <script src="js/app.js?v=46"></script>
+  <script src="js/questions.js?v=47"></script>
+  <script src="js/profiles.js?v=47"></script>
+  <script src="js/app.js?v=47"></script>
 </body>
 </html>

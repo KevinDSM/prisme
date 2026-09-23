@@ -2963,6 +2963,7 @@
     renderPick(cur, 'musique');
     renderPick(cur, 'plat');
     renderJob(cur);
+    renderMorePicks(cur);
     $('values-section').hidden = !vp;
     if (vp) renderValuesSection(r, vp);
     const upgradable = canUpgrade(r);
@@ -3923,7 +3924,8 @@
      partent en tâche de fond dès que l'accueil est affiché ; un lien de résultat
      ouvert directement les attend avant de s'afficher. Une liste qui ne répond pas
      laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
-  const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow'];
+  const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow',
+    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine'];
   let extrasReady = false, extrasPromise = null;
 
   function initExtras() {
@@ -4151,6 +4153,7 @@
     renderGroupPick(people, 'g-', 'musique');
     renderGroupPick(people, 'g-', 'plat');
     renderGroupOrg(people);
+    renderGroupMore(people);
     renderClans(people, 'g-');
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
@@ -4612,6 +4615,91 @@
     },
   };
 
+  /* « Et si tu étais… » : six listes de plus, rangées en accordéon pour ne pas
+     allonger la page de six sections. Même calcul que les autres listes plates ;
+     dans un cercle, chacun reçoit là aussi une entrée différente. */
+  const MORE_PICKS = [
+    { key: 'emission', title: 'Une émission de télé', unit: 'émissions', like: 'comme elle', k: 'Tu serais', circle: 'La grille des programmes',
+      get items() { return (window.PRISME_TVSHOWS || { TVSHOWS: [] }).TVSHOWS; } },
+    { key: 'monument', title: 'Un monument', unit: 'monuments', like: 'comme lui', k: 'Tu serais', circle: 'Le circuit touristique',
+      get items() { return (window.PRISME_MONUMENTS || { MONUMENTS: [] }).MONUMENTS; } },
+    { key: 'vegetal', title: 'Un végétal', unit: 'végétaux', like: 'comme lui', k: 'Tu serais', circle: 'Le jardin du cercle',
+      get items() { return (window.PRISME_PLANTS || { PLANTS: [] }).PLANTS; } },
+    { key: 'pays', title: 'Un pays', unit: 'pays', like: 'comme lui', k: 'Tu serais', circle: 'Le tour du monde',
+      get items() { return (window.PRISME_COUNTRIES || { COUNTRIES: [] }).COUNTRIES; } },
+    { key: 'sucrerie', title: 'Une sucrerie', unit: 'sucreries', like: 'comme elle', k: 'Tu serais', circle: 'Le paquet de bonbons',
+      get items() { return (window.PRISME_SWEETS || { SWEETS: [] }).SWEETS; } },
+    { key: 'medecine', title: 'Une spécialité de médecine', unit: 'spécialités', like: 'comme elle', k: 'Tu exercerais', circle: 'L\'hôpital du cercle',
+      get items() { return (window.PRISME_SPECIALTIES || { SPECIALTIES: [] }).SPECIALTIES; } },
+  ];
+
+  function renderMorePicks(cur) {
+    const html = MORE_PICKS.map(cfg => {
+      const ranked = rankMatches(cfg.items, cur.r);
+      if (!ranked.length) return '';
+      const best = ranked[0];
+      const why = matchWhy(best, 4), gap = matchGap(best);
+      const others = ranked.slice(1, 4).map(x => `${esc(x.ch.name)} (${pct(x.score)}\u00a0%)`);
+      // une liste rangée par familles (les végétaux) donne aussi le meilleur de chaque famille
+      const cats = [];
+      ranked.forEach(x => { if (x.ch.cat && !cats.some(c => c.cat === x.ch.cat)) cats.push({ cat: x.ch.cat, m: x }); });
+      return `
+      <details class="lic" style="--c:${best.ch.color}">
+        <summary><span class="lic-kind">${cfg.items.length} ${esc(cfg.unit)}</span><span class="lic-name">${esc(cfg.title)}</span><span class="lic-cta">Découvrir</span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="lic-body">
+          <p class="lic-k">${esc(cfg.k)}</p>
+          <h3 class="lic-char">${esc(best.ch.name)}<span class="pct">${pct(best.score)}\u00a0%</span></h3>
+          ${best.ch.by ? `<p class="more-by">${esc(best.ch.by)}</p>` : ''}
+          <p class="lic-tag">${esc(best.ch.tag)}</p>
+          <p>${esc(best.ch.desc)}</p>
+          <p class="lic-why"><b>Pourquoi toi :</b> ${why.length ? cfg.like + ', tu as ' + esc(joinFr(why)) + '.' : 'c\'est le profil d\'ensemble le plus proche du tien, sans trait dominant.'}${gap ? ` <b>Là où tu t'en écartes :</b> ${esc(gap)}.` : ''}</p>
+          ${cats.length > 1 ? `<p class="lic-others">Famille par famille : ${cats.map(c => `${esc(c.cat.toLowerCase())}, ${esc(c.m.ch.name)} (${pct(c.m.score)}\u00a0%)`).join(' · ')}.</p>` : ''}
+          ${others.length ? `<p class="lic-others">Tu n'étais pas loin non plus de : ${others.join(' · ')}.</p>` : ''}
+        </div>
+      </details>`;
+    }).join('');
+    $('more-section').hidden = !html;
+    $('more-picks').innerHTML = html;
+  }
+
+  // Chacun son entrée, toutes différentes : le plus ressemblant est servi en premier
+  function distinctPicks(table) {
+    const freeP = new Set(table.map((t, i) => i).filter(i => table[i].length));
+    const taken = new Set();
+    const picks = [];
+    while (freeP.size) {
+      let best = null;
+      freeP.forEach(i => {
+        const m = table[i].find(x => !taken.has(x.ch.name)) || table[i][0];
+        if (!best || m.score > best.m.score) best = { i, m };
+      });
+      picks.push(best);
+      taken.add(best.m.ch.name);
+      freeP.delete(best.i);
+    }
+    return picks.sort((a, b) => a.i - b.i);
+  }
+
+  function renderGroupMore(people) {
+    const card = $('g-more-card-group');
+    card.hidden = people.length < 2;
+    if (people.length < 2) return;
+    $('g-more').innerHTML = MORE_PICKS.map(cfg => {
+      const picks = distinctPicks(people.map(p => rankMatches(cfg.items, p.r)));
+      if (!picks.length) return '';
+      return `
+      <details class="lic" style="--c:${picks[0].m.ch.color}">
+        <summary><span class="lic-kind">${esc(cfg.circle)}</span><span class="lic-name">${esc(cfg.title)}</span><span class="lic-cta">Voir qui est quoi</span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="lic-body">
+          <ul class="casting menagerie">${picks.map(x => {
+            const why = matchWhy(x.m, 2);
+            return `<li style="--c:${x.m.ch.color}">${whoChip(people[x.i])}<span class="arrow">→</span><span class="role"><b>${esc(x.m.ch.name)}</b> <small>${pct(x.m.score)}\u00a0%</small>${x.m.ch.by ? `<span class="role-by">${esc(x.m.ch.by)}</span>` : ''}<em>${esc(x.m.ch.tag)}</em>${why.length ? `<span class="because">${esc(joinFr(why))}</span>` : ''}</span></li>`;
+          }).join('')}</ul>
+        </div>
+      </details>`;
+    }).join('');
+  }
+
   /* Dans quel service travaillerais-tu ?
      Les postes d'une grande entreprise sont notés comme les personnages : sur
      le tempérament qu'ils réclament, jamais sur le diplôme. Chaque poste garde
@@ -5062,7 +5150,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 46;
+  const BUILD = 47;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
