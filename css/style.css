@@ -1938,18 +1938,10 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 }
 
 /* Les deux cartes qui formaient une grille sont maintenant seules sur la largeur */
-#g-circle-disc-card .disc-wheel svg { max-width: 340px; }
+#g-circle-disc-card .disc-wheel svg { max-width: 620px; }
 #g-circle-disc-card .circle-disc-list { margin-top: 14px; }
 #g-map-card .circle-map { max-width: 560px; }
 @media (min-width: 980px) {
-  #g-circle-disc-card > .fold > .fold-body {
-    display: grid; align-items: start;
-    grid-template-columns: minmax(0, 340px) minmax(0, 1fr); column-gap: 36px;
-    grid-template-areas: 'w l' 'w n';
-  }
-  #g-circle-disc-card .disc-wheel { grid-area: w; }
-  #g-circle-disc-card .circle-disc-list { grid-area: l; margin-top: 0; }
-  #g-circle-disc-card .circle-disc-notes { grid-area: n; }
 
   #g-map-card > .fold > .fold-body {
     display: grid; align-items: start;
@@ -2474,3 +2466,16 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 }
 .gsit-win.is-tie { color: var(--ink-2); font-style: italic; }
 .gsit-win.is-tie small { margin: 0; font-style: normal; }
+
+/* Cercle : la grande roue DISC, les initiales dans les pastilles, la liste en dessous */
+.disc-tagpt circle { stroke: var(--bg-2); stroke-width: 2.5; }
+.disc-tagpt text { fill: #fff; font-family: var(--font-body); font-size: 11px; font-weight: 800; letter-spacing: -0.03em; stroke: none; paint-order: normal; pointer-events: none; }
+.disc-tagpt.me text { fill: var(--bg); }
+.disc-lead { stroke: rgba(var(--ink-rgb), 0.35); stroke-width: 1.2; }
+.disc-anchor { fill: var(--ink); }
+#g-circle-disc-card .circle-disc-list { margin-top: 18px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); column-gap: 28px; }
+.disc-tag { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px; box-sizing: border-box; color: #fff; font-size: 11px; font-weight: 800; letter-spacing: -0.03em; }
+.disc-tag.me { background: var(--ink); color: var(--bg); }
+@media (max-width: 560px) {
+  #g-circle-disc-card .circle-disc-list { grid-template-columns: 1fr; }
+}

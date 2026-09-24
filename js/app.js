@@ -1859,12 +1859,52 @@
         svg += `<text class="disc-score" x="${sx.toFixed(1)}" y="${(sy + 8).toFixed(1)}" text-anchor="middle">${pct(fill[x.id])}</text>`;
       }
     });
-    (points || []).forEach(p => {
+    const tagged = (points || []).some(p => p.tag);
+    if (!tagged) {
+      (points || []).forEach(p => {
+        const [dx, dy] = discPoint(p.disc);
+        const x = C + dx * R, y = C - dy * R;
+        const right = x > S - 120;
+        svg += `<g class="disc-pt ${p.me ? 'me' : ''}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.me ? 9 : 7}"${p.color ? ` style="fill:${p.color}"` : ''}/>`
+          + `<text x="${(right ? x - 13 : x + 13).toFixed(1)}" y="${(y + 5).toFixed(1)}" text-anchor="${right ? 'end' : 'start'}">${esc(p.label)}</text></g>`;
+      });
+      return svg + '</svg>';
+    }
+    /* Dans un cercle : une pastille par personne, avec ses initiales (la liste en dessous dit qui).
+       Les pastilles qui se touchent s'écartent doucement, et un trait fin les relie à leur
+       vraie position : on garde l'endroit exact, et chacun reste lisible. */
+    const DOT = 13.5, GAP = DOT * 2 + 3;
+    const ms = points.map((p, i) => {
       const [dx, dy] = discPoint(p.disc);
-      const x = C + dx * R, y = C - dy * R;
-      const right = x > S - 120;
-      svg += `<g class="disc-pt ${p.me ? 'me' : ''}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.me ? 9 : 7}"${p.color ? ` style="fill:${p.color}"` : ''}/>`
-        + `<text x="${(right ? x - 13 : x + 13).toFixed(1)}" y="${(y + 5).toFixed(1)}" text-anchor="${right ? 'end' : 'start'}">${esc(p.label)}</text></g>`;
+      const x0 = C + dx * R, y0 = C - dy * R;
+      return { p, x0, y0, x: x0, y: y0, i };
+    });
+    for (let it = 0; it < 120; it++) {
+      let moved = false;
+      for (let a = 0; a < ms.length; a++) for (let b = a + 1; b < ms.length; b++) {
+        const A = ms[a], B = ms[b];
+        let vx = B.x - A.x, vy = B.y - A.y, d = Math.hypot(vx, vy);
+        if (d >= GAP) continue;
+        if (d < 0.01) { const ang = (b * 2.39996) % (2 * Math.PI); vx = Math.cos(ang); vy = Math.sin(ang); d = 1; }
+        const push = (GAP - d) / 2 + 0.2;
+        A.x -= vx / d * push; A.y -= vy / d * push;
+        B.x += vx / d * push; B.y += vy / d * push;
+        moved = true;
+      }
+      // chacun reste dans la roue, et revient un peu vers sa vraie place
+      ms.forEach(m => {
+        m.x += (m.x0 - m.x) * 0.02; m.y += (m.y0 - m.y) * 0.02;
+        const r = Math.hypot(m.x - C, m.y - C), lim = R - DOT + 4;
+        if (r > lim) { m.x = C + (m.x - C) * lim / r; m.y = C + (m.y - C) * lim / r; }
+      });
+      if (!moved) break;
+    }
+    ms.forEach(m => {
+      if (Math.hypot(m.x - m.x0, m.y - m.y0) > 3) svg += `<line class="disc-lead" x1="${m.x0.toFixed(1)}" y1="${m.y0.toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${m.y.toFixed(1)}"/><circle class="disc-anchor" cx="${m.x0.toFixed(1)}" cy="${m.y0.toFixed(1)}" r="2.2"${m.p.color ? ` style="fill:${m.p.color}"` : ''}/>`;
+    });
+    ms.forEach(m => {
+      svg += `<g class="disc-pt disc-tagpt ${m.p.me ? 'me' : ''}"><title>${esc(m.p.label)}</title><circle cx="${m.x.toFixed(1)}" cy="${m.y.toFixed(1)}" r="${DOT}"${m.p.color ? ` style="fill:${m.p.color}"` : ''}/>`
+        + `<text x="${m.x.toFixed(1)}" y="${(m.y + 4).toFixed(1)}" text-anchor="middle">${esc(m.p.tag)}</text></g>`;
     });
     return svg + '</svg>';
   }
@@ -1921,14 +1961,15 @@
     card.hidden = people.length < 2;
     if (people.length < 2) return;
 
-    // « Toi » dessiné en dernier pour rester au-dessus
+    // une pastille par personne avec ses initiales ; « Toi » dessiné en dernier pour rester au-dessus
+    const tags = shortTags(people);
     $(pre + 'circle-disc-wheel').innerHTML = renderDiscWheel({
       scores: false,
-      points: people.slice().reverse().map(p => ({ disc: p.r.disc, label: p.name, me: !!p.me, color: p.me ? null : p.color })),
+      points: people.map((p, i) => ({ disc: p.r.disc, label: p.name, tag: tags[i], me: !!p.me, color: p.me ? null : p.color })).reverse(),
     });
-    const profiles = people.map(p => ({ ...p, dp: discProfile(p.r.disc) }));
+    const profiles = people.map((p, i) => ({ ...p, tag: tags[i], dp: discProfile(p.r.disc) }));
     $(pre + 'circle-disc-list').innerHTML = profiles.map(p =>
-      `<li><span class="who">${esc(p.name)}</span>${discPills(p.dp, true)}<small>${esc(p.dp.secondary ? p.dp.pair.title : p.dp.primary.style.title)}</small></li>`).join('');
+      `<li><span class="disc-tag${p.me ? ' me' : ''}" style="${p.me ? '' : `background:${p.color}`}">${esc(p.tag)}</span><span class="who">${esc(p.me ? 'Toi' : p.name)}</span>${discPills(p.dp, true)}<small>${esc(p.dp.secondary ? p.dp.pair.title : p.dp.primary.style.title)}</small></li>`).join('');
 
     const counts = {};
     DISC.forEach(x => { counts[x.id] = 0; });
@@ -2588,7 +2629,7 @@
         + (off ? `<line class="hemi-lead" x1="${s.x.toFixed(1)}" y1="${s.y.toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${m.y.toFixed(1)}" style="stroke:${p.color}"/>`
                + `<circle class="hemi-anchor" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="3.2" style="fill:${p.color}"/>` : '')
         + `<circle cx="${m.x.toFixed(1)}" cy="${m.y.toFixed(1)}" r="${r}" style="fill:${p.color}" class="${p.me ? 'me' : ''}"/>`
-        + `<text x="${m.x.toFixed(1)}" y="${(m.y + 3.8).toFixed(1)}" text-anchor="middle" class="${p.me ? 'me' : ''}">${esc(p.tag)}</text></g>`;
+        + `<text x="${m.x.toFixed(1)}" y="${(m.y + 4).toFixed(1)}" text-anchor="middle" class="${p.me ? 'me' : ''}">${esc(p.tag)}</text></g>`;
     });
     return svg + '</svg>';
   }
@@ -6087,7 +6128,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 57;
+  const BUILD = 58;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
