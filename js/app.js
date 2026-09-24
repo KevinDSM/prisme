@@ -4304,7 +4304,8 @@
      ouvert directement les attend avant de s'afficher. Une liste qui ne répond pas
      laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
   const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow',
-    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions', 'emojis'];
+    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions', 'emojis',
+    'planets', 'colors', 'objects', 'brands'];
   let extrasReady = false, extrasPromise = null;
 
   function initExtras() {
@@ -5559,6 +5560,14 @@
       get items() { return (window.PRISME_EMOTIONS || { EMOTIONS: [] }).EMOTIONS; } },
     { key: 'emoji', title: 'Un emoji', unit: 'emojis', like: 'comme lui', k: 'Tu serais', circle: 'La conversation du cercle',
       get items() { return (window.PRISME_EMOJIS || { EMOJIS: [] }).EMOJIS; } },
+    { key: 'planete', title: 'Une planète', unit: 'astres', like: 'comme elle', k: 'Tu serais', circle: 'Le système solaire du cercle',
+      get items() { return (window.PRISME_PLANETS || { PLANETS: [] }).PLANETS; } },
+    { key: 'couleur', title: 'Une couleur', unit: 'couleurs', like: 'comme elle', k: 'Tu serais', circle: 'Le nuancier du cercle',
+      get items() { return (window.PRISME_COLORS || { COLORS: [] }).COLORS; } },
+    { key: 'objet', title: 'Un objet du quotidien', unit: 'objets', like: 'comme lui', k: 'Tu serais', circle: 'Le tiroir du cercle',
+      get items() { return (window.PRISME_OBJECTS || { OBJECTS: [] }).OBJECTS; } },
+    { key: 'entreprise', title: 'Une entreprise', unit: 'entreprises', like: 'comme elle', k: 'Tu serais', circle: 'Le conglomérat du cercle',
+      get items() { return (window.PRISME_BRANDS || { BRANDS: [] }).BRANDS; } },
   ];
 
   function renderMorePicks(cur) {
@@ -6078,7 +6087,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 55;
+  const BUILD = 56;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
