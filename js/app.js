@@ -5540,17 +5540,17 @@
     { t: 'Le plus loyal', say: n => `Avec ${n}, la fidélité n'est pas une promesse, c'est une évidence. Quoi qu'il arrive, ${n} sera là : on peut lui faire confiance les yeux fermés.`, sub: 'fidèle aux siens quoi qu\'il arrive', v: p => p.r.found.loy,
       how: 'le fondement « loyauté » de sa boussole morale : la fidélité au groupe et la fierté d\'en faire partie' },
     { t: 'Le plus en demande', say: n => `${n} a le cœur grand ouvert et a besoin de le sentir en retour. Un petit message de temps en temps, et sa journée s'illumine.`, sub: 'a besoin de signes d\'affection', v: p => p.r.rel.anx,
-      how: 'ses réponses sur l\'inquiétude quand un proche tarde à répondre, le besoin qu\'on lui confirme qu\'on tient à lui, la peur qu\'on se lasse de lui' },
+      how: 'ses réponses sur l\'inquiétude quand un proche tarde à répondre, le besoin qu\'on lui confirme son affection, la peur que les autres se lassent' },
     { t: 'Le plus indépendant', say: n => `${n} aime les gens avec de l'air entre eux. Quelques jours sans nouvelles ne veulent rien dire : l'amitié est intacte.`, sub: 'a besoin d\'air, même avec ceux qu\'il aime', v: p => p.r.rel.avo,
       how: 'ses réponses sur l\'envie de ne pas dépendre des autres, le malaise à se confier et le besoin d\'air quand une relation devient fusionnelle' },
     { t: 'Le cœur sur la main', say: n => `Chez ${n}, tout se voit : la joie, la peine, l'affection. Impossible de ne pas savoir ce que ${n} ressent, et c'est reposant.`, sub: 'montre tout ce qu\'il ressent', v: p => p.r.rel.exp,
-      how: 'ses réponses sur le fait de montrer ce qu\'il ressent sans filtre et de se confier facilement' },
+      how: 'ses réponses sur le fait de montrer ses émotions sans filtre et de se confier facilement' },
     { t: 'Le plus secret', say: n => `${n} garde ses tempêtes pour soi, pour ne pas inquiéter les autres. Si ça n'a pas l'air d'aller, c'est à vous de poser la question.`, sub: 'garde ses peines pour lui', v: p => 1 - p.r.rel.exp,
-      how: 'ses réponses sur le fait de garder ses peines pour lui, pour ne pas inquiéter les autres' },
+      how: 'ses réponses sur le fait de garder ses peines pour soi, pour ne pas inquiéter les autres' },
     { t: 'Celui qui pardonne tout', say: n => `Chez ${n}, les brouilles ne durent pas : un pardon, et on passe à autre chose, sans rancune ni compte à régler.`, sub: 'tourne la page le plus vite', v: p => p.r.rel.par,
-      how: 'ses réponses sur le fait de pardonner vite quand un proche le blesse, et de ne pas garder de rancune' },
+      how: 'ses réponses sur le fait de pardonner vite quand un proche blesse, et de ne pas garder de rancune' },
     { t: 'Celui qui n\'oublie pas', say: n => `${n} pardonne, mais n'oublie pas. Sa confiance se mérite, et se reconstruit lentement quand elle a été abîmée.`, sub: 'pardonne le moins vite', v: p => 1 - p.r.rel.par,
-      how: 'ses réponses sur les blessures qu\'il n\'a jamais vraiment pardonnées' },
+      how: 'ses réponses sur les blessures jamais vraiment pardonnées' },
     { t: 'La famille avant tout', say: n => `Pour ${n}, la famille passe avant tout : les repas, les anniversaires, les coups durs. ${n} répond toujours présent pour les siens.`, sub: 'les siens d\'abord', v: p => p.r.rel.fam,
       how: 'ses réponses sur la famille qui passe avant presque tout, plutôt que les amis' },
     { t: 'Le plus entouré', say: n => `${n} connaît du monde partout et en rencontre sans cesse. Avec ${n}, on n'est jamais seul bien longtemps.`, sub: 'se fait des amis partout', v: p => p.r.rel.cer,
@@ -6262,7 +6262,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 60;
+  const BUILD = 61;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
