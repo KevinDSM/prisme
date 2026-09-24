@@ -4304,7 +4304,7 @@
      ouvert directement les attend avant de s'afficher. Une liste qui ne répond pas
      laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
   const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow',
-    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions'];
+    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions', 'emojis'];
   let extrasReady = false, extrasPromise = null;
 
   function initExtras() {
@@ -5557,6 +5557,8 @@
       get items() { return (window.PRISME_ORGANS || { ORGANS: [] }).ORGANS; } },
     { key: 'emotion', title: 'Une émotion', unit: 'émotions', like: 'comme elle', k: 'Tu serais', circle: 'La palette du cercle',
       get items() { return (window.PRISME_EMOTIONS || { EMOTIONS: [] }).EMOTIONS; } },
+    { key: 'emoji', title: 'Un emoji', unit: 'emojis', like: 'comme lui', k: 'Tu serais', circle: 'La conversation du cercle',
+      get items() { return (window.PRISME_EMOJIS || { EMOJIS: [] }).EMOJIS; } },
   ];
 
   function renderMorePicks(cur) {
@@ -6076,7 +6078,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 54;
+  const BUILD = 55;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
