@@ -2271,6 +2271,66 @@
   /* ---------------------------------------------------------
      Cercle : palmarès, matrice des affinités, sujets du groupe
      --------------------------------------------------------- */
+
+  /* Le commentaire de chaque titre, au prénom de qui le reçoit. Écrit sans accord de genre :
+     le prénom revient plutôt qu'un « il » ou un « elle » qu'on ne peut pas deviner. */
+  const AWARD_SAY = {
+    'Le pilier de confiance': n => `On peut confier à ${n} une clé, un secret ou un projet : c'est tenu, c'est gardé, et c'est rendu. Une parole de ${n} vaut un contrat.`,
+    'Le rouleau compresseur': n => `Quand ${n} a décidé quelque chose, ça finit par se faire : les obstacles ralentissent ${n}, ils ne l'arrêtent pas.`,
+    'Le cœur du groupe': n => `${n} sent quand quelque chose ne va pas avant même qu'on le dise, et trouve le mot qui apaise. C'est vers ${n} qu'on va quand ça fait mal.`,
+    'L\'esprit le plus ouvert': n => `Avec ${n}, on peut tout mettre sur la table : un bon argument suffit à faire bouger les lignes, sans vexation ni entêtement.`,
+    'L\'électron libre': n => `${n} trace sa route sans attendre la permission de personne, et c'est souvent là que naissent les meilleures idées du cercle.`,
+    'Le capitaine': n => `Quand le groupe hésite, c'est ${n} qui propose, tranche et embarque tout le monde. Sans chercher le pouvoir : ça vient naturellement.`,
+    'Le sang-froid': n => `Quand tout s'agite, ${n} garde la tête froide. En cas de pépin, c'est le numéro à appeler en premier.`,
+    'Le négociateur': n => `${n} trouve toujours la phrase qui réconcilie deux avis opposés. Dans une dispute du cercle, c'est ${n} qui ramène tout le monde à table.`,
+    'Le casse-cou': n => `${n} ose ce que les autres repoussent à plus tard. Les meilleures histoires du cercle commencent souvent par une idée de ${n}.`,
+    'L\'œil de lynx': n => `Rien n'échappe à ${n} : une date qui cloche, un détail oublié, une erreur dans l'addition. Relisez vos plans avec ${n}.`,
+    'Le rayon de soleil': n => `${n} voit le bon côté des choses, même les jours gris, et ça finit par déteindre sur tout le monde.`,
+    'La vigie': n => `${n} voit venir les ennuis avant tout le monde. Quand ${n} dit « attention », mieux vaut écouter.`,
+    'Le boute-en-train': n => `Avec ${n}, une soirée ordinaire devient un souvenir. L'ambiance, c'est son talent, et le cercle en profite.`,
+    'Le bagarreur d\'idées': n => `${n} ne laisse jamais passer une idée sans la discuter. Débattre avec ${n} est un sport de combat, et on en ressort toujours plus affûté.`,
+    'L\'idéaliste': n => `${n} croit qu'un monde meilleur est possible, et le rappelle à ceux qui l'ont oublié. Une boussole pour les jours de cynisme.`,
+    'Le fidèle': n => `${n} n'oublie ni ses racines ni ceux qui comptent. Une amitié avec ${n}, c'est pour longtemps.`,
+    'Le plus tranché': n => `Avec ${n}, pas de langue de bois : les avis sont nets, francs, assumés. On sait toujours à quoi s'en tenir.`,
+    'Le plus nuancé': n => `${n} pèse chaque mot et voit toujours l'autre côté de la question. L'avis à demander quand c'est compliqué.`,
+    'Le plus cohérent': n => `Les idées de ${n} forment un tout : tout se tient, d'un sujet à l'autre. On peut ne pas être d'accord, mais on ne peut pas dire que c'est incohérent.`,
+    'Le ciment du groupe': n => `${n} s'entend avec tout le monde, même avec ceux qui ne s'entendent pas entre eux. C'est par ${n} que le cercle tient ensemble.`,
+    'Le cas à part': n => `${n} ne pense comme personne ici, et c'est précieux : c'est la voix qui empêche le cercle de tourner en rond.`,
+    'Le funambule': n => `${n} avance très bien dans le flou : pas besoin d'avoir toutes les réponses pour se lancer. Les autres regardent le vide, ${n} regarde le fil.`,
+    'L\'inébranlable': n => `Les convictions de ${n} ne bougent pas au premier coup de vent. On peut compter sur ${n} pour tenir la même ligne demain.`,
+    'Le militant': n => `${n} ne garde pas ses idées pour soi : pétition, bénévolat, débat, il faut qu'elles servent. Le cercle a son moteur.`,
+    'L\'arbitre': n => `Avec ${n}, les règles valent pour tout le monde, amis compris. S'il faut trancher un litige, c'est l'arbitre juste du cercle.`,
+    'Le garant de l\'ordre': n => `${n} sait que sans cadre rien ne tient, et c'est souvent la voix qui ramène le groupe à ce qui avait été décidé.`,
+    'Le gardien du sacré': n => `Pour ${n}, certaines choses ne se négocient pas. Ce qui compte vraiment, on ne le brade pas, même pour une bonne raison.`,
+    'Le passionné': n => `Certains sujets touchent ${n} au cœur : là-dessus, ce n'est pas une opinion, c'est une part de soi. À aborder avec délicatesse.`,
+    'Le plus à gauche': n => `C'est ${n} qui siège le plus à gauche du cercle : la voix qui défend en premier l'égalité et les plus fragiles.`,
+    'Le plus à droite': n => `C'est ${n} qui siège le plus à droite du cercle : la voix de l'ordre, du mérite et de ce qui a fait ses preuves.`,
+    'Le fonceur': n => `Quand ça traîne, ${n} décide et y va. Avec ${n}, les projets du cercle sortent enfin des discussions.`,
+    'L\'enthousiaste': n => `L'énergie de ${n} est contagieuse : ses idées donnent envie d'y aller, tout de suite, tous ensemble.`,
+    'Le roc tranquille': n => `${n} ne s'affole jamais. Sa présence suffit à calmer tout le monde quand ça chauffe.`,
+    'Le perfectionniste': n => `${n} vérifie deux fois plutôt qu'une, et ce que ${n} rend est toujours carré. Confiez-lui ce qui ne doit pas rater.`,
+    'Le franc-tireur': n => `${n} fait les choses à sa manière, et sa manière marche souvent mieux que celle du manuel.`,
+    'L\'aventurier': n => `Proposez un plan un peu fou : ${n} dira oui avant la fin de la phrase. La routine, très peu pour ${n}.`,
+    'L\'épicurien': n => `${n} sait profiter : un bon repas, un moment qui s'étire, la vie comme elle vient. Le cercle a son spécialiste du bon temps.`,
+    'L\'ambitieux': n => `${n} vise toujours la marche du dessus, et donne envie aux autres de monter avec.`,
+    'L\'influent': n => `${n} aime peser sur les décisions et sait comment faire bouger les choses. Pour obtenir quelque chose, passez par ${n}.`,
+    'Le prévoyant': n => `${n} a toujours un plan B, et souvent un plan C. En cas de pépin, c'est la bonne personne à avoir à côté de soi.`,
+    'Le bon élève': n => `${n} tient parole, respecte les autres et fait ce qui est attendu. Avec ${n}, on n'a jamais de mauvaise surprise.`,
+    'Le gardien des traditions': n => `${n} garde vivant ce qu'on a reçu : les recettes, les fêtes, les histoires de famille. Grâce à ${n}, rien ne se perd.`,
+    'L\'ange gardien': n => `${n} veille sur les siens comme sur un trésor. Le bien-être des proches passe avant presque tout, et ça se sent.`,
+    'Le citoyen du monde': n => `${n} pense à la planète entière et à ceux qu'on ne rencontrera jamais. Un cœur qui voit loin.`,
+    'Le visionnaire': n => `${n} pense à dans dix ans quand les autres pensent au week-end. Utile quand il faut voir plus loin que le bout du mois.`,
+    'Le carpe diem': n => `${n} vit l'instant présent. Avec ${n}, on profite de maintenant, et demain attendra.`,
+    'L\'organisé': n => `${n} a un plan pour tout. Les vacances du cercle sont entre de bonnes mains.`,
+    'L\'improvisateur': n => `${n} improvise, et ça marche : les meilleurs plans de dernière minute viennent de ${n}.`,
+    'La tête froide': n => `${n} réfléchit avant de ressentir. Le bon réflexe quand il faut prendre une décision difficile.`,
+    'Le cœur qui décide': n => `${n} écoute d'abord ce que dit le cœur, et le cœur de ${n} se trompe rarement sur les gens.`,
+    'Le compétiteur': n => `${n} joue pour gagner, et ça pousse tout le monde à se dépasser. Même au Uno.`,
+    'L\'esprit d\'équipe': n => `${n} pense « nous » avant « je ». Quand le cercle a besoin de bras, ${n} est déjà là.`,
+    'Le globe-trotter': n => `${n} se sent chez soi partout. Le compagnon de voyage idéal, curieux de tout et de tout le monde.`,
+    'L\'enraciné': n => `${n} tient à son coin de terre et à ceux qui y vivent. Les racines, pour ${n}, ce n'est pas un mot.`,
+  };
+
   function renderGroup(people, pre) {
     const enough = people.length >= 3;
     $(pre + 'awards-card').hidden = !enough;
@@ -2451,6 +2511,7 @@
         <p class="award-title">${esc(a.title)}</p>
         <p class="award-sub">${esc(a.sub)}</p>
         <div class="award-who">${who(a.p)}<span class="award-score">${esc(String(a.score))}</span></div>
+        ${AWARD_SAY[a.title] ? `<p class="award-say">${esc(AWARD_SAY[a.title](a.p.name))}</p>` : ''}
         <p class="award-text">${esc(a.text)}</p>
         ${a.tie ? `<p class="award-tie">${esc(a.tie)}</p>` : ''}
         ${a.how ? `<p class="award-how">${esc(a.how)}</p>` : ''}
@@ -5476,27 +5537,27 @@
   /* Le cercle et les autres : des records lisibles d'un coup d'œil, puis une fiche par
      personne (ses trois styles et six jauges), ce qui fait plaisir à chacun et le climat. */
   const REL_RECORDS = [
-    { t: 'Le plus loyal', sub: 'fidèle aux siens quoi qu\'il arrive', v: p => p.r.found.loy,
+    { t: 'Le plus loyal', say: n => `Avec ${n}, la fidélité n'est pas une promesse, c'est une évidence. Quoi qu'il arrive, ${n} sera là : on peut lui faire confiance les yeux fermés.`, sub: 'fidèle aux siens quoi qu\'il arrive', v: p => p.r.found.loy,
       how: 'le fondement « loyauté » de sa boussole morale : la fidélité au groupe et la fierté d\'en faire partie' },
-    { t: 'Le plus en demande', sub: 'a besoin de signes d\'affection', v: p => p.r.rel.anx,
+    { t: 'Le plus en demande', say: n => `${n} a le cœur grand ouvert et a besoin de le sentir en retour. Un petit message de temps en temps, et sa journée s'illumine.`, sub: 'a besoin de signes d\'affection', v: p => p.r.rel.anx,
       how: 'ses réponses sur l\'inquiétude quand un proche tarde à répondre, le besoin qu\'on lui confirme qu\'on tient à lui, la peur qu\'on se lasse de lui' },
-    { t: 'Le plus indépendant', sub: 'a besoin d\'air, même avec ceux qu\'il aime', v: p => p.r.rel.avo,
+    { t: 'Le plus indépendant', say: n => `${n} aime les gens avec de l'air entre eux. Quelques jours sans nouvelles ne veulent rien dire : l'amitié est intacte.`, sub: 'a besoin d\'air, même avec ceux qu\'il aime', v: p => p.r.rel.avo,
       how: 'ses réponses sur l\'envie de ne pas dépendre des autres, le malaise à se confier et le besoin d\'air quand une relation devient fusionnelle' },
-    { t: 'Le cœur sur la main', sub: 'montre tout ce qu\'il ressent', v: p => p.r.rel.exp,
+    { t: 'Le cœur sur la main', say: n => `Chez ${n}, tout se voit : la joie, la peine, l'affection. Impossible de ne pas savoir ce que ${n} ressent, et c'est reposant.`, sub: 'montre tout ce qu\'il ressent', v: p => p.r.rel.exp,
       how: 'ses réponses sur le fait de montrer ce qu\'il ressent sans filtre et de se confier facilement' },
-    { t: 'Le plus secret', sub: 'garde ses peines pour lui', v: p => 1 - p.r.rel.exp,
+    { t: 'Le plus secret', say: n => `${n} garde ses tempêtes pour soi, pour ne pas inquiéter les autres. Si ça n'a pas l'air d'aller, c'est à vous de poser la question.`, sub: 'garde ses peines pour lui', v: p => 1 - p.r.rel.exp,
       how: 'ses réponses sur le fait de garder ses peines pour lui, pour ne pas inquiéter les autres' },
-    { t: 'Celui qui pardonne tout', sub: 'tourne la page le plus vite', v: p => p.r.rel.par,
+    { t: 'Celui qui pardonne tout', say: n => `Chez ${n}, les brouilles ne durent pas : un pardon, et on passe à autre chose, sans rancune ni compte à régler.`, sub: 'tourne la page le plus vite', v: p => p.r.rel.par,
       how: 'ses réponses sur le fait de pardonner vite quand un proche le blesse, et de ne pas garder de rancune' },
-    { t: 'Celui qui n\'oublie pas', sub: 'pardonne le moins vite', v: p => 1 - p.r.rel.par,
+    { t: 'Celui qui n\'oublie pas', say: n => `${n} pardonne, mais n'oublie pas. Sa confiance se mérite, et se reconstruit lentement quand elle a été abîmée.`, sub: 'pardonne le moins vite', v: p => 1 - p.r.rel.par,
       how: 'ses réponses sur les blessures qu\'il n\'a jamais vraiment pardonnées' },
-    { t: 'La famille avant tout', sub: 'les siens d\'abord', v: p => p.r.rel.fam,
+    { t: 'La famille avant tout', say: n => `Pour ${n}, la famille passe avant tout : les repas, les anniversaires, les coups durs. ${n} répond toujours présent pour les siens.`, sub: 'les siens d\'abord', v: p => p.r.rel.fam,
       how: 'ses réponses sur la famille qui passe avant presque tout, plutôt que les amis' },
-    { t: 'Le plus entouré', sub: 'se fait des amis partout', v: p => p.r.rel.cer,
+    { t: 'Le plus entouré', say: n => `${n} connaît du monde partout et en rencontre sans cesse. Avec ${n}, on n'est jamais seul bien longtemps.`, sub: 'se fait des amis partout', v: p => p.r.rel.cer,
       how: 'ses réponses sur l\'envie d\'être entouré de beaucoup de monde plutôt que de quelques amis très proches' },
-    { t: 'Le franc-parler', sub: 's\'affirme le plus dans un désaccord', v: p => p.r.rel.ass,
+    { t: 'Le franc-parler', say: n => `${n} dit ce qu'il y a à dire, en face et sans détour. On ne se demande jamais ce que ${n} pense vraiment.`, sub: 's\'affirme le plus dans un désaccord', v: p => p.r.rel.ass,
       how: 'ses réponses sur le fait de dire clairement son désaccord à un proche, même si ça crée une tension' },
-    { t: 'Le gardien de la paix', sub: 'tient le plus à se quitter en bons termes', v: p => p.r.rel.coo,
+    { t: 'Le gardien de la paix', say: n => `${n} tient à ce qu'on se quitte en bons termes. Même au cœur d'une dispute, le lien passe avant l'ego.`, sub: 'tient le plus à se quitter en bons termes', v: p => p.r.rel.coo,
       how: 'ses réponses sur l\'envie de se quitter en bons termes et de chercher une solution qui convienne aux deux' },
   ];
   const REL_METERS = [
@@ -5507,6 +5568,30 @@
     { k: 'Pardonne vite', v: r => r.rel.par, c: '#8ab17d' },
     { k: 'Famille d\'abord', v: r => r.rel.fam, c: '#b08900' },
   ];
+
+  // le portrait d'une personne dans le cercle, au prénom
+  const ATTACH_SAY = {
+    secure: n => `${n} aime sans s'accrocher : on peut s'éloigner quelques jours, rien ne se casse.`,
+    anxious: n => `${n} a besoin de signes : un message, un mot, une attention suffisent à rassurer, et ça vaut de l'or.`,
+    avoidant: n => `${n} tient aux gens à sa façon, avec de l'air : un silence n'est jamais un désintérêt.`,
+    fearful: n => `${n} a besoin des autres mais avance à petits pas : la constance compte plus que les grands gestes.`,
+  };
+  const CONFLICT_SAY = {
+    build: n => `Dans un désaccord, ${n} cherche une vraie solution à deux, quitte à y passer du temps.`,
+    defend: n => `Dans un désaccord, ${n} dit les choses franchement et va au bout : au moins, on sait où on en est.`,
+    yield: n => `Dans un désaccord, ${n} préfère la paix à la victoire : pensez à demander ce que ${n} veut vraiment.`,
+    avoid: n => `Dans un désaccord, ${n} laisse retomber la pression plutôt que d'attaquer de front.`,
+    deal: n => `Dans un désaccord, ${n} cherche vite le terrain d'entente où chacun fait un pas.`,
+  };
+  const ROLE_SAY = {
+    pilier: n => `Quand ça tangue, c'est vers ${n} qu'on se tourne.`,
+    confident: n => `${n} est la personne à qui l'on confie ce qu'on ne dit à personne.`,
+    orga: n => `Sans ${n}, la moitié des retrouvailles n'auraient jamais lieu.`,
+    ambiance: n => `Avec ${n}, la soirée démarre : l'ambiance, c'est son rayon.`,
+    mediateur: n => `Quand deux proches se fâchent, ${n} recolle les morceaux sans prendre parti.`,
+    libre: n => `${n} va et vient à sa guise, et c'est pour ça qu'on savoure chaque moment ensemble.`,
+    protecteur: n => `Personne ne touche aux proches de ${n} : famille et amis peuvent compter sur sa défense.`,
+  };
 
   function renderGroupRel(people) {
     const withRel = people.filter(p => p.r.rel);
@@ -5531,7 +5616,7 @@
       <div class="grec">
         <p class="grec-t">${esc(x.t)}</p>
         <p class="grec-who">${whoChip(w.p)}<b>${pct(w.v)}</b></p>
-        <p class="grec-sub">${esc(x.sub)}</p>
+        <p class="grec-say">${esc(x.say(w.p.name))}</p>
         <p class="grec-why">D'après ${esc(x.how)}.${next ? ` ${pct(w.v) - pct(next.v) > 0 ? `${pct(w.v) - pct(next.v)} point${pct(w.v) - pct(next.v) > 1 ? 's' : ''} devant ${esc(next.p.name)} (${pct(next.v)})` : `À égalité avec ${esc(next.p.name)}, qui avait déjà plus de records`}.` : ''}</p>
       </div>`).join('');
 
@@ -5559,6 +5644,7 @@
       const g = lw(rel.give), w = lw(rel.want);
       return `<article class="grel-person" style="--pc:${p.color}">
         <header>${whoChip(p)}<span class="grel-role">${esc(role.name)}</span></header>
+        <p class="grel-say">${esc([ROLE_SAY[role.id](p.name), ATTACH_SAY[a.id](p.name), CONFLICT_SAY[c.id](p.name), w ? `Pour faire plaisir à ${p.name} : ${w.desc}.` : ''].filter(Boolean).join(' '))}</p>
         <div class="grel-tags">
           <span class="grel-tag" style="--c:${a.color}" title="${esc(a.tag)}">${esc(a.name)}</span>
           <span class="grel-tag" style="--c:${c.color}" title="${esc(c.tag)}">${esc(cap(c.name.replace(/^(Le |L')/, '')))}</span>
@@ -6176,7 +6262,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 59;
+  const BUILD = 60;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

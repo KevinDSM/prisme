@@ -2486,3 +2486,9 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .grec-why { margin-top: 6px !important; padding-top: 6px; border-top: 1px dashed var(--line-2); font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
 .grel-why { margin: 10px 0 0; padding: 8px 0 0; border-top: 1px dashed var(--line-2); list-style: none; display: grid; gap: 4px; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
 .grel-why b { color: var(--ink); }
+
+/* le commentaire humain, avant les chiffres */
+.award-say { margin: 8px 0 8px; font-family: var(--font-display); font-size: 16.5px; line-height: 1.45; color: var(--ink); }
+.award .award-text { font-size: 13px; color: var(--ink-3); }
+.grec-say { margin: 6px 0 0 !important; font-family: var(--font-display); font-size: 15px; line-height: 1.45; color: var(--ink); }
+.grel-say { margin: 8px 0 4px; font-family: var(--font-display); font-size: 15.5px; line-height: 1.5; color: var(--ink); }
