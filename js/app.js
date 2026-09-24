@@ -4304,7 +4304,7 @@
      ouvert directement les attend avant de s'afficher. Une liste qui ne répond pas
      laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
   const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow',
-    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments'];
+    'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions'];
   let extrasReady = false, extrasPromise = null;
 
   function initExtras() {
@@ -5553,6 +5553,10 @@
       get items() { return (window.PRISME_SPECIALTIES || { SPECIALTIES: [] }).SPECIALTIES; } },
     { key: 'maladie', title: 'Une maladie', unit: 'petits maux', like: 'comme elle', k: 'Tu serais', circle: 'L\'infirmerie du cercle',
       get items() { return (window.PRISME_AILMENTS || { AILMENTS: [] }).AILMENTS; } },
+    { key: 'organe', title: 'Un organe', unit: 'organes', like: 'comme lui', k: 'Tu serais', circle: 'Le corps du cercle',
+      get items() { return (window.PRISME_ORGANS || { ORGANS: [] }).ORGANS; } },
+    { key: 'emotion', title: 'Une émotion', unit: 'émotions', like: 'comme elle', k: 'Tu serais', circle: 'La palette du cercle',
+      get items() { return (window.PRISME_EMOTIONS || { EMOTIONS: [] }).EMOTIONS; } },
   ];
 
   function renderMorePicks(cur) {
@@ -6072,7 +6076,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 53;
+  const BUILD = 54;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
