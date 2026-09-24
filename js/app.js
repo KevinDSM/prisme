@@ -4937,7 +4937,7 @@
 
   // Certaines familles méritent un avertissement sous leur titre
   const GROUP_NOTES = {
-    'Le monde réel': 'Des personnes réelles. Seul le tempérament public est comparé — ni les idées, ni la vie privée, ni le bilan.',
+    'Le monde réel': 'Des personnes réelles. Seul le tempérament public est comparé — ni la vie privée, ni le bilan. Exception : pour les politiques d\'aujourd\'hui, les positions publiques comptent aussi.',
   };
 
   // Une famille = un volet replié : on ne déroule que l'univers qui intéresse
@@ -6262,7 +6262,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 61;
+  const BUILD = 62;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
