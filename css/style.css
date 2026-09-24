@@ -2479,3 +2479,10 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 @media (max-width: 560px) {
   #g-circle-disc-card .circle-disc-list { grid-template-columns: 1fr; }
 }
+
+/* les « pourquoi » : palmarès, records, fiches */
+.award-tie { margin: 0 0 8px; padding: 8px 10px; border-radius: 8px; background: rgba(var(--accent-rgb), 0.08); font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.award-how { margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); font-style: italic; }
+.grec-why { margin-top: 6px !important; padding-top: 6px; border-top: 1px dashed var(--line-2); font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+.grel-why { margin: 10px 0 0; padding: 8px 0 0; border-top: 1px dashed var(--line-2); list-style: none; display: grid; gap: 4px; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+.grel-why b { color: var(--ink); }

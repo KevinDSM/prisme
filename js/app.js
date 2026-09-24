@@ -2199,6 +2199,14 @@
     return out;
   }
 
+  function compName([src, id, dir]) {
+    if (src === 'axis') { const a = axisById(id); return a ? (dir > 0 ? a.rightFull : a.leftFull).toLowerCase() : id; }
+    if (src === 'found') { const f = FOUNDATIONS.find(x => x.id === id); return f ? (dir > 0 ? '' : 'peu de ') + f.label.toLowerCase() : id; }
+    if (src === 'trait') { const t = TRAITS.find(x => x.id === id); return t ? (dir > 0 ? t.high : t.low).toLowerCase() : id; }
+    if (src === 'disc') { const d = DISC.find(x => x.id === id); return d ? `${d.color.toLowerCase()} au DISC` : id; }
+    return id;
+  }
+
   function qualityWhy(r, q) {
     const strong = q.parts.filter(p => p.v >= 0.6).sort((x, y) => y.v * y.w - x.v * x.w).slice(0, 3);
     if (!strong.length) return 'une somme de petites tendances qui vont toutes dans le même sens';
@@ -2293,17 +2301,27 @@
        titres — moins qu'une réponse ne fait bouger un score. */
     const awards = [];
     let awardCat = 'Les qualités';
+    let awardHow = '';   // ce que mesure le titre, affiché sous la raison
     const titleCount = new Map(people.map(p => [p, 0]));
     const give = (title, sub, ranked, fmt, text, nextWord) => {
       if (ranked.length < 2) return;
       // à trois points près, c'est une égalité : le titre revient à qui en a le moins
       const num = x => parseFloat(fmt(x.v));
-      const tied = ranked.filter(x => num(ranked[0]) - num(x) <= 3);
+      // l'écart se mesure dans l'ordre du classement (pour « le cas à part », plus bas est meilleur)
+      const tied = ranked.filter(x => Math.abs(num(ranked[0]) - num(x)) <= 3);
       const w = tied.reduce((a, b) => (titleCount.get(b.p) < titleCount.get(a.p) ? b : a));
       const next = ranked.find(x => x.p !== w.p);
+      // quand le titre ne va pas au score le plus haut, on dit pourquoi
+      const best = ranked[0];
+      const tie = best.p !== w.p
+        ? (() => {
+          const d = Math.abs(num(best) - num(w));
+          return `${best.p.name} était en tête avec ${fmt(best.v)}${d ? ` (${d} point${d > 1 ? 's' : ''} d'écart)` : ' (le même score)'} : à trois points près, on considère que c'est une égalité, et le titre revient à qui en avait le moins jusque-là (${w.p.name} : ${titleCount.get(w.p)}, ${best.p.name} : ${titleCount.get(best.p)}).`;
+        })()
+        : '';
       titleCount.set(w.p, titleCount.get(w.p) + 1);
-      const close = num(next) >= num(w);
-      awards.push({ cat: awardCat, title, sub, p: w.p, score: String(fmt(w.v)), text: text(w), next: `${close ? 'à un cheveu de' : nextWord || 'devant'} ${next.p.name} (${fmt(next.v)})` });
+      const close = ranked.indexOf(next) < ranked.indexOf(w);   // le suivant était en fait devant au classement
+      awards.push({ cat: awardCat, title, sub, p: w.p, score: String(fmt(w.v)), text: text(w), how: awardHow, tie, next: `${close ? 'à un cheveu de' : nextWord || 'devant'} ${next.p.name} (${fmt(next.v)})` });
     };
     const rank = fn => people.map((p, i) => ({ p, v: fn(p, i) }))
       .filter(x => x.v !== null && x.v !== undefined && !Number.isNaN(x.v))
@@ -2316,11 +2334,13 @@
         .filter(x => x.q && x.q.score !== null)
         .map(x => ({ p: x.p, v: x.q.score, q: x.q }))
         .sort((x, y) => y.v - x.v);
+      awardHow = `Le score de la qualité « ${q.name.toLowerCase()} », qui combine ${joinFr(q.comps.map(compName))}.`;
       give(q.award, q.sub, ranked, v => pct(v), w => `Parce que : ${qualityWhy(w.p.r, w.q)}.`);
     });
 
     // Style de réponse et place dans le groupe
     awardCat = 'Le style et la place dans le groupe';
+    awardHow = '';
     give("Le plus tranché", "pousse ses curseurs à fond", rank(p => p.r.stats.radical), asPct,
       x => `${pct(x.v)} % de ses curseurs sont aux extrêmes : avec ${x.p.me ? 'toi' : x.p.name}, on sait à quoi s'en tenir.`);
     give("Le plus nuancé", "pèse le pour et le contre", rank(p => p.r.stats.nuance), asPct,
@@ -2432,6 +2452,8 @@
         <p class="award-sub">${esc(a.sub)}</p>
         <div class="award-who">${who(a.p)}<span class="award-score">${esc(String(a.score))}</span></div>
         <p class="award-text">${esc(a.text)}</p>
+        ${a.tie ? `<p class="award-tie">${esc(a.tie)}</p>` : ''}
+        ${a.how ? `<p class="award-how">${esc(a.how)}</p>` : ''}
         <p class="award-next">${esc(a.next)}</p>
       </article>`).join('')).join('');
 
@@ -5218,19 +5240,19 @@
 
   const ROLES_CLOSE = [
     { id: 'pilier', name: 'Le pilier', desc: 'Quand ça tangue, c\'est vers toi qu\'on se tourne : tu restes calme, tu ne juges pas, et tu es encore là le lendemain.',
-      f: r => [[1 - r.rel.anx, 1], [r.disc ? r.disc.ste : 0.5, 1], [r.rel.par, 0.6], [1 - r.rel.exp, 0.4]] },
+      f: r => [[1 - r.rel.anx, 1, 'serein quand on s\'éloigne'], [r.disc ? r.disc.ste : 0.5, 1, 'calme (vert au DISC)'], [r.rel.par, 0.6, 'pardonne vite'], [1 - r.rel.exp, 0.4, 'garde son calme émotionnel']] },
     { id: 'confident', name: 'Le confident', desc: 'On te raconte ce qu\'on ne dit à personne. Tu écoutes vraiment, tu gardes les secrets, et tu te souviens de ce qui compte pour chacun.',
-      f: r => [[1 - r.rel.avo, 1], [r.rel.coo, 0.8], [r.found.care, 1], [1 - r.rel.cer, 0.6]] },
+      f: r => [[1 - r.rel.avo, 1, 'aime la proximité'], [r.rel.coo, 0.8, 'tient au lien'], [r.found.care, 1, 'sensible à la souffrance des autres'], [1 - r.rel.cer, 0.6, 'quelques amis très proches']] },
     { id: 'orga', name: 'L\'organisateur', desc: 'Les anniversaires, les week-ends, les retrouvailles : sans toi, la moitié ne se ferait jamais. Tu tiens le calendrier affectif de tout le monde.',
-      f: r => [[r.disc ? r.disc.con : 0.5, 0.8], [(r.axes.ord + 1) / 2, 1], [r.rel.cer, 0.8], [r.rel.fam, 0.4]] },
+      f: r => [[r.disc ? r.disc.con : 0.5, 0.8, 'méthodique (bleu au DISC)'], [(r.axes.ord + 1) / 2, 1, 'structuré'], [r.rel.cer, 0.8, 'entouré'], [r.rel.fam, 0.4, 'attaché à la famille']] },
     { id: 'ambiance', name: 'Le boute-en-train', desc: 'Tu mets l\'ambiance, tu fais rire, tu embarques tout le monde. Une soirée sans toi, ça se sent.',
-      f: r => [[r.disc ? r.disc.inf : 0.5, 1], [r.rel.exp, 1], [r.rel.cer, 1], [1 - r.rel.avo, 0.4]] },
+      f: r => [[r.disc ? r.disc.inf : 0.5, 1, 'expansif (jaune au DISC)'], [r.rel.exp, 1, 'montre ses émotions'], [r.rel.cer, 1, 'entouré'], [1 - r.rel.avo, 0.4, 'aime la proximité']] },
     { id: 'mediateur', name: 'Le médiateur', desc: 'Quand deux proches se fâchent, c\'est toi qui recolles les morceaux, sans prendre parti. Tu comprends chacun, et chacun le sent.',
-      f: r => [[r.rel.coo, 1], [1 - Math.abs(r.rel.ass - 0.55) * 2, 0.6], [(1 - r.axes.cfl) / 2, 1], [r.rel.par, 0.6]] },
+      f: r => [[r.rel.coo, 1, 'tient au lien'], [1 - Math.abs(r.rel.ass - 0.55) * 2, 0.6, 's\'affirme sans écraser'], [(1 - r.axes.cfl) / 2, 1, 'évite les conflits'], [r.rel.par, 0.6, 'pardonne vite']] },
     { id: 'libre', name: 'L\'électron libre', desc: 'Tu vas et tu viens, tu tiens à ta liberté — et c\'est justement pour ça qu\'on savoure chaque moment passé avec toi.',
-      f: r => [[r.rel.avo, 1], [r.values ? r.values.vsd : 0.5, 0.8], [1 - r.rel.fam, 0.8], [r.values ? r.values.vst : 0.5, 0.5]] },
+      f: r => [[r.rel.avo, 1, 'a besoin d\'air'], [r.values ? r.values.vsd : 0.5, 0.8, 'tient à son autonomie'], [1 - r.rel.fam, 0.8, 'les amis avant la famille'], [r.values ? r.values.vst : 0.5, 0.5, 'aime la nouveauté']] },
     { id: 'protecteur', name: 'Le protecteur', desc: 'Personne ne touche aux tiens. Tu défends ta famille et tes amis bec et ongles, parfois avant même qu\'ils le demandent.',
-      f: r => [[r.rel.ass, 1], [r.rel.fam, 1], [r.found.loy, 1], [r.rel.anx, 0.3]] },
+      f: r => [[r.rel.ass, 1, 's\'affirme'], [r.rel.fam, 1, 'la famille d\'abord'], [r.found.loy, 1, 'loyal'], [r.rel.anx, 0.3, 'veille sur les siens']] },
   ];
   function roleCloseOf(r) {
     return roleScores(r)[0].x;
@@ -5239,8 +5261,14 @@
     return ROLES_CLOSE.map(x => {
       const parts = x.f(r);
       const w = parts.reduce((s, p) => s + p[1], 0);
-      return { x, s: parts.reduce((s, p) => s + p[0] * p[1], 0) / w };
+      return { x, s: parts.reduce((s, p) => s + p[0] * p[1], 0) / w, parts };
     }).sort((a, b) => b.s - a.s);
+  }
+  // les deux ou trois raisons les plus fortes d'un rôle
+  function roleWhy(r, role) {
+    const sc = roleScores(r).find(y => y.x === role);
+    return sc.parts.slice().sort((a, b) => b[0] * b[1] - a[0] * a[1]).filter(p => p[0] >= 0.55).slice(0, 3)
+      .map(p => `${p[2]} (${pct(p[0])})`);
   }
 
   /* Deux cartes à deux dimensions : l'attachement (besoin d'espace → , besoin d'être rassuré ↑)
@@ -5448,17 +5476,28 @@
   /* Le cercle et les autres : des records lisibles d'un coup d'œil, puis une fiche par
      personne (ses trois styles et six jauges), ce qui fait plaisir à chacun et le climat. */
   const REL_RECORDS = [
-    { t: 'Le plus loyal', sub: 'fidèle aux siens quoi qu\'il arrive', v: p => p.r.found.loy },
-    { t: 'Le plus en demande', sub: 'a besoin de signes d\'affection', v: p => p.r.rel.anx },
-    { t: 'Le plus indépendant', sub: 'a besoin d\'air, même avec ceux qu\'il aime', v: p => p.r.rel.avo },
-    { t: 'Le cœur sur la main', sub: 'montre tout ce qu\'il ressent', v: p => p.r.rel.exp },
-    { t: 'Le plus secret', sub: 'garde ses peines pour lui', v: p => 1 - p.r.rel.exp },
-    { t: 'Celui qui pardonne tout', sub: 'tourne la page le plus vite', v: p => p.r.rel.par },
-    { t: 'Celui qui n\'oublie pas', sub: 'pardonne le moins vite', v: p => 1 - p.r.rel.par },
-    { t: 'La famille avant tout', sub: 'les siens d\'abord', v: p => p.r.rel.fam },
-    { t: 'Le plus entouré', sub: 'se fait des amis partout', v: p => p.r.rel.cer },
-    { t: 'Le franc-parler', sub: 's\'affirme le plus dans un désaccord', v: p => p.r.rel.ass },
-    { t: 'Le gardien de la paix', sub: 'tient le plus à se quitter en bons termes', v: p => p.r.rel.coo },
+    { t: 'Le plus loyal', sub: 'fidèle aux siens quoi qu\'il arrive', v: p => p.r.found.loy,
+      how: 'le fondement « loyauté » de sa boussole morale : la fidélité au groupe et la fierté d\'en faire partie' },
+    { t: 'Le plus en demande', sub: 'a besoin de signes d\'affection', v: p => p.r.rel.anx,
+      how: 'ses réponses sur l\'inquiétude quand un proche tarde à répondre, le besoin qu\'on lui confirme qu\'on tient à lui, la peur qu\'on se lasse de lui' },
+    { t: 'Le plus indépendant', sub: 'a besoin d\'air, même avec ceux qu\'il aime', v: p => p.r.rel.avo,
+      how: 'ses réponses sur l\'envie de ne pas dépendre des autres, le malaise à se confier et le besoin d\'air quand une relation devient fusionnelle' },
+    { t: 'Le cœur sur la main', sub: 'montre tout ce qu\'il ressent', v: p => p.r.rel.exp,
+      how: 'ses réponses sur le fait de montrer ce qu\'il ressent sans filtre et de se confier facilement' },
+    { t: 'Le plus secret', sub: 'garde ses peines pour lui', v: p => 1 - p.r.rel.exp,
+      how: 'ses réponses sur le fait de garder ses peines pour lui, pour ne pas inquiéter les autres' },
+    { t: 'Celui qui pardonne tout', sub: 'tourne la page le plus vite', v: p => p.r.rel.par,
+      how: 'ses réponses sur le fait de pardonner vite quand un proche le blesse, et de ne pas garder de rancune' },
+    { t: 'Celui qui n\'oublie pas', sub: 'pardonne le moins vite', v: p => 1 - p.r.rel.par,
+      how: 'ses réponses sur les blessures qu\'il n\'a jamais vraiment pardonnées' },
+    { t: 'La famille avant tout', sub: 'les siens d\'abord', v: p => p.r.rel.fam,
+      how: 'ses réponses sur la famille qui passe avant presque tout, plutôt que les amis' },
+    { t: 'Le plus entouré', sub: 'se fait des amis partout', v: p => p.r.rel.cer,
+      how: 'ses réponses sur l\'envie d\'être entouré de beaucoup de monde plutôt que de quelques amis très proches' },
+    { t: 'Le franc-parler', sub: 's\'affirme le plus dans un désaccord', v: p => p.r.rel.ass,
+      how: 'ses réponses sur le fait de dire clairement son désaccord à un proche, même si ça crée une tension' },
+    { t: 'Le gardien de la paix', sub: 'tient le plus à se quitter en bons termes', v: p => p.r.rel.coo,
+      how: 'ses réponses sur l\'envie de se quitter en bons termes et de chercher une solution qui convienne aux deux' },
   ];
   const REL_METERS = [
     { k: 'Loyauté', v: r => r.found.loy, c: '#f8961e' },
@@ -5492,7 +5531,8 @@
       <div class="grec">
         <p class="grec-t">${esc(x.t)}</p>
         <p class="grec-who">${whoChip(w.p)}<b>${pct(w.v)}</b></p>
-        <p class="grec-sub">${esc(x.sub)}${next ? ` · puis ${esc(next.p.name)} (${pct(next.v)})` : ''}</p>
+        <p class="grec-sub">${esc(x.sub)}</p>
+        <p class="grec-why">D'après ${esc(x.how)}.${next ? ` ${pct(w.v) - pct(next.v) > 0 ? `${pct(w.v) - pct(next.v)} point${pct(w.v) - pct(next.v) > 1 ? 's' : ''} devant ${esc(next.p.name)} (${pct(next.v)})` : `À égalité avec ${esc(next.p.name)}, qui avait déjà plus de records`}.` : ''}</p>
       </div>`).join('');
 
     // un rôle différent pour chacun (tant qu'il y en a) : le plus net est servi en premier
@@ -5509,6 +5549,9 @@
       free.delete(best.p);
     }
 
+    const firstRole = new Map(withRel.map(p => [p, table.get(p)[0].x]));
+    const roleHolder = role => { const h = withRel.find(q => roleOf.get(q) === role); return h ? h.name : 'quelqu\'un d\'autre'; };
+
     // une fiche par personne
     const lw = x => (x !== null && x !== undefined ? LOVE_WAYS[x] : null);
     $('g-rel-people').innerHTML = withRel.map(p => {
@@ -5518,12 +5561,17 @@
         <header>${whoChip(p)}<span class="grel-role">${esc(role.name)}</span></header>
         <div class="grel-tags">
           <span class="grel-tag" style="--c:${a.color}" title="${esc(a.tag)}">${esc(a.name)}</span>
-          <span class="grel-tag" style="--c:${c.color}" title="${esc(c.tag)}">${esc(c.name.replace(/^(Le |L')/, ''))}</span>
+          <span class="grel-tag" style="--c:${c.color}" title="${esc(c.tag)}">${esc(cap(c.name.replace(/^(Le |L')/, '')))}</span>
         </div>
         <div class="grel-meters">${REL_METERS.map(m => {
           const v = pct(m.v(p.r));
           return `<div class="grel-m${v >= 75 ? ' is-high' : v <= 25 ? ' is-low' : ''}" style="--c:${m.c}"><span class="grel-m-k">${esc(m.k)}</span><span class="grel-m-bar"><i style="width:${v}%"></i></span><span class="grel-m-v">${v}</span></div>`;
         }).join('')}</div>
+        <ul class="grel-why">
+          <li><b>${esc(a.name)}</b> : besoin d'être rassuré ${pct(rel.anx)} (${rel.anx >= 0.5 ? 'haut' : 'bas'}), besoin d'espace ${pct(rel.avo)} (${rel.avo >= 0.5 ? 'haut' : 'bas'}).</li>
+          <li><b>${esc(cap(c.name.replace(/^(Le |L')/, '')))}</b> : s'affirme ${pct(rel.ass)}, tient au lien ${pct(rel.coo)}.</li>
+          <li><b>${esc(role.name)}</b> : ${esc(joinFr(roleWhy(p.r, role)) || 'un ensemble de petites tendances')}${firstRole.get(p) !== role ? ` — son rôle le plus net, « ${esc(firstRole.get(p).name.toLowerCase())} », revenait déjà à ${esc(roleHolder(firstRole.get(p)))}` : ''}.</li>
+        </ul>
         ${g || w ? `<p class="grel-love">${g ? `<span title="ce qu'il donne">${g.icon} donne ${esc(g.label.toLowerCase())}</span>` : ''}${w ? `<span title="ce qui le touche">${w.icon} touché par ${esc(w.label.toLowerCase())}</span>` : ''}</p>` : ''}
       </article>`;
     }).join('');
@@ -6128,7 +6176,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 58;
+  const BUILD = 59;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
