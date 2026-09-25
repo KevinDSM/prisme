@@ -2511,7 +2511,7 @@
         <p class="award-title">${esc(a.title)}</p>
         <p class="award-sub">${esc(a.sub)}</p>
         <div class="award-who">${who(a.p)}<span class="award-score">${esc(String(a.score))}</span></div>
-        ${AWARD_SAY[a.title] ? `<p class="award-say">${esc(AWARD_SAY[a.title](a.p.name))}</p>` : ''}
+        ${AWARD_SAY[a.title] ? `<p class="award-say">${esc(AWARD_SAY[a.title](cap(a.p.name)))}</p>` : ''}
         <p class="award-text">${esc(a.text)}</p>
         ${a.tie ? `<p class="award-tie">${esc(a.tie)}</p>` : ''}
         ${a.how ? `<p class="award-how">${esc(a.how)}</p>` : ''}
@@ -4429,7 +4429,7 @@
      laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
   const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow',
     'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions', 'emojis',
-    'planets', 'colors', 'objects', 'brands', 'tales', 'cities', 'clothes'];
+    'planets', 'colors', 'objects', 'brands', 'tales', 'cities', 'clothes', 'departments', 'drugs'];
   let extrasReady = false, extrasPromise = null;
 
   function initExtras() {
@@ -4653,6 +4653,7 @@
     renderGovernment(people, 'g-');
     renderGroupSit(people);
     renderGroupRel(people);
+    renderGroupDuos(people);
     renderGroupCast(people, 'g-');
     renderGroupPick(people, 'g-', 'animal');
     renderGroupPick(people, 'g-', 'film');
@@ -5569,6 +5570,140 @@
     { k: 'Famille d\'abord', v: r => r.rel.fam, c: '#b08900' },
   ];
 
+
+  /* Étincelles et accords : pour chaque paire du cercle, un score de dispute (idées opposées,
+     surtout sur les sujets de cœur ; deux caractères qui ne lâchent rien ; valeurs qui tirent en
+     sens inverse ; styles de dispute qui se heurtent) et un score d'entente (affinité, sujets
+     d'accord, valeurs communes, l'un donne ce qui touche l'autre). On garde les duos les plus nets. */
+  function duoMetrics(p, q) {
+    const A = p.r, B = q.r;
+    const pol = sharedAxes(A, B).filter(x => x.group === 'politique');
+    const heart = id => A.heartAxes.includes(id) || B.heartAxes.includes(id);
+    const fight = pol.filter(x => A.axes[x.id] * B.axes[x.id] < 0 && Math.abs(A.axes[x.id]) >= 0.3 && Math.abs(B.axes[x.id]) >= 0.3)
+      .map(x => ({ x, w: Math.abs(A.axes[x.id] - B.axes[x.id]) + (heart(x.id) ? 0.3 : 0), heart: heart(x.id) }))
+      .sort((u, v) => v.w - u.w);
+    const agree = pol.filter(x => A.axes[x.id] * B.axes[x.id] > 0 && Math.min(Math.abs(A.axes[x.id]), Math.abs(B.axes[x.id])) >= 0.35)
+      .map(x => ({ x, w: Math.min(Math.abs(A.axes[x.id]), Math.abs(B.axes[x.id])) + (heart(x.id) ? 0.2 : 0) }))
+      .sort((u, v) => v.w - u.w);
+    const ideaGap = pol.length ? meanOf(pol.map(x => Math.abs(A.axes[x.id] - B.axes[x.id]))) / 2 : 0;
+    const cfl = r => (r.known.has('cfl') ? (r.axes.cfl + 1) / 2 : 0.5);
+    const fire = Math.min(cfl(A), cfl(B)) * 0.6 + Math.min(A.traits.dog, B.traits.dog) * 0.4;
+    // les valeurs : ouverture contre conservation, affirmation contre dépassement de soi
+    let valGap = 0, vA = null, vB = null;
+    const pa = A.values && valueProfile(A), pb = B.values && valueProfile(B);
+    if (pa && pb) {
+      const axis = (r, x, y) => meanOf(VALUES.filter(v => v.pole === x).map(v => r.values[v.id])) - meanOf(VALUES.filter(v => v.pole === y).map(v => r.values[v.id]));
+      valGap = (Math.abs(axis(A, 'ouv', 'cnt') - axis(B, 'ouv', 'cnt')) + Math.abs(axis(A, 'aff', 'dep') - axis(B, 'aff', 'dep'))) / 2;
+      vA = pa.ranked[0]; vB = pb.ranked[0];
+    }
+    let styleClash = 0, styleWhy = '';
+    if (A.rel && B.rel) {
+      const ca = conflictOf(A.rel), cb = conflictOf(B.rel);
+      const ids = [ca.id, cb.id].sort().join('+');
+      if (ids === 'defend+defend') { styleClash = 0.25; styleWhy = 'deux défenseurs, qui ne cèdent pas'; }
+      else if (ids === 'avoid+defend') { styleClash = 0.18; styleWhy = 'l\'un fonce, l\'autre esquive'; }
+      else if (ids === 'defend+yield') { styleClash = 0.08; styleWhy = 'l\'un s\'affirme, l\'autre cède et accumule'; }
+    }
+    const aff = affinityBetween(A, B).total;
+    const sameTop = vA && vB && vA.id === vB.id ? vA : null;
+    const lw = x => (x !== null && x !== undefined ? LOVE_WAYS[x] : null);
+    const giveAB = A.rel && B.rel && A.rel.give !== null && A.rel.give === B.rel.want ? lw(A.rel.give) : null;
+    const giveBA = A.rel && B.rel && B.rel.give !== null && B.rel.give === A.rel.want ? lw(B.rel.give) : null;
+    const bothCoo = A.rel && B.rel ? Math.min(A.rel.coo, B.rel.coo) : 0.5;
+    const clash = ideaGap * 1.1 + fight.slice(0, 3).reduce((t, f) => t + f.w, 0) * 0.08 + fire * 0.35 + valGap * 0.6 + styleClash;
+    const harmony = aff + agree.slice(0, 3).reduce((t, f) => t + f.w, 0) * 0.05 + (sameTop ? 0.06 : 0) + (giveAB ? 0.05 : 0) + (giveBA ? 0.05 : 0) + (bothCoo - 0.5) * 0.1 - fire * 0.08;
+    return { p, q, fight, agree, ideaGap, fire, valGap, vA, vB, styleClash, styleWhy, aff, sameTop, giveAB, giveBA, clash, harmony };
+  }
+
+  function pickDuos(list, key, k) {
+    const used = new Map();
+    const out = [];
+    list.slice().sort((a, b) => b[key] - a[key]).forEach(d => {
+      if (out.length >= k) return;
+      // pas trois fois la même personne : on veut entendre parler de tout le cercle
+      if ((used.get(d.p) || 0) >= 2 || (used.get(d.q) || 0) >= 2) return;
+      out.push(d);
+      used.set(d.p, (used.get(d.p) || 0) + 1);
+      used.set(d.q, (used.get(d.q) || 0) + 1);
+    });
+    return out;
+  }
+
+  const pos = (r, x) => nuancedLabel(x, r.axes[x.id]).toLowerCase();
+  const twoThemes = list => list.length > 1 ? `${theme(list[0].x.id)} comme sur ${theme(list[1].x.id)}` : theme(list[0].x.id);
+  const heartOf = (d, f) => { const who = [d.p, d.q].filter(x => x.r.heartAxes.includes(f.x.id)).map(x => x.name); return who.length ? `un sujet qui tient à cœur à ${joinFr(who)}` : ''; };
+  function clashSay(d, i) {
+    const a = cap(d.p.name), b = cap(d.q.name);
+    const f0 = d.fight[0], heart = f0 ? heartOf(d, f0) : '';
+    const ideas = [
+      () => `Entre ${a} et ${b}, un dîner peut vite tourner au grand débat : sur ${twoThemes(d.fight)}, tout les oppose${heart ? ` — et c'est ${heart}` : ''}.`,
+      () => `Mettez ${a} et ${b} à la même table et lancez le sujet de ${theme(f0.x.id)} : la soirée sera animée, et pas forcément dans le calme${heart ? ` (c'est ${heart})` : ''}.`,
+      () => `${a} et ${b} ont chacun raison, chacun de son côté : sur ${twoThemes(d.fight)}, leurs curseurs sont aux antipodes${heart ? `, et c'est ${heart}` : ''}.`,
+    ];
+    const parts = [
+      { ok: true, k: d.ideaGap * 1.1 + (d.fight[0] ? d.fight[0].w * 0.2 : 0), t: () => d.fight.length
+        ? ideas[i % ideas.length]()
+        : `${a} et ${b} ne voient pas le monde avec les mêmes lunettes : sans être aux antipodes, l'accord reste rare.` },
+      { ok: true, k: d.fire * 0.8, t: () => `${a} et ${b} ont le même défaut, et c'est bien le problème : personne ne lâche le premier. Une broutille peut vite devenir une affaire de principe.` },
+      { ok: !!(d.vA && d.vB && d.vA.id !== d.vB.id), k: d.valGap * 1.2, t: () => `${a} vit pour ${d.vA.short}, ${b} tient d'abord à ${d.vB.short} : ce ne sont pas les idées qui frottent, c'est ce qui compte dans la vie.` },
+      { ok: !!d.styleWhy, k: d.styleClash * 2.2, t: () => `Quand ça coince entre ${a} et ${b}, ${d.styleWhy} : c'est dans la façon de se disputer que ça dérape, plus que sur le fond.` },
+    ].filter(x => x.ok);
+    return parts.sort((u, v) => v.k - u.k)[0].t();
+  }
+  function clashWhy(d) {
+    const A = d.p.r, B = d.q.r;
+    const out = [`Écart d'idées : ${pct(d.ideaGap)} sur 100.`];
+    if (d.fight.length) out.push(`Sujets qui fâchent : ${d.fight.slice(0, 3).map(f => `${theme(f.x.id)} (${d.p.name} : ${pos(A, f.x)} ; ${d.q.name} : ${pos(B, f.x)})${f.heart ? ' ❤' : ''}`).join(' · ')}.`);
+    if (d.fire >= 0.55) out.push(`Deux tempéraments qui aiment la confrontation et doutent peu (${pct(d.fire)} sur 100).`);
+    if (d.styleWhy) out.push(`Façon de se disputer : ${d.styleWhy}.`);
+    if (d.agree.length) out.push(`Terrain neutre pour se réconcilier : ${theme(d.agree[0].x.id)}, où l'accord est net.`);
+    return out;
+  }
+  function harmonySay(d, i) {
+    const a = cap(d.p.name), b = cap(d.q.name);
+    const same = [
+      () => `${a} et ${b} pourraient refaire le monde jusqu'à deux heures du matin sans jamais se fâcher : même regard sur ${twoThemes(d.agree)}.`,
+      () => `Entre ${a} et ${b}, les discussions finissent souvent par « exactement ! » : sur ${twoThemes(d.agree)}, c'est le même avis, au mot près.`,
+      () => `${a} et ${b} formeraient un duo redoutable : sur ${twoThemes(d.agree)}, pas besoin de se convaincre, il suffit d'avancer ensemble.`,
+    ];
+    let t = d.agree.length >= 2
+      ? same[i % same.length]()
+      : d.sameTop
+        ? `${a} et ${b} tiennent aux mêmes choses dans la vie (${d.sameTop.label.toLowerCase()}) : le genre d'entente qui résiste à tout.`
+        : `${a} et ${b} fonctionnent sur la même longueur d'onde : pas besoin de longues explications.`;
+    if (d.giveAB && d.giveBA) t += ` Et chacun donne naturellement ce qui touche l'autre : un duo rare.`;
+    else if (d.giveAB) t += ` Bonus : ${a} donne naturellement ce qui touche le plus ${b} (${d.giveAB.label.toLowerCase()}).`;
+    else if (d.giveBA) t += ` Bonus : ${b} donne naturellement ce qui touche le plus ${a} (${d.giveBA.label.toLowerCase()}).`;
+    return t;
+  }
+  function harmonyWhy(d) {
+    const A = d.p.r;
+    const out = [`Affinité : ${pct(d.aff)} %.`];
+    if (d.agree.length) out.push(`D'accord sur : ${d.agree.slice(0, 3).map(f => `${theme(f.x.id)} (${pos(A, f.x)})`).join(' · ')}.`);
+    if (d.sameTop) out.push(`Même valeur en tête : ${d.sameTop.label.toLowerCase()}.`);
+    if (d.fire < 0.4) out.push('Deux tempéraments qui cherchent l\'accord plutôt que la confrontation.');
+    return out;
+  }
+
+  function renderGroupDuos(people) {
+    const card = $('g-duos-card');
+    card.hidden = people.length < 3;
+    if (people.length < 3) return;
+    const all = [];
+    for (let i = 0; i < people.length; i++) for (let j = i + 1; j < people.length; j++) all.push(duoMetrics(people[i], people[j]));
+    const k = people.length >= 6 ? 3 : people.length >= 4 ? 2 : 1;
+    const clash = pickDuos(all, 'clash', k);
+    const harm = pickDuos(all.filter(d => !clash.includes(d)), 'harmony', k);
+    const card1 = (d, cls, sym, say, why) => `
+      <article class="gduo ${cls}">
+        <p class="gduo-who">${whoChip(d.p)}<span class="gduo-sym" aria-hidden="true">${sym}</span>${whoChip(d.q)}</p>
+        <p class="gduo-say">${esc(say)}</p>
+        <ul class="gduo-why">${why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+      </article>`;
+    $('g-duos-clash').innerHTML = clash.map((d, i) => card1(d, 'is-clash', '⚡', clashSay(d, i), clashWhy(d))).join('');
+    $('g-duos-harmony').innerHTML = harm.map((d, i) => card1(d, 'is-harmony', '♥', harmonySay(d, i), harmonyWhy(d))).join('');
+  }
+
   // le portrait d'une personne dans le cercle, au prénom
   const ATTACH_SAY = {
     secure: n => `${n} aime sans s'accrocher : on peut s'éloigner quelques jours, rien ne se casse.`,
@@ -5616,7 +5751,7 @@
       <div class="grec">
         <p class="grec-t">${esc(x.t)}</p>
         <p class="grec-who">${whoChip(w.p)}<b>${pct(w.v)}</b></p>
-        <p class="grec-say">${esc(x.say(w.p.name))}</p>
+        <p class="grec-say">${esc(x.say(cap(w.p.name)))}</p>
         <p class="grec-why">D'après ${esc(x.how)}.${next ? ` ${pct(w.v) - pct(next.v) > 0 ? `${pct(w.v) - pct(next.v)} point${pct(w.v) - pct(next.v) > 1 ? 's' : ''} devant ${esc(next.p.name)} (${pct(next.v)})` : `À égalité avec ${esc(next.p.name)}, qui avait déjà plus de records`}.` : ''}</p>
       </div>`).join('');
 
@@ -5644,7 +5779,7 @@
       const g = lw(rel.give), w = lw(rel.want);
       return `<article class="grel-person" style="--pc:${p.color}">
         <header>${whoChip(p)}<span class="grel-role">${esc(role.name)}</span></header>
-        <p class="grel-say">${esc([ROLE_SAY[role.id](p.name), ATTACH_SAY[a.id](p.name), CONFLICT_SAY[c.id](p.name), w ? `Pour faire plaisir à ${p.name} : ${w.desc}.` : ''].filter(Boolean).join(' '))}</p>
+        <p class="grel-say">${esc([ROLE_SAY[role.id](cap(p.name)), ATTACH_SAY[a.id](cap(p.name)), CONFLICT_SAY[c.id](cap(p.name)), w ? `Pour faire plaisir à ${p.name} : ${w.desc}.` : ''].filter(Boolean).join(' '))}</p>
         <div class="grel-tags">
           <span class="grel-tag" style="--c:${a.color}" title="${esc(a.tag)}">${esc(a.name)}</span>
           <span class="grel-tag" style="--c:${c.color}" title="${esc(c.tag)}">${esc(cap(c.name.replace(/^(Le |L')/, '')))}</span>
@@ -5749,6 +5884,10 @@
       get items() { return (window.PRISME_CITIES || { CITIES: [] }).CITIES; } },
     { key: 'vetement', title: 'Un vêtement', unit: 'vêtements', like: 'comme lui', k: 'Tu serais', circle: 'La garde-robe du cercle',
       get items() { return (window.PRISME_CLOTHES || { CLOTHES: [] }).CLOTHES; } },
+    { key: 'departement', title: 'Un département français', unit: 'départements', like: 'comme lui', k: 'Tu serais', circle: 'La carte de France du cercle',
+      get items() { return (window.PRISME_DEPTS || { DEPARTMENTS_FR: [] }).DEPARTMENTS_FR; } },
+    { key: 'drogue', title: 'Une drogue (du quotidien)', unit: 'petites addictions', like: 'comme elle', k: 'Tu serais', circle: 'Les petites addictions du cercle',
+      get items() { return (window.PRISME_DRUGS || { DRUGS: [] }).DRUGS; } },
   ];
 
   function renderMorePicks(cur) {
@@ -6268,7 +6407,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 63;
+  const BUILD = 65;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

@@ -2492,3 +2492,15 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .award .award-text { font-size: 13px; color: var(--ink-3); }
 .grec-say { margin: 6px 0 0 !important; font-family: var(--font-display); font-size: 15px; line-height: 1.45; color: var(--ink); }
 .grel-say { margin: 8px 0 4px; font-family: var(--font-display); font-size: 15.5px; line-height: 1.5; color: var(--ink); }
+
+/* étincelles et accords */
+.gduos { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.gduo { padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(var(--bg-rgb), 0.5); }
+.gduo.is-clash { border-top: 4px solid #e76f51; }
+.gduo.is-harmony { border-top: 4px solid #2fb67c; }
+.gduo-who { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 16px; }
+.gduo-sym { font-size: 18px; }
+.gduo.is-clash .gduo-sym { color: #e76f51; }
+.gduo.is-harmony .gduo-sym { color: #2fb67c; }
+.gduo-say { margin: 10px 0 8px; font-family: var(--font-display); font-size: 17px; line-height: 1.45; color: var(--ink); }
+.gduo-why { margin: 0; padding: 8px 0 0; border-top: 1px dashed var(--line-2); list-style: none; display: grid; gap: 4px; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
