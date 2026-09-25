@@ -2000,7 +2000,7 @@
     const adj3 = qs.slice(0, 3).map(q => PORTRAIT_Q[q.id][0]);
     const lead = T(`Une personne ${adj3.length === 3 ? `${adj3[0]}, ${adj3[1]} et ${adj3[2]}` : 'singulière'}`
       + (vp && !vp.flat ? `, ${PORTRAIT_V[vp.ranked[0].id][1]}.` : '.'));
-    return { lead, paras };
+    return { lead, paras, ...portraitExtras(r, T, qs, vp) };
   }
 
   /* « Ce qui matche avec… » : les points d'entente de deux personnes, en positif.
@@ -2184,8 +2184,295 @@
       + `<div class="pp-match-out" hidden></div></div>`;
   }
 
+
+  /* ---------------------------------------------------------
+     Le portrait, en pratique : quatre scènes, un mode d'emploi, deux pistes
+     pour grandir. Et dans un cercle : ce qui distingue la personne des autres,
+     et le petit discours qu'on lui porterait.
+     --------------------------------------------------------- */
+  const EXTRA_WANT = {
+    mots: "un message sincère, un compliment précis, un « merci » dit vraiment : les mots comptent plus que les cadeaux",
+    temps: "un moment rien qu'à deux, téléphone rangé : c'est le plus beau des cadeaux",
+    aide: "un coup de main sans qu'il faille le demander : s'occuper de ce qui pèse vaut toutes les déclarations",
+    cadeau: "une petite attention qui prouve qu'on a pensé à {toi} : pas besoin que ce soit cher, il faut que ce soit juste",
+    contact: "être là, en vrai : une présence, une accolade, un moment côte à côte",
+  };
+  const EXTRA_WANT_V = {
+    vsd: "respecter {tes} choix et {ta} liberté, sans jamais décider à {ta} place",
+    vst: "une surprise, une sortie inédite, une expérience qui sort de l'ordinaire",
+    vhe: "un bon repas, un moment de plaisir simple, sans prise de tête",
+    vac: "remarquer {tes} réussites et les fêter comme il se doit",
+    vpo: "reconnaître {ton} influence et demander {ton} avis sur ce qui compte",
+    vse: "de la constance : tenir parole, être là quand on l'a promis",
+    vco: "de la ponctualité, de la politesse et des engagements tenus",
+    vtr: "honorer les traditions et les rendez-vous qui comptent",
+    vbe: "prendre soin de {tes} proches : c'est déjà prendre soin de {toi}",
+    vun: "s'engager pour une cause juste, ou simplement agir avec justice",
+  };
+  const EXTRA_DOWN = {
+    secure: "laisser un peu d'espace, puis être là : un simple signe suffit",
+    anxious: "se manifester vite, même par un petit message : le silence est ce qui inquiète le plus",
+    avoidant: "ne pas insister : proposer sans forcer, et attendre que l'envie de parler revienne",
+    fearful: "être constant et patient : de petits gestes réguliers rassurent plus que les grands discours",
+  };
+  const EXTRA_FIGHT = {
+    build: "revenir en discuter à tête reposée : {s} {veux|veut} une vraie solution, pas un pansement",
+    defend: "laisser redescendre, puis reconnaître ce qui était juste dans {ta} position : la franchise appelle la franchise",
+    yield: "vérifier ce qui a vraiment été ressenti : par amour de la paix, {s} {as|a} peut-être cédé trop vite",
+    avoid: "revenir à froid, sans pression : aborder le sujet calmement, jamais en pleine tempête",
+    deal: "proposer un compromis : chacun fait un pas, et c'est oublié",
+  };
+  const EXTRA_DRIVE = {
+    dom: "un défi, un objectif clair et de l'autonomie pour l'atteindre",
+    inf: "de l'enthousiasme, de la reconnaissance et un projet à partager avec d'autres",
+    ste: "un cadre stable, de la confiance et le sentiment d'être utile",
+    con: "des objectifs précis, du temps pour bien faire et la reconnaissance du travail soigné",
+  };
+
+  function portraitExtras(r, T, qs, vp) {
+    const ax = id => (r.known.has(id) ? r.axes[id] : 0);
+    const rel = r.rel, dp = discProfile(r.disc);
+    const strongest = ids => ids.map(id => ({ id, v: ax(id) })).sort((a, b) => Math.abs(b.v) - Math.abs(a.v))[0];
+
+    // En situation : pour chaque scène, le trait le plus marqué parmi ceux qui comptent
+    const scenes = [];
+    {
+      const k = dp && !dp.balanced ? dp.primary.id : null;
+      const t = k === 'inf' ? "{s} {es|est} au centre des conversations, et {connais|connaît} déjà la moitié de la salle."
+        : k === 'dom' ? "{s} {choisis|choisit} le lieu, {lances|lance} les jeux et {mènes|mène} la danse."
+        : k === 'ste' ? "{s} {veilles|veille} à ce que chacun se sente bien, et {repères|repère} tout de suite qui reste dans son coin."
+        : k === 'con' ? "{s} {préfères|préfère} une vraie conversation à deux aux grands éclats de rire collectifs."
+        : rel && rel.cer >= 0.6 ? "{s} {es|est} dans {ton} élément : plus il y a de monde, mieux c'est."
+        : "{s} {passes|passe} d'un groupe à l'autre avec aisance, à l'écoute de chacun.";
+      scenes.push({ h: 'En soirée', t });
+    }
+    {
+      const x = strongest(['ord', 'cmp', 'rsk']);
+      const t = !x || Math.abs(x.v) < 0.2 ? "{s} {fais|fait} ce qu'il y a à faire, sans bruit et sans faute."
+        : x.id === 'ord' ? (x.v > 0 ? "{s} {arrives|arrive} avec un plan, une liste et une échéance : on peut dormir tranquille." : "{s} {trouves|trouve} des solutions là où personne n'avait regardé, souvent au dernier moment… et ça marche.")
+        : x.id === 'cmp' ? (x.v > 0 ? "{s} {vises|vise} la première place et {tires|tire} toute l'équipe vers le haut." : "{s} {partages|partage} {tes} idées et {fais|fait} passer l'équipe avant la gloire personnelle.")
+        : (x.v > 0 ? "{s} {proposes|propose} l'idée audacieuse que personne n'osait mettre sur la table." : "{s} {repères|repère} le risque que tout le monde avait oublié.");
+      scenes.push({ h: 'Au travail', t });
+    }
+    {
+      const x = strongest(['opn', 'ord', 'tmp']);
+      const t = !x || Math.abs(x.v) < 0.2 ? "{s} {sais|sait} alterner visites et farniente : le bon équilibre."
+        : x.id === 'opn' ? (x.v < 0 ? "{s} {veux|veut} goûter le plat local le plus étrange et {te} perdre dans les ruelles." : "{s} {retrouves|retrouve} avec bonheur {tes} adresses fétiches, celles qu'on ne change pas.")
+        : x.id === 'ord' ? (x.v > 0 ? "L'itinéraire est prêt depuis des semaines, restaurants compris." : "Le programme ? On verra sur place, et c'est souvent là que naissent les meilleurs souvenirs.")
+        : (x.v < 0 ? "{s} {profites|profite} de chaque instant, sans jamais regarder l'heure." : "{s} {as|a} déjà une idée du prochain voyage avant la fin de celui-ci.");
+      scenes.push({ h: 'En voyage', t });
+    }
+    {
+      const x = strongest(['thr', 'aff', 'rsk']);
+      const t = !x || Math.abs(x.v) < 0.2 ? "{s} {prends|prend} un temps pour comprendre, puis {avances|avance} pas à pas."
+        : x.id === 'thr' ? (x.v < 0 ? "{s} {gardes|garde} la tête froide et {rassures|rassure} tout le monde." : "{s} {avais|avait} vu venir le problème, et {as|a} déjà un plan.")
+        : x.id === 'aff' ? (x.v > 0 ? "{s} {analyses|analyse}, {tries|trie} les priorités et {passes|passe} à l'action." : "{s} {penses|pense} d'abord aux gens : qui va bien, qui a besoin d'aide.")
+        : (x.v > 0 ? "{s} {prends|prend} les choses en main sans attendre." : "{s} {évites|évite} les décisions hâtives, et c'est souvent ce qui sauve la situation.");
+      scenes.push({ h: 'Face à une crise', t });
+    }
+
+    // Mode d'emploi
+    const manual = [];
+    const want = rel && rel.want !== null && rel.want !== undefined ? LOVE_WAYS[rel.want] : null;
+    const v1 = vp && !vp.flat ? vp.ranked[0] : null;
+    if (want) manual.push({ h: 'Pour {lui} faire plaisir', t: EXTRA_WANT[want.id] });
+    else if (v1) manual.push({ h: 'Pour {lui} faire plaisir', t: EXTRA_WANT_V[v1.id] });
+    if (rel) manual.push({ h: 'Quand ça ne va pas', t: EXTRA_DOWN[attachOf(rel).id] });
+    else if (r.known.has('thr')) manual.push({ h: 'Quand ça ne va pas', t: ax('thr') > 0 ? "rassurer avec du concret : un plan, des solutions, pas de promesses vagues" : "écouter sans dramatiser : une oreille attentive suffit souvent" });
+    if (rel) manual.push({ h: 'Après une dispute', t: EXTRA_FIGHT[conflictOf(rel).id] });
+    else if (r.known.has('cfl')) manual.push({ h: 'Après une dispute', t: ax('cfl') > 0 ? EXTRA_FIGHT.defend : EXTRA_FIGHT.deal });
+    if (dp && !dp.balanced) manual.push({ h: 'Ce qui {lui} donne de l\'élan', t: EXTRA_DRIVE[dp.primary.id] });
+    const avoid = [];
+    const av = (w, t) => { if (w > 0) avoid.push({ w, t }); };
+    if (rel) {
+      av(rel.anx - 0.55, 'laisser un message sans réponse trop longtemps');
+      av(rel.avo - 0.6, 'mettre la pression ou exiger des comptes');
+      if (conflictOf(rel).id === 'avoid') av(0.1, 'les éclats de voix');
+      if (conflictOf(rel).id === 'defend') av(0.1, 'fuir la discussion : un échange franc vaut mieux');
+    }
+    av(ax('thr') - 0.4, 'les mauvaises surprises de dernière minute');
+    av(ax('ord') - 0.4, 'changer les plans au dernier moment');
+    av(-ax('ord') - 0.45, 'tout planifier à {ta} place');
+    av(r.found.loy - 0.8, 'la moindre trahison, même petite');
+    av(r.found.fair - 0.8, 'les injustices, même envers les autres');
+    av(r.found.lib - 0.8, '{lui} dire quoi faire');
+    if (r.traits) av(r.traits.dog - 0.62, 'contester {tes} convictions de front, sans arguments');
+    av(ax('cmp') - 0.45, 'minimiser {tes} réussites');
+    av(-ax('opn') - 0.5, 'la routine imposée');
+    if (dp && !dp.balanced && dp.primary.id === 'inf') av(0.12, 'ignorer {tes} idées en groupe');
+    if (dp && !dp.balanced && dp.primary.id === 'con') av(0.12, 'le travail bâclé et les approximations');
+    const avTop = avoid.sort((a, b) => b.w - a.w).slice(0, 2).map(x => x.t);
+    if (avTop.length) manual.push({ h: 'À éviter', t: avTop.join(' ; ') });
+
+    // Pistes pour grandir
+    const tips = [];
+    const tp = (w, t) => { if (w > 0) tips.push({ w, t }); };
+    if (rel) {
+      const at = attachOf(rel).id, cf = conflictOf(rel).id;
+      if (at === 'anxious') tp(0.5, "Dire simplement {ton} besoin d'un signe, plutôt que de l'attendre en silence : ceux qui {t'|l'}aiment ne demandent qu'à le savoir.");
+      if (at === 'avoidant') tp(0.5, 'Envoyer un petit signe de temps en temps : ça coûte peu, et ça rassure beaucoup ceux qui tiennent à {toi}.');
+      if (at === 'fearful') tp(0.5, 'Avancer par petits pas, et oser nommer le tiraillement quand il arrive : la confiance se construit aussi comme ça.');
+      if (cf === 'defend') tp(0.45, "Demander « et pour toi, qu'est-ce qui compte là-dedans ? » : ça désamorce beaucoup, sans rien lâcher sur le fond.");
+      if (cf === 'yield') tp(0.45, 'Oser dire, calmement, ce que {s} {veux|veut} vraiment : ceux qui comptent préfèrent le savoir.');
+      if (cf === 'avoid') tp(0.45, 'Repérer les deux ou trois sujets qui ne passeront pas tout seuls, et les aborder à froid.');
+      if (cf === 'build') tp(0.3, 'Garder {ton} énergie pour les désaccords qui comptent vraiment : tous ne méritent pas une heure de discussion.');
+    }
+    if (r.traits) tp(r.traits.dog - 0.6, "S'offrir de temps en temps le plaisir d'écouter vraiment l'autre camp : une conviction qui a résisté à l'examen n'en est que plus forte.");
+    if (r.traits) tp(0.4 - r.traits.inc, "Apprivoiser un peu d'imprévu : les plus beaux souvenirs naissent souvent sans plan.");
+    tp(ax('thr') - 0.35, "S'accorder le droit de lâcher prise : tout ne dépend pas de {toi}, et c'est reposant.");
+    tp(ax('cmp') - 0.45, 'Savourer aussi les victoires des autres : on gagne souvent plus à plusieurs.');
+    tp(-ax('rsk') - 0.45, "Oser, de temps en temps, un petit saut dans l'inconnu : le risque mesuré fait grandir.");
+    tp(ax('rsk') - 0.5, "Prendre parfois le temps de vérifier avant de foncer : l'audace n'en sera que plus efficace.");
+    tp(-ax('aff') - 0.5, 'Prendre une nuit avant les grandes décisions : le cœur a souvent raison, la tête aide à le prouver.');
+    tp(ax('aff') - 0.5, "Laisser parfois parler l'intuition : tout ne se met pas en équation.");
+    const low = qs.length >= 4 ? qs[qs.length - 1] : null;
+    if (low && low.score <= 0.4 && low.id === 'dip') tp(0.3, 'Adoucir parfois la forme sans rien changer au fond : le message passe encore mieux.');
+    if (low && low.score <= 0.4 && low.id === 'ouv') tp(0.3, "Se demander de temps en temps « et si l'autre avait un peu raison ? » : c'est comme ça qu'on devient imbattable.");
+    const tipsTop = tips.sort((a, b) => b.w - a.w).slice(0, 2).map(x => x.t);
+    if (!tipsTop.length) tipsTop.push('Garder du temps pour soi, pour recharger les batteries : les autres en profiteront aussi.');
+    if (tipsTop.length < 2) tipsTop.push('Continuer à cultiver ce qui fait {ta} force : les gens qui {t\'|l\'}entourent en profitent chaque jour.');
+
+    return {
+      scenes: scenes.map(x => ({ h: x.h, t: T(x.t) })),
+      manual: manual.map(x => ({ h: T(x.h), t: T(x.t) })),
+      tips: tipsTop.map(T),
+    };
+  }
+
+  /* Dans ce cercle : là où la personne se démarque vraiment des autres (le maximum
+     ou le minimum du groupe, avec un écart net), et ce qu'elle est seule à avoir. */
+  const UNIQUE_DIMS = [
+    ['axis', 'aff', 'écoute le plus son cœur', 'raisonne le plus avec la tête'],
+    ['axis', 'loc', 'prend le plus sa vie en main', 'accueille le hasard avec le plus de philosophie'],
+    ['axis', 'rsk', 'mesure le plus les risques', 'ose le plus'],
+    ['axis', 'ord', 'improvise le plus volontiers', 'a le plus le goût de l\'organisation'],
+    ['axis', 'thr', 'garde le mieux son calme face aux soucis', 'voit venir les problèmes de plus loin'],
+    ['axis', 'col', 'tient le plus à son indépendance', 'pense le plus « nous » avant « je »'],
+    ['axis', 'tmp', 'vit le plus l\'instant présent', 'voit le plus loin dans le temps'],
+    ['axis', 'cmp', 'a le plus l\'esprit d\'équipe', 'a le plus l\'esprit de compétition'],
+    ['axis', 'opn', 'a le plus soif de nouveauté', 'tient le plus à ses racines'],
+    ['axis', 'eco', 'croit le plus en un État protecteur', 'croit le plus à la liberté d\'entreprendre'],
+    ['axis', 'egl', 'se bat le plus pour l\'égalité', 'croit le plus au mérite'],
+    ['axis', 'soc', 'accueille le plus volontiers les évolutions de la société', 'tient le plus aux traditions'],
+    ['axis', 'idn', 'défend le plus une société ouverte', 'tient le plus à l\'identité du pays'],
+    ['axis', 'aut', 'défend le plus les libertés individuelles', 'réclame le plus d\'ordre'],
+    ['axis', 'env', 'croit le plus à la croissance', 'se bat le plus pour la planète'],
+    ['axis', 'geo', 'croit le plus à l\'ouverture au monde', 'défend le plus la souveraineté'],
+    ['axis', 'jus', 'croit le plus à la réinsertion', 'réclame le plus de fermeté'],
+    ['axis', 'tec', 'croit le plus au progrès technique', 'se méfie le plus de la technologie'],
+    ['rel', 'anx', null, 'a le plus besoin de signes d\'affection'],
+    ['rel', 'avo', null, 'a le plus besoin d\'espace'],
+    ['rel', 'exp', 'garde le plus ses émotions pour soi', 'montre le plus ses émotions'],
+    ['rel', 'par', null, 'pardonne le plus facilement'],
+    ['rel', 'cer', 'choisit ses amis avec le plus de soin', 'a le plus de monde autour de soi'],
+    ['rel', 'fam', null, 'place le plus la famille au centre'],
+    ['disc', 'dom', null, 'fonce le plus'],
+    ['disc', 'inf', null, 'met le plus l\'ambiance'],
+    ['disc', 'ste', null, 'apporte le plus de calme'],
+    ['disc', 'con', null, 'soigne le plus les détails'],
+  ];
+  const UNIQUE_Q = {
+    fia: 'sur qui l\'on peut le plus compter', det: 'lâche le moins facilement', emp: 'ressent le mieux ce que vivent les autres',
+    ouv: 'change le plus volontiers d\'avis quand les faits changent', ind: 'pense le plus par soi-même', lea: 'entraîne le plus les autres',
+    san: 'garde le mieux la tête froide', dip: 'arrondit le mieux les angles', aud: 'ose le plus', rig: 'travaille avec le plus de rigueur',
+    opt: 'voit le plus la vie du bon côté', vig: 'voit le plus vite ce qui cloche', soc: 'aime le plus la compagnie des autres',
+    com: 'se bat le plus pour ses causes', ide: 'rêve le plus d\'un monde meilleur', att: 'tient le plus à ses proches',
+  };
+
+  function circleUnique(p, people) {
+    const group = people.filter(x => x.r);
+    if (group.length < 3) return '';
+    const N = esc(cap(p.name));
+    const val = (r, d) => {
+      if (d[0] === 'axis') return r.known.has(d[1]) ? (r.axes[d[1]] + 1) / 2 : null;
+      if (d[0] === 'rel') return r.rel ? r.rel[d[1]] : null;
+      if (d[0] === 'disc') return r.disc ? r.disc[d[1]] : null;
+      if (d[0] === 'q') { const q = qualityScores(r).find(x => x.id === d[1]); return q ? q.score : null; }
+      return null;
+    };
+    const dims = UNIQUE_DIMS.concat(Object.keys(UNIQUE_Q).map(id => ['q', id, null, UNIQUE_Q[id]]));
+    const cands = [];
+    dims.forEach(d => {
+      const mine = val(p.r, d);
+      if (mine === null) return;
+      const others = group.filter(x => x !== p).map(x => val(x.r, d)).filter(v => v !== null);
+      if (others.length < 2) return;
+      const hi = Math.max(...others), lo = Math.min(...others), mean = meanOf(others);
+      if (d[3] && mine - hi >= 0.06) cands.push({ t: d[3], w: (mine - hi) + (mine - mean) * 0.5, key: d[1] });
+      if (d[2] && lo - mine >= 0.06) cands.push({ t: d[2], w: (lo - mine) + (mean - mine) * 0.5, key: d[1] });
+    });
+    const seen = new Set();
+    const top = cands.sort((a, b) => b.w - a.w).filter(c => (seen.has(c.key) ? false : seen.add(c.key))).slice(0, 3);
+    const facts = [];
+    // ce qu'elle est seule à avoir
+    const famOf = r => rankFamilies(r)[0].name;
+    const myFam = famOf(p.r);
+    if (group.every(x => x === p || famOf(x.r) !== myFam)) facts.push(`la seule personne du cercle proche des ${esc(familyPlural(myFam))}`);
+    const topV = r => { const v = r.values && valueProfile(r); return v && !v.flat ? v.ranked[0] : null; };
+    const myV = topV(p.r);
+    if (myV && group.every(x => x === p || !topV(x.r) || topV(x.r).id !== myV.id)) facts.push(`la seule personne à placer ${PORTRAIT_V[myV.id][0]}${esc(myV.label.toLowerCase())} en tête de ses valeurs`);
+    const col = r => { const d = discProfile(r.disc); return d && !d.balanced ? d.primary.id : null; };
+    const myC = col(p.r);
+    if (myC && group.every(x => x === p || col(x.r) !== myC)) facts.push(`le seul profil à dominante ${esc(DISC.find(x => x.id === myC).color.toLowerCase())} du cercle`);
+    if (!top.length && !facts.length) return `${N} est le point d'équilibre du cercle : jamais à l'extrême, toujours là où le groupe se retrouve. Une place précieuse, qui aide tout le monde à se comprendre.`;
+    let out = '';
+    if (top.length) out += `Dans ce cercle, c'est ${N} qui ${joinFr(top.map(c => `<b>${esc(c.t)}</b>`))}.`;
+    if (facts.length) out += top.length ? ` ${N} est aussi ${joinFr(facts.slice(0, 2))}.` : `Dans ce cercle, ${N} est ${joinFr(facts.slice(0, 2))}.`;
+    out += ' ' + ['Une place bien à soi, que personne d\'autre ne tient.', 'Sans cette touche-là, le cercle ne serait pas tout à fait le même.', 'C\'est ce qui rend sa présence si reconnaissable.'][p.name.length % 3];
+    return out.trim();
+  }
+
+  // Le petit discours : ce que le cercle dirait en levant son verre
+  const TOAST_TEASE = {
+    ord: ['arrivera sans doute en retard, avec une excellente histoire', 'a sûrement déjà prévu le plan B du plan B'],
+    thr: ['resterait zen même si la maison brûlait', 'a vérifié trois fois que le four était éteint avant de venir'],
+    rsk: ['a lu les conditions générales jusqu\'au bout', 'a sûrement une idée folle pour la suite de la soirée'],
+    cmp: ['laissera gagner tout le monde au jeu de ce soir', 'compte déjà les points de la partie de ce soir'],
+    opn: ['va encore nous traîner dans un restaurant dont personne n\'a entendu parler', 'commandera exactement le même plat que d\'habitude'],
+    aff: ['va sûrement verser une petite larme pendant ce discours', 'va sûrement vérifier les chiffres de ce discours'],
+    tmp: ['profite de chaque minute, sans jamais regarder l\'heure', 'pense déjà aux vacances de l\'année prochaine'],
+    col: ['rentrera à sa façon, quand bon lui semble', 'a déjà créé le groupe WhatsApp de la soirée'],
+  };
+  function toastOf(p, pt) {
+    const r = p.r, N = esc(cap(p.name));
+    const qs = qualityScores(r).filter(q => q.score !== null && PORTRAIT_Q[q.id]).sort((x, y) => y.score - x.score);
+    const T = voiceOf(p.name);
+    const adj = qs.slice(0, 3).map(q => PORTRAIT_Q[q.id][0]);
+    const x = Object.keys(TOAST_TEASE).filter(id => r.known.has(id)).map(id => ({ id, v: r.axes[id] }))
+      .sort((a, b) => Math.abs(b.v) - Math.abs(a.v))[0];
+    const tease = x && Math.abs(x.v) >= 0.2 ? TOAST_TEASE[x.id][x.v < 0 ? 0 : 1]
+      : (r.traits && r.traits.dog >= 0.6 ? 'aura le dernier mot, comme toujours' : 'trouvera encore le moyen de nous surprendre');
+    const vp = r.values && valueProfile(r);
+    const role = r.rel ? PORTRAIT_ROLE[roleCloseOf(r).id][1] : vp && !vp.flat ? PORTRAIT_V[vp.ranked[0].id][1] : 'une personne rare';
+    let t = `Levons nos verres à ${N} ! `;
+    t += adj.length === 3 ? `${N}, c'est une personne ${adj[0]}, ${adj[1]} et ${adj[2]} à la fois, et ce n'est pas si courant. ` : `${N}, c'est une personne comme on en croise peu. `;
+    if (qs[0]) t += cap(T(PORTRAIT_Q[qs[0].id][1])) + '. ';
+    t += `Bien sûr, ${N} ${tease}… mais c'est aussi pour ça qu'on l'aime. `;
+    t += `Alors à ${N}, ${esc(role)}, et à tout ce qui nous reste à vivre ensemble !`;
+    return t;
+  }
+
+  // Tout ce qui suit l'accroche : les paragraphes, puis la partie pratique
+  function portraitBody(pt) {
+    let h = pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('');
+    if (pt.circle) h += `<h3>Dans ce cercle</h3><p>${pt.circle}</p>`;
+    if (pt.scenes && pt.scenes.length) h += `<h3>En situation</h3><div class="pt-scenes">${pt.scenes.map(x => `<div class="pt-scene"><p class="pt-scene-k">${x.h}</p><p class="pt-scene-t">${x.t}</p></div>`).join('')}</div>`;
+    if (pt.manual && pt.manual.length) h += `<h3>Mode d'emploi</h3><dl class="pt-manual">${pt.manual.map(x => `<div><dt>${x.h}</dt><dd>${cap(x.t)}.</dd></div>`).join('')}</dl>`;
+    if (pt.tips && pt.tips.length) h += `<h3>Pistes pour grandir</h3><ol class="pt-tips">${pt.tips.map(t => `<li>${t}</li>`).join('')}</ol>`;
+    if (pt.toast) h += `<h3>Le petit discours</h3><blockquote class="pt-toast"><p>${pt.toast}</p></blockquote>`;
+    return h;
+  }
+
+  // Le portrait d'une personne d'un cercle : au prénom, avec ce qui la distingue des autres
+  function circlePortrait(p, people) {
+    const pt = portraitOf(p.r, p.name);
+    pt.circle = circleUnique(p, people);
+    pt.toast = toastOf(p, pt);
+    return pt;
+  }
+
   function portraitHtml(pt) {
-    return `<p class="portrait-lead">${pt.lead}</p>` + pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('');
+    return `<p class="portrait-lead">${pt.lead}</p>` + portraitBody(pt);
   }
 
   /* ---------------------------------------------------------
@@ -5249,10 +5536,10 @@
     // Un portrait par personne : le prénom et la phrase d'accroche, le texte entier en dépliant
     portraitPeople = people;
     $('g-portraits').innerHTML = people.filter(p => p.r).map(p => {
-      const pt = portraitOf(p.r, p.name);
+      const pt = circlePortrait(p, people);
       return `<details class="pp-item" style="--c:${p.color}"><summary><span class="pp-name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`
         + `<span class="pp-lead">${pt.lead}</span><span class="pp-cue"><span class="cue-o">Lire le portrait</span><span class="cue-c">Replier</span><span class="fold-chev" aria-hidden="true"></span></span></summary>`
-        + `<div class="portrait">${pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('')}${matchRow(p, people)}</div></details>`;
+        + `<div class="portrait">${portraitBody(pt)}${matchRow(p, people)}</div></details>`;
     }).join('');
 
     // Cohésion : affinité moyenne entre toutes les paires
@@ -5398,7 +5685,7 @@
     const pt = document.createElement('section');
     pt.className = 'res-section person-portrait';
     const me = portraitPeople.find(x => x.code === member.code);
-    pt.innerHTML = `<div class="section-head"><h2>Le portrait ${esc(deName(name))}</h2></div><div class="portrait">${portraitHtml(portraitOf(r, name))}${me ? matchRow(me, portraitPeople) : ''}</div>`;
+    pt.innerHTML = `<div class="section-head"><h2>Le portrait ${esc(deName(name))}</h2></div><div class="portrait">${portraitHtml(me ? circlePortrait(me, portraitPeople) : portraitOf(r, name))}${me ? matchRow(me, portraitPeople) : ''}</div>`;
     body.appendChild(pt);
 
     document.querySelectorAll('#screen-results .res-body > .res-section, #screen-results .res-body > .res-act').forEach(sec => {
@@ -7043,7 +7330,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 69;
+  const BUILD = 70;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

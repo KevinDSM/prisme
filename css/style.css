@@ -2659,3 +2659,30 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .portrait .pp-match-out .pp-m-p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ink-2); }
 .portrait .pp-match-out .pp-m-p b { color: var(--ink); font-weight: 700; }
 .portrait .pp-match-out .pp-m-end { margin: 14px 0 0; font-family: var(--font-display); font-style: italic; font-size: 16.5px; line-height: 1.45; color: var(--ink); }
+
+/* Le portrait en pratique : scenes, mode d'emploi, pistes, petit discours */
+.pt-scenes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+.pt-scene { padding: 14px 16px; border-radius: var(--radius-sm); background: rgba(var(--ink-rgb), 0.045); }
+.portrait .pt-scene-k { margin: 0 0 4px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.portrait .pt-scene-t { margin: 0; font-size: 15.5px; line-height: 1.5; color: var(--ink); }
+.pt-manual { display: grid; gap: 0; margin: 4px 0 0; }
+.pt-manual > div { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.pt-manual > div:first-child { border-top: 1px solid var(--line); }
+.pt-manual dt { font-weight: 800; font-size: 14.5px; line-height: 1.45; color: var(--ink); }
+.pt-manual dd { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); }
+.pt-tips { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: tip; display: grid; gap: 10px; }
+.pt-tips li { counter-increment: tip; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+.pt-tips li::before {
+  content: counter(tip); display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--bg);
+  font-size: 13.5px; font-weight: 800; margin-top: 1px;
+}
+.pt-toast { position: relative; margin: 8px 0 0; padding: 26px 24px 22px; border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 9%, rgb(var(--panel-rgb))); text-align: center; }
+.pt-toast::before { content: '\201C'; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 64px; line-height: 1; color: var(--accent); }
+.portrait .pt-toast p { margin: 0; font-family: var(--font-display); font-style: italic; font-size: clamp(18px, 2.3vw, 21px); line-height: 1.5; color: var(--ink); text-wrap: pretty; }
+@media (max-width: 560px) {
+  .pt-manual > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+}
+@media (max-width: 480px) {
+  .pt-scenes { grid-template-columns: minmax(0, 1fr); }
+}
