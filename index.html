@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=66">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=67">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=66">
+  <link rel="stylesheet" href="css/style.css?v=67">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -386,7 +386,7 @@
     </section>
     <div class="res-act res-act-plain" data-act="En bref" data-tab="En bref">
       <p class="act-t">En bref</p>
-      <p class="act-s">Tes trois portraits, ce qui te distingue, et ton résumé en cinq temps.</p>
+      <p class="act-s">Tes trois portraits, ton portrait complet, ce qui te distingue, et le détail en cinq temps.</p>
     </div>
     <section class="res-section res-trio" id="trio-section">
       <article class="res-card family-card">
@@ -415,6 +415,13 @@
         <ul class="fam-list" id="psy-list"></ul>
       </article>
     </section>
+    <section class="res-section portrait-section" id="portrait-section">
+      <div class="section-head">
+        <h2 data-nav="Portrait">Ton portrait</h2>
+        <p>Tout le test réuni en un seul texte : ta façon d'être, ce qui compte pour toi, tes idées, tes liens, tes forces et ce qui peut t'inquiéter.</p>
+      </div>
+      <div class="portrait" id="portrait"></div>
+    </section>
     <section class="res-section" id="signatures-section" hidden>
       <div class="section-head">
         <h2>Signatures</h2>
@@ -424,8 +431,8 @@
     </section>
     <section class="res-section summary" id="summary-section">
       <div class="section-head">
-        <h2>En résumé</h2>
-        <p>Un portrait en cinq temps, écrit à partir des réponses — et d'elles seules.</p>
+        <h2 data-nav="Le détail">Le détail, en cinq temps</h2>
+        <p>La version analytique du portrait : chaque phrase s'appuie sur un curseur précis, chiffres à l'appui.</p>
       </div>
       <div class="summary-body" id="summary"></div>
     </section>
@@ -775,6 +782,14 @@
       <div id="group-gaps" class="group-gaps" hidden></div>
     </section>
 
+    <section class="res-section portrait-section" id="g-portraits-section">
+      <div class="section-head">
+        <h2 data-nav="Portraits">Les portraits</h2>
+        <p>Chaque personne du cercle en un seul texte, écrit à partir de tout son test : sa façon d'être, ce qui compte, ses idées, ses liens, ses forces et ce qui peut l'inquiéter. Touche un prénom pour lire son portrait.</p>
+      </div>
+      <div class="pp-list" id="g-portraits"></div>
+    </section>
+
     <section class="res-section">
 
 
@@ -1003,8 +1018,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=66"></script>
-  <script src="js/profiles.js?v=66"></script>
-  <script src="js/app.js?v=66"></script>
+  <script src="js/questions.js?v=67"></script>
+  <script src="js/profiles.js?v=67"></script>
+  <script src="js/app.js?v=67"></script>
 </body>
 </html>

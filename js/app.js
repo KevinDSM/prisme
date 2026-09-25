@@ -356,7 +356,7 @@
         cards.forEach(card => { if (!card.hasAttribute('data-no-fold')) foldPanel(card, {}); });
         return;
       }
-      foldPanel(sec, { open: sec.id === 'compare-block' });
+      foldPanel(sec, { open: sec.id === 'compare-block' || sec.classList.contains('portrait-section') });
     });
     if (!first || body.querySelector(':scope > .fold-tools')) return;
 
@@ -1740,6 +1740,271 @@
     parts.push({ h: 'Ce qui te distingue', p: p5.trim() });
 
     return parts;
+  }
+
+  /* ---------------------------------------------------------
+     Portrait : tout le test réuni en un seul texte
+     Le résumé en cinq temps détaille ; le portrait, lui, raconte une personne.
+     Il croise tout ce qu'on sait (caractère, valeurs, idées, liens, qualités,
+     inquiétudes), cherche toujours le côté lumineux, et s'écrit à deux voix :
+     « tu » dans un profil, le prénom dans un cercle. Jamais d'accord de genre :
+     on écrit « une personne fiable », on répète le prénom, on dit « soi ».
+     --------------------------------------------------------- */
+  // {S} Tu / Prénom, {s} tu / Prénom, {toi} toi / Prénom, {ton} ton / son, {te} te / se, {lui} te / lui, {a|b} au choix
+  function voiceOf(name) {
+    const tu = !name, N = esc(name || '');
+    const map = { S: tu ? 'Tu' : N, s: tu ? 'tu' : N, toi: tu ? 'toi' : N, ton: tu ? 'ton' : 'son', ta: tu ? 'ta' : 'sa', tes: tu ? 'tes' : 'ses',
+      Ton: tu ? 'Ton' : 'Son', Ta: tu ? 'Ta' : 'Sa', Tes: tu ? 'Tes' : 'Ses', te: tu ? 'te' : 'se', lui: tu ? 'te' : 'lui' };
+    return str => str.replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (m, a, b) => (tu ? a : b)).replace(/\{(\w+)\}/g, (m, k) => (k in map ? map[k] : m));
+  }
+
+  // Les neuf curseurs de caractère, côté gauche (valeur négative) et côté droit
+  const PORTRAIT_PSY = {
+    aff: ['{S} {écoutes|écoute} d\'abord {ton} cœur : les décisions passent par ce qui est ressenti, et c\'est souvent juste.',
+          '{S} {réfléchis|réfléchit} avant de {te} laisser emporter : les faits d\'abord, l\'émotion ensuite, et les décisions n\'en sont que plus solides.'],
+    loc: ['{S} {prends|prend} {ta} vie en main : la chance, mieux vaut la provoquer.',
+          '{S} {sais|sait} que tout ne dépend pas de soi, et {avances|avance} avec une forme de sagesse face aux hasards de la vie.'],
+    rsk: ['{S} {préfères|préfère} mesurer avant de sauter : chez {toi}, la prudence est une forme d\'intelligence.',
+          '{S} {aimes|aime} oser : le risque stimule plus qu\'il n\'effraie, et c\'est ce qui fait avancer les choses.'],
+    ord: ['{S} {improvises|improvise} avec aisance : quand les plans changent, {s} {rebondis|rebondit} sans perdre le sourire.',
+          '{S} {aimes|aime} que les choses soient pensées et à leur place : rien n\'est laissé au hasard.'],
+    thr: ['{S} {gardes|garde} une vraie sérénité : les soucis glissent plus qu\'ils ne s\'installent, et ce calme rassure.',
+          '{S} {vois|voit} venir les problèmes de loin : une vigilance qui protège, bien souvent, tout le monde autour.'],
+    col: ['{S} {comptes|compte} d\'abord sur soi et {tiens|tient} à mener {ta} barque, avec une belle autonomie.',
+          '{S} {penses|pense} en « nous » avant de penser en « je » : le groupe compte autant que soi.'],
+    tmp: ['{S} {sais|sait} savourer l\'instant présent, et c\'est un vrai talent.',
+          '{S} {penses|pense} à long terme : aujourd\'hui se prépare en pensant à demain.'],
+    cmp: ['{S} {préfères|préfère} gagner à plusieurs que gagner contre les autres : la coopération est une seconde nature.',
+          '{S} {aimes|aime} {te} dépasser et viser haut : la compétition est un moteur, pas une menace.'],
+    opn: ['{S} {es|est} une personne curieuse, qui a besoin de nouveauté, d\'idées neuves et d\'horizons à découvrir.',
+          '{S} {as|a} des racines : les lieux, les habitudes et les gens de toujours comptent énormément.'],
+  };
+  // Premier contact, selon la couleur DISC dominante
+  const PORTRAIT_DISC = {
+    dom: 'Au premier abord, {s} {dégages|dégage} une énergie franche et décidée : on sent une personne qui aime avancer, trancher et obtenir des résultats.',
+    inf: 'Au premier abord, {s} {dégages|dégage} une chaleur communicative : on sent une personne qui aime le contact, les idées qui fusent et les rires partagés.',
+    ste: 'Au premier abord, {s} {dégages|dégage} un calme rassurant : on sent une personne patiente, à l\'écoute, sur qui l\'on peut s\'appuyer.',
+    bal: 'Au premier abord, {s} {dégages|dégage} un bel équilibre : une personne qui sait s\'adapter à chaque situation et à chaque interlocuteur.',
+    con: 'Au premier abord, {s} {dégages|dégage} une réserve attentive : on sent une personne précise et réfléchie, qui aime comprendre avant d\'agir.',
+  };
+  const PORTRAIT_FOUND = {
+    care: 'la souffrance des autres touche en plein cœur',
+    fair: 'l\'injustice ne passe jamais',
+    loy: 'la loyauté n\'est pas négociable',
+    auth: 'le respect des règles et des engagements compte beaucoup',
+    sanc: 'certaines choses méritent le respect, au-delà de ce qui est utile',
+    lib: 'personne ne devrait dicter aux autres leur façon de vivre',
+  };
+  // Les idées, en clair : ce qu'on défend de chaque côté d'un axe politique
+  const PORTRAIT_POL = {
+    eco: ['un État qui régule et protège', 'la liberté d\'entreprendre'],
+    egl: ['la réduction des écarts entre les gens', 'la récompense du mérite et de l\'effort'],
+    soc: ['les évolutions de la société', 'les repères et les traditions'],
+    idn: ['une appartenance ouverte à tous', 'une culture et une identité à préserver'],
+    aut: ['les libertés individuelles', 'l\'ordre et l\'autorité'],
+    env: ['la croissance et la production', 'la protection de la planète'],
+    geo: ['l\'ouverture au monde', 'la souveraineté du pays'],
+    jus: ['la réinsertion plutôt que la seule punition', 'la fermeté face à ceux qui enfreignent la loi'],
+    tec: ['la confiance dans le progrès technique', 'une vraie prudence envers la technologie'],
+  };
+  const PORTRAIT_ATTACH = {
+    secure: '{S} {fais|fait} confiance sans {t\'|s\'}accrocher : on sait où l\'on en est, et c\'est reposant.',
+    anxious: '{S} {t\'|s\'}{attaches|attache} fort et {as|a} besoin de sentir que c\'est réciproque : un grand cœur, très présent pour les autres.',
+    avoidant: '{S} {tiens|tient} aux gens à {ta} façon, avec de l\'air et de l\'autonomie : une présence solide, jamais envahissante.',
+    fearful: '{S} {as|a} besoin des autres tout en gardant une petite réserve : la confiance se gagne, mais une fois donnée, elle est précieuse.',
+  };
+  const PORTRAIT_CONFLICT = {
+    build: 'Dans un désaccord, {s} {cherches|cherche} la solution où chacun s\'y retrouve, quitte à y passer du temps.',
+    defend: 'Dans un désaccord, {s} {dis|dit} les choses franchement : pas de non-dits, jamais.',
+    yield: 'Dans un désaccord, {s} {fais|fait} passer le lien avant le fait d\'avoir raison.',
+    avoid: 'Les disputes, {s} {préfères|préfère} les laisser retomber plutôt que de les attiser.',
+    deal: 'Dans un désaccord, {s} {trouves|trouve} vite le terrain d\'entente où chacun fait un pas.',
+  };
+  const PORTRAIT_ROLE = {
+    pilier: ['Quand ça tangue, c\'est vers {toi} qu\'on se tourne : du calme, une vraie présence, et encore là le lendemain.', 'le point d\'appui quand ça tangue'],
+    confident: ['On {lui} confie ce qu\'on ne dit à personne, parce que l\'écoute est sincère et les secrets bien gardés.', 'l\'oreille à qui l\'on confie tout'],
+    orga: ['Anniversaires, week-ends, retrouvailles : sans {toi}, la moitié ne se ferait jamais.', 'la personne grâce à qui les choses arrivent'],
+    ambiance: ['{S} {mets|met} l\'ambiance et {embarques|embarque} tout le monde : une soirée sans {toi}, ça se sent.', 'l\'étincelle des soirées'],
+    mediateur: ['Quand deux proches se fâchent, c\'est {toi} qui {recolles|recolle} les morceaux, sans prendre parti.', 'le trait d\'union entre les uns et les autres'],
+    libre: ['{S} {vas|va} et {viens|vient}, en toute liberté, et chaque moment partagé n\'en a que plus de prix.', 'un vent de liberté dans la bande'],
+    protecteur: ['Personne ne touche aux {tiens|siens} : {s} {défends|défend} famille et amis, parfois avant même qu\'ils le demandent.', 'un rempart pour ceux qui comptent'],
+  };
+  const PORTRAIT_V = {
+    vsd: ['l\'', 'qui tient avant tout à penser par soi-même'],
+    vst: ['la ', 'qui a besoin de nouveauté et de défis pour se sentir vivante'],
+    vhe: ['le ', 'qui sait profiter de la vie'],
+    vac: ['la ', 'qui aime accomplir de belles choses'],
+    vpo: ['le ', 'qui aime peser sur le cours des choses'],
+    vse: ['la ', 'qui veille avant tout sur ceux qu\'elle aime'],
+    vco: ['la ', 'qui tient au respect des règles et des autres'],
+    vtr: ['la ', 'qui reste fidèle à ce qui lui a été transmis'],
+    vbe: ['la ', 'qui prend soin de ses proches avant tout'],
+    vun: ['l\'', 'qui se bat pour un monde plus juste'],
+  };
+  // Chaque qualité : un adjectif (pour « une personne… »), ce qu'elle donne, et son revers quand elle manque
+  const PORTRAIT_Q = {
+    fia: ['fiable', 'on peut compter sur {toi}, sans condition', 'la régularité à toute épreuve, compensée par une vraie spontanéité'],
+    det: ['déterminée', 'quand un objectif est fixé, rien ne {t\'|l\'}arrête', 'l\'acharnement, car {s} {sais|sait} aussi lâcher prise, et c\'est une force'],
+    emp: ['empathique', '{s} {sens|sent} ce que vivent les autres avant même qu\'ils le disent', 'se mettre à la place des autres, au profit d\'un regard plus objectif'],
+    ouv: ['ouverte d\'esprit', '{s} {sais|sait} écouter un avis contraire et changer d\'idée quand les faits changent', 'changer d\'avis facilement, mais c\'est aussi une forme de constance'],
+    ind: ['indépendante', '{s} {as|a} un jugement {bien à toi|bien à soi}', 'décider en solitaire, car {s} {aimes|aime} avancer avec les autres'],
+    lea: ['entraînante', 'quand {s} {prends|prend} les choses en main, les autres suivent naturellement', 'prendre la tête, au profit d\'un vrai sens de l\'équipe'],
+    san: ['posée', 'dans la tempête, {s} {gardes|garde} la tête froide', 'garder la tête froide, car l\'émotion passe d\'abord, et c\'est aussi une forme de sincérité'],
+    dip: ['diplomate', '{s} {sais|sait} dire les choses sans blesser', 'arrondir les angles, au profit d\'une franchise rafraîchissante'],
+    aud: ['audacieuse', '{s} {oses|ose} là où d\'autres hésitent', 'se jeter dans l\'inconnu, au profit d\'une prudence qui évite bien des erreurs'],
+    rig: ['rigoureuse', 'le travail précis et soigné est une signature', 'la minutie, compensée par une belle capacité d\'adaptation'],
+    opt: ['optimiste', '{s} {vois|voit} le verre à moitié plein, et ça rejaillit sur tout le monde', 'l\'optimisme béat, remplacé par un réalisme lucide'],
+    vig: ['attentive', 'rien n\'échappe à {ton} regard', 'la méfiance, car la confiance vient naturellement, et c\'est reposant'],
+    soc: ['chaleureuse', '{s} {aimes|aime} les gens, et les gens le sentent', 'les grandes tablées, au profit de relations choisies et profondes'],
+    com: ['combative', '{s} ne {lâches|lâche} rien quand la cause est juste', 'la bagarre, car {s} {préfères|préfère} la paix aux batailles'],
+    ide: ['idéaliste', '{s} {crois|croit} qu\'un monde meilleur est possible, et {agis|agit} pour', 'les grandes utopies, au profit d\'un solide sens du réel'],
+    att: ['dévouée', '{s} {tiens|tient} profondément à {tes} proches', 's\'attacher vite, mais les liens tissés n\'en sont que plus solides'],
+  };
+
+  // « a, b, ainsi que c » : lisible même quand chaque élément contient déjà un « et »
+  function joinAlso(items) {
+    if (items.length <= 1) return items.join('');
+    const last = items[items.length - 1];
+    return items.slice(0, -1).join(', ') + (/^[aeiouéèêàh]/i.test(last) ? ', ainsi qu\'' : ', ainsi que ') + last;
+  }
+
+  const PORTRAIT_END = [
+    'Et c\'est sans doute ce que {tes} proches apprécient le plus chez {toi} : on sait qui l\'on a en face.',
+    '{S} {fais|fait} partie de ces personnes qu\'on est heureux de compter parmi ses proches.',
+    'Le genre de personne sur qui l\'on peut bâtir, et avec qui l\'on aime avancer.',
+  ];
+
+  function portraitOf(r, name) {
+    const T = voiceOf(name);
+    const b = s => `<strong>${s}</strong>`;
+    const known = id => r.known.has(id);
+    const fam = rankFamilies(r), temp = rankTemperaments(r), psy = r.partial ? [] : rankPsyche(r);
+    const vp = r.values ? valueProfile(r) : null;
+    const qs = qualityScores(r).filter(q => q.score !== null && PORTRAIT_Q[q.id]).sort((x, y) => y.score - x.score);
+    const paras = [];
+    const add = (h, fn) => { try { const p = fn(); if (p) paras.push({ h: T(h), p: T(p) }); } catch (e) { /* une partie en moins */ } };
+
+    // Les traits de caractère les plus marqués (hors ceux qui parlent du temps et du groupe, gardés pour la suite)
+    const psyTop = keys => PSYCHE.filter(a => keys.includes(a.id) && known(a.id))
+      .map(a => ({ a, v: r.axes[a.id] })).filter(x => Math.abs(x.v) >= 0.25)
+      .sort((x, y) => Math.abs(y.v) - Math.abs(x.v));
+
+    add('Au premier abord', () => {
+      const dp = discProfile(r.disc);
+      let p = dp ? PORTRAIT_DISC[dp.balanced ? 'bal' : dp.primary.id] : `Au premier abord, {s} {as|a} tout d'un tempérament de ${b(esc(shortName(temp[0].name).toLowerCase()))}.`;
+      if (dp && dp.secondary) p += ` Avec, en second plan, une touche ${dp.secondary.id === 'dom' ? 'de détermination' : dp.secondary.id === 'inf' ? 'de chaleur et d\'enthousiasme' : dp.secondary.id === 'ste' ? 'de douceur et de patience' : 'de méthode et de précision'}.`;
+      psyTop(['aff', 'rsk', 'ord', 'thr', 'cmp', 'opn']).slice(0, 2).forEach(x => { p += ' ' + PORTRAIT_PSY[x.a.id][x.v < 0 ? 0 : 1]; });
+      return p;
+    });
+
+    add('Ce qui compte pour {toi}', () => {
+      let p = '';
+      if (vp && !vp.flat) {
+        const [v1, v2] = vp.ranked;
+        p += `Ce qui compte le plus pour {toi}, c'est ${PORTRAIT_V[v1.id][0]}${b(esc(v1.label.toLowerCase()))} (${esc(v1.short)}), puis ${PORTRAIT_V[v2.id][0]}${b(esc(v2.label.toLowerCase()))} (${esc(v2.short)}).`;
+      } else if (vp) {
+        p += 'Aucune valeur n\'écrase les autres chez {toi} : une boussole remarquablement équilibrée, qui fait place à tout.';
+      }
+      const f = FOUNDATIONS.slice().sort((x, y) => r.found[y.id] - r.found[x.id]);
+      p += ` Moralement, ${PORTRAIT_FOUND[f[0].id]}, et ${PORTRAIT_FOUND[f[1].id]}.`;
+      psyTop(['loc', 'col', 'tmp']).slice(0, 2).forEach(x => { p += ' ' + PORTRAIT_PSY[x.a.id][x.v < 0 ? 0 : 1]; });
+      return p.trim();
+    });
+
+    add('{Tes|Ses} idées', () => {
+      const pol = knownList(POLITICAL, r).map(a => ({ a, v: r.axes[a.id] })).filter(x => Math.abs(x.v) >= 0.25)
+        .sort((x, y) => Math.abs(y.v) - Math.abs(x.v)).slice(0, 2);
+      let p = pol.length
+        ? `Sur le fond, {s} {défends|défend} ${pol[0].v * pol[0].v >= 0.36 ? 'avec conviction ' : ''}${b(PORTRAIT_POL[pol[0].a.id][pol[0].v < 0 ? 0 : 1])}${pol[1] ? `, ainsi ${/^[aeiouéèêàh]/i.test(PORTRAIT_POL[pol[1].a.id][pol[1].v < 0 ? 0 : 1]) ? 'qu\'' : 'que '}${b(PORTRAIT_POL[pol[1].a.id][pol[1].v < 0 ? 0 : 1])}` : ''}, ce qui fait de {toi} une personne proche des ${esc(familyPlural(fam[0].name))}.`
+        : `Politiquement, {s} {cultives|cultive} la nuance : peu de positions tranchées, beaucoup de « ça dépend », et une saine méfiance envers les réponses toutes faites. De tous les courants, ce sont les ${esc(familyPlural(fam[0].name))} qui {lui} ressemblent le plus.`;
+      if (r.heartAxes.length) p += ` Les sujets qui {lui} tiennent le plus à cœur : ${esc(joinAlso(r.heartAxes.slice(0, 3).map(theme)))}.`;
+      const dog = r.traits ? r.traits.dog : 0.5, eng = r.traits ? r.traits.eng : 0.5;
+      p += dog <= 0.4 ? ' {S} {as|a} des convictions, mais jamais fermées : {s} {sais|sait} écouter l\'autre camp et changer d\'avis quand les faits changent.'
+        : dog >= 0.6 ? ' Une fois une conviction faite, {s} la {défends|défend} avec constance et sincérité.'
+        : ' {S} {tiens|tient} à {tes} idées sans jamais fermer la porte au débat.';
+      if (eng >= 0.62) p += ' Et pas question d\'en rester aux mots : place à l\'action.';
+      else if (eng <= 0.38) p += ' La politique, {s} la {regardes|regarde} plutôt de loin, avec recul.';
+      const ss = r.sit ? sitSummary(r) : null;
+      if (ss) {
+        const t = sitTitle(ss).t;
+        p += t.startsWith('Fidèle') ? ' Face aux situations concrètes, {s} {restes|reste} fidèle à {tes} idées : les paroles et les actes se tiennent.'
+          : t.startsWith('Plus') ? ' Face aux situations concrètes, {s} {sais|sait} {te} montrer plus souple que {tes} principes : le cas réel l\'emporte sur la théorie.'
+          : t.startsWith('À la carte') ? ' Face au concret, {s} {juges|juge} au cas par cas, sans {t\'|s\'}enfermer dans un camp.'
+          : ' Face au concret, {s} {gardes|garde} le cap tout en {t\'|s\'}adaptant à chaque situation.';
+      }
+      return p;
+    });
+
+    add('Avec les autres', () => {
+      if (!r.rel) return '';
+      const rel = r.rel;
+      let p = (rel.cer >= 0.6 ? '{S} {aimes|aime} avoir du monde autour de {toi}' : rel.cer <= 0.4 ? '{S} {préfères|préfère} un petit cercle de proches, choisis avec soin' : '{S} {as|a} un cercle à taille humaine')
+        + (rel.fam >= 0.65 ? ', et la famille y occupe une place centrale. ' : rel.fam <= 0.35 ? ', où les amis comptent autant que la famille. ' : '. ');
+      p += PORTRAIT_ATTACH[attachOf(rel).id] + ' ' + PORTRAIT_CONFLICT[conflictOf(rel).id] + ' ' + PORTRAIT_ROLE[roleCloseOf(r).id][0];
+      const give = rel.give !== null && rel.give !== undefined ? LOVE_WAYS[rel.give] : null;
+      const want = rel.want !== null && rel.want !== undefined ? LOVE_WAYS[rel.want] : null;
+      if (give && want) {
+        p += give === want
+          ? ` Pour dire {ta} tendresse, {s} {passes|passe} par ${b(esc(give.label.toLowerCase()))} (${esc(give.desc)}), et c'est aussi ce qui {lui} fait le plus plaisir en retour.`
+          : ` Pour dire {ta} tendresse, {s} {passes|passe} par ${b(esc(give.label.toLowerCase()))} (${esc(give.desc)}) ; ce qui {lui} fait le plus plaisir en retour : ${b(esc(want.label.toLowerCase()))}.`;
+      }
+      return p;
+    });
+
+    add('{Tes|Ses} forces', () => {
+      if (qs.length < 4) return '';
+      const [q1, q2, q3] = qs, low = qs[qs.length - 1];
+      let p = `{Tes|Ses} plus grandes forces : ${b(esc(q1.name.toLowerCase()))}, ${b(esc(q2.name.toLowerCase()))} et ${b(esc(q3.name.toLowerCase()))}. `;
+      const q1s = PORTRAIT_Q[q1.id][1], q2s = PORTRAIT_Q[q2.id][1];
+      p += q1s.includes(',') ? cap(T(q1s)) + '. ' + cap(T(q2s)) + '.'
+        : cap(T(q1s)) + ', et ' + (q1s.startsWith('{s} ') && q2s.startsWith('{s} ') ? q2s.slice(4) : q2s) + '.';
+      if (low.score <= 0.45) p += ` {Ce qui t'est|Ce qui lui est} moins naturel : ${PORTRAIT_Q[low.id][2]}.`;
+      return p;
+    });
+
+    add('Ce qui peut {t\'|l\'}inquiéter', () => {
+      const fears = [];
+      const f = (s, t, w) => { if (s > 0) fears.push({ s, t, w }); };
+      if (known('thr')) f(r.axes.thr - 0.25, 'les mauvaises surprises', 'c\'est le prix d\'une vigilance qui protège souvent tout le monde');
+      if (r.rel) {
+        f(r.rel.anx - 0.55, 'l\'éloignement de ceux qui comptent', 'c\'est le revers d\'un cœur qui s\'attache vraiment');
+        f(r.rel.avo - 0.6, 'l\'idée de perdre {ta} liberté', 'c\'est le revers d\'un grand besoin d\'autonomie');
+        if (conflictOf(r.rel).id === 'avoid') f(0.15, 'les conflits ouverts', 'c\'est le revers d\'un vrai besoin d\'harmonie');
+      }
+      if (r.traits) f(0.4 - r.traits.inc, 'le flou et l\'incertitude', 'c\'est le revers d\'un besoin de repères clairs, qui rend aussi très fiable');
+      if (vp && vp.ranked.slice(0, 2).some(v => v.id === 'vse')) f(0.25, 'ce qui pourrait ébranler l\'équilibre du foyer', 'c\'est le revers d\'un profond sens des responsabilités');
+      f(r.found.care - 0.75, 'la souffrance des autres, quand on ne peut rien y faire', 'c\'est le revers d\'une grande sensibilité');
+      f(r.found.loy - 0.78, 'la trahison', 'c\'est le revers d\'une loyauté sans faille');
+      if (known('nat')) f(r.axes.nat - 0.35, 'l\'idée de {te} faire avoir', 'c\'est le revers d\'un esprit lucide, que les belles paroles n\'endorment pas');
+      if (known('vis')) f(r.axes.vis - 0.35, 'voir se perdre ce qui fonctionne', 'c\'est le revers d\'un attachement sincère à ce qui marche');
+      if (known('rsk')) f(-r.axes.rsk - 0.4, 'les risques pris à la légère', 'c\'est le revers d\'une prudence qui évite bien des erreurs');
+      if (known('cmp')) f(r.axes.cmp - 0.4, 'l\'idée de stagner', 'c\'est le revers d\'une vraie ambition');
+      if (known('opn')) {
+        f(-r.axes.opn - 0.4, 'l\'ennui et la routine', 'c\'est le revers d\'une curiosité insatiable');
+        f(r.axes.opn - 0.4, 'voir disparaître ce qui fait {tes} racines', 'c\'est le revers d\'un attachement profond à {tes} origines');
+      }
+      if (known('ord')) f(r.axes.ord - 0.4, 'le désordre et l\'improvisation', 'c\'est le revers d\'un grand sens de l\'organisation');
+      const top = fears.sort((x, y) => y.s - x.s).slice(0, 3);
+      if (!top.length) return '{S} {as|a} une belle sérénité : peu de choses semblent {t\'|l\'}inquiéter vraiment, et ce calme fait du bien autour.';
+      return `Comme tout le monde, {s} {as|a} {tes} points sensibles : ${joinAlso(top.map(x => x.t))}. ${cap(top[0].t)} : ${top[0].w}. Ces sensibilités ne sont pas des faiblesses, elles disent surtout ce qui compte pour {toi}.`;
+    });
+
+    add('Au fond', () => {
+      const adj = qs.slice(0, 2).map(q => PORTRAIT_Q[q.id][0]);
+      let p = adj.length === 2 ? `Au fond, {s} {es|est} une personne ${b(adj[0])} et ${b(adj[1])}` : 'Au fond, {s} {es|est} une personne attachante';
+      p += r.rel ? `, ${PORTRAIT_ROLE[roleCloseOf(r).id][1]}. ` : '. ';
+      p += `{Ton} portrait en trois mots : ${b(esc(fam[0].name))}, ${b(esc(shortName(temp[0].name)))}${psy.length ? `, ${b(esc(shortName(psy[0].name)))}` : ''}. ${PORTRAIT_END[(qs.length ? qs[0].id.charCodeAt(0) + qs[0].id.charCodeAt(2) : 0) % PORTRAIT_END.length]}`;
+      return p;
+    });
+
+    const adj3 = qs.slice(0, 3).map(q => PORTRAIT_Q[q.id][0]);
+    const lead = T(`Une personne ${adj3.length === 3 ? `${adj3[0]}, ${adj3[1]} et ${adj3[2]}` : 'singulière'}`
+      + (vp && !vp.flat ? `, ${PORTRAIT_V[vp.ranked[0].id][1]}.` : '.'));
+    return { lead, paras };
+  }
+
+  function portraitHtml(pt) {
+    return `<p class="portrait-lead">${pt.lead}</p>` + pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('');
   }
 
   /* ---------------------------------------------------------
@@ -3711,6 +3976,7 @@
       return `<span class="heart-chip"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.8 6.6 4.8c2 0 3.4 1 4.2 2.3.8-1.3 2.2-2.3 4.2-2.3 3.6 0 5.7 3.5 4.2 6.9C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>${esc(a.left)} / ${esc(a.right)} <small>· ${esc(nuancedLabel(a, r.axes[id]).toLowerCase())}</small></span>`;
     }).join('');
 
+    $('portrait').innerHTML = portraitHtml(portraitOf(r));
     $('summary').innerHTML = summarize(r, fam, temp, psy).map((p, i) =>
       `<h3 data-n="${ROMAN[i]}">${esc(p.h)}</h3><p>${p.p}</p>`).join('');
 
@@ -4781,6 +5047,14 @@
         + `</span>`;
     }).join('');
 
+    // Un portrait par personne : le prénom et la phrase d'accroche, le texte entier en dépliant
+    $('g-portraits').innerHTML = people.filter(p => p.r).map(p => {
+      const pt = portraitOf(p.r, p.name);
+      return `<details class="pp-item" style="--c:${p.color}"><summary><span class="pp-name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`
+        + `<span class="pp-lead">${pt.lead}</span><span class="fold-chev" aria-hidden="true"></span></summary>`
+        + `<div class="portrait">${pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('')}</div></details>`;
+    }).join('');
+
     // Cohésion : affinité moyenne entre toutes les paires
     let sum = 0, count = 0;
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { sum += affinityBetween(people[i].r, people[j].r).total; count++; }
@@ -4900,7 +5174,7 @@
     const mine = myCode();
     renderResults({ code: member.code, name, r, isMine: false, hasMine: !!mine }, null, true);
 
-    const skip = new Set(['compare-block', 'values-teaser-section']);
+    const skip = new Set(['compare-block', 'values-teaser-section', 'portrait-section']);
     const head = document.createElement('div');
     head.className = 'person-head';
     head.innerHTML = `<h3 class="res-title">${$('res-title').innerHTML}</h3>`
@@ -4920,6 +5194,11 @@
           <p class="swap-hint">Le nouveau profil prend la place de l'ancien, au même endroit dans le cercle, avec le même prénom. L'URL du cercle change : pense à la recopier.</p>
         </div>`;
     body.appendChild(head);
+    // le portrait, cette fois au prénom
+    const pt = document.createElement('section');
+    pt.className = 'res-section person-portrait';
+    pt.innerHTML = `<div class="section-head"><h2>Le portrait ${esc(deName(name))}</h2></div><div class="portrait">${portraitHtml(portraitOf(r, name))}</div>`;
+    body.appendChild(pt);
 
     document.querySelectorAll('#screen-results .res-body > .res-section, #screen-results .res-body > .res-act').forEach(sec => {
       if (sec.hidden || skip.has(sec.id)) return;
@@ -6563,7 +6842,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 66;
+  const BUILD = 67;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -6590,7 +6869,7 @@
   initQuiz();
   initResults();
   // le moteur de calcul, en lecture : pour les tests automatiques (aucune donnée n'y transite)
-  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress });
+  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress, portraitOf });
   initGroup();
   initCircleByUrl();
   window.addEventListener('hashchange', route);
