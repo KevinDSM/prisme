@@ -76,11 +76,11 @@
       </article>
       <article class="gcard">
         <h4>7 · Une page pliée</h4>
-        <p>Le rapport complet fait plusieurs mètres : la page arrive donc <b>pliée</b>. Chaque bloc est un titre qu'on ouvre d'un clic, et l'ensemble se lit d'abord comme un sommaire — on va voir ce qui intéresse, dans l'ordre qu'on veut. « Tout déplier » ouvre tout d'un coup, et le sommaire de gauche ouvre le bloc qu'on vise. Seuls les portraits restent ouverts au départ — et, sur la page de cercle, « le cercle en bref » et la liste des profils, pour qu'on voie tout de suite qui en fait partie.</p>
+        <p>Le rapport complet fait plusieurs mètres : la page arrive donc <b>pliée</b>. Chaque bloc est un titre qu'on ouvre d'un clic, et l'ensemble se lit d'abord comme un sommaire — on va voir ce qui intéresse, dans l'ordre qu'on veut. « Tout déplier » ouvre tout d'un coup, et le sommaire de gauche ouvre le bloc qu'on vise. Sur téléphone, le sommaire devient une rangée d'<b>onglets de chapitres</b> collée en haut : toucher un chapitre y mène et referme ce qui était ouvert ailleurs, pour que la page reste courte. Seuls les portraits restent ouverts au départ — et, sur la page de cercle, « le cercle en bref » et la liste des profils, pour qu'on voie tout de suite qui en fait partie.</p>
       </article>
       <article class="gcard">
         <h4>8 · Trois temps</h4>
-        <p>Le rapport est rangé en trois actes, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits, les signatures, le résumé. <b>I · Ce que tu penses</b> : la politique — axes, méta-politique, hémicycle, face au réel, angles morts, curseurs tranchés, sujets de cœur. <b>II · Qui tu es</b> : le caractère — personnalité, fondements moraux, traits, DISC, valeurs, « toi et les autres », qualités. <b>III · Pour le plaisir</b> : le personnage, l'animal, le film et le morceau. La page de cercle suit les mêmes trois temps, puis les profils un par un.</p>
+        <p>Le rapport est rangé en chapitres, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits, les signatures, le résumé. <b>I · Ce que tu penses</b> : la politique — axes, méta-politique, hémicycle, face au réel, angles morts, curseurs tranchés, sujets de cœur. <b>II · Qui tu es</b> : le caractère — personnalité, fondements moraux, traits, DISC, valeurs, qualités, dans la vie. <b>III · Avec les autres</b> : en amour, en famille, en amitié. <b>IV · Pour le plaisir</b> : le personnage, l'animal, le film, le morceau et les listes « Et si tu étais… ». La page de cercle suit les mêmes temps (en politique, en caractère, pour le plaisir), puis les profils un par un.</p>
       </article>
     </div>`);
 

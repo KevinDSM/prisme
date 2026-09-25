@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=65">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=66">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=65">
+  <link rel="stylesheet" href="css/style.css?v=66">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -153,9 +153,8 @@
         <div class="quiz-counter"><span id="q-index">1</span><span class="sep">/</span><span id="q-total">269</span></div>
       </div>
     </div>
-    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div id="progress-fill" class="progress-fill"></div>
-    </div>
+    <div class="progress" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Avancement du test"></div>
+    <p class="quiz-part" id="q-part"></p>
 
     <div class="quiz-stage">
       <article id="q-card" class="q-card">
@@ -168,8 +167,12 @@
         <div class="slider-wrap" id="q-slider-block">
           <div id="slider-bubble" class="slider-bubble">Neutre</div>
           <input id="slider" class="slider" type="range" min="-100" max="100" step="1" value="0" aria-label="Degré d'accord">
-          <div class="slider-ticks" aria-hidden="true">
-            <span></span><span></span><span class="mid"></span><span></span><span></span>
+          <div class="slider-ticks" id="slider-ticks">
+            <button type="button" class="tick" data-v="-100" aria-label="Absolument pas d'accord"></button>
+            <button type="button" class="tick" data-v="-50" aria-label="Pas d'accord"></button>
+            <button type="button" class="tick mid" data-v="0" aria-label="Neutre"></button>
+            <button type="button" class="tick" data-v="50" aria-label="D'accord"></button>
+            <button type="button" class="tick" data-v="100" aria-label="Absolument d'accord"></button>
           </div>
           <div class="slider-ends" aria-hidden="true">
             <span>Absolument pas d'accord</span>
@@ -184,6 +187,13 @@
           </span>
           <span class="heart-label">Ce sujet me tient particulièrement à cœur</span>
         </label>
+      </article>
+      <article id="q-break" class="q-card q-break" hidden aria-live="polite">
+        <p class="q-break-k" id="q-break-k"></p>
+        <h2 class="q-break-t" id="q-break-t"></h2>
+        <p class="q-break-peek" id="q-break-peek" hidden></p>
+        <p class="q-break-next" id="q-break-next"></p>
+        <button id="btn-break" class="btn btn-primary" type="button"><span>Continuer</span></button>
       </article>
     </div>
 
@@ -212,7 +222,7 @@
       </div>
     </header>
 
-    <nav class="res-nav" id="res-nav" aria-label="Sommaire du profil" hidden></nav>
+    <nav class="res-nav" id="res-nav" aria-label="Sommaire du profil" data-pre-tab="À deux" hidden></nav>
 
     <div class="res-body">
 
@@ -374,7 +384,7 @@
       <p class="cmp-psy" id="cmp-psy" hidden></p>
       <button id="btn-compare-close" class="link-btn" type="button">Fermer la comparaison</button>
     </section>
-    <div class="res-act res-act-plain" data-act="En bref">
+    <div class="res-act res-act-plain" data-act="En bref" data-tab="En bref">
       <p class="act-t">En bref</p>
       <p class="act-s">Tes trois portraits, ce qui te distingue, et ton résumé en cinq temps.</p>
     </div>
@@ -419,7 +429,7 @@
       </div>
       <div class="summary-body" id="summary"></div>
     </section>
-    <div class="res-act" data-act="Ce que tu penses">
+    <div class="res-act" data-act="Ce que tu penses" data-tab="Idées">
       <p class="act-n">I</p>
       <p class="act-t">Ce que tu penses</p>
       <p class="act-s">La politique : tes axes, ta place dans l’hémicycle, tes angles morts et tes curseurs les plus tranchés.</p>
@@ -502,7 +512,7 @@
       </div>
       <div id="hearts" class="hearts"></div>
     </section>
-    <div class="res-act" data-act="Qui tu es">
+    <div class="res-act" data-act="Qui tu es" data-tab="Caractère">
       <p class="act-n">II</p>
       <p class="act-t">Qui tu es</p>
       <p class="act-s">Le caractère, sous la politique : personnalité, morale, couleurs DISC, valeurs et qualités.</p>
@@ -570,31 +580,6 @@
         <div id="values-cards" class="val-cards"></div>
       </div>
     </section>
-    <section class="res-section" id="rel-section" hidden>
-      <div class="section-head">
-        <h2 data-nav="Toi et les autres">Toi et les autres</h2>
-        <p>Comment tu t'attaches, comment tu te disputes, comment tu montres que tu tiens aux gens. Rien de politique ici : c'est la partie la plus intime du rapport. Ce sont des tendances, pas des diagnostics — elles bougent avec les relations et avec le temps.</p>
-      </div>
-      <div class="rel-grid">
-        <article class="res-card rel-card" id="rel-attach"></article>
-        <article class="res-card rel-card" id="rel-conflict"></article>
-      </div>
-      <div class="rel-grid rel-lower">
-        <article class="res-card">
-          <p class="card-kicker">Ta façon d'aimer</p>
-          <h2>Ce que tu donnes, ce qui te touche</h2>
-          <div id="rel-love"></div>
-        </article>
-        <div class="rel-side">
-          <article class="res-card rel-role" id="rel-role"></article>
-          <article class="res-card">
-            <p class="card-kicker">Quatre curseurs de plus</p>
-            <div id="rel-bars" class="rel-bars"></div>
-          </article>
-        </div>
-      </div>
-      <p class="rel-source">Les deux cartes s'appuient sur des modèles reconnus : l'attachement adulte à deux dimensions (Brennan, Clark et Shaver, dans la lignée de Bowlby) et les cinq façons de gérer un désaccord (Thomas et Kilmann). Les façons d'aimer reprennent une idée populaire, les « langages de l'amour » : à lire comme une piste, pas comme une science.</p>
-    </section>
     <section class="res-section" id="qualities-section" hidden>
       <div class="section-head">
         <h2>Tes qualités</h2>
@@ -621,8 +606,38 @@
       </div>
       <div id="life-cards" class="life-cards"></div>
     </section>
-    <div class="res-act" data-act="Pour le plaisir">
+    <div class="res-act" data-act="Avec les autres" data-tab="Relations">
       <p class="act-n">III</p>
+      <p class="act-t">Avec les autres</p>
+      <p class="act-s">La partie la plus intime : ce que tu es en amour, en famille et en amitié.</p>
+    </div>
+    <section class="res-section" id="rel-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Toi et les autres">Toi et les autres</h2>
+        <p>Comment tu t'attaches, comment tu te disputes, comment tu montres que tu tiens aux gens. Rien de politique ici : c'est la partie la plus intime du rapport. Ce sont des tendances, pas des diagnostics — elles bougent avec les relations et avec le temps.</p>
+      </div>
+      <div class="rel-grid">
+        <article class="res-card rel-card" id="rel-attach"></article>
+        <article class="res-card rel-card" id="rel-conflict"></article>
+      </div>
+      <div class="rel-grid rel-lower">
+        <article class="res-card">
+          <p class="card-kicker">Ta façon d'aimer</p>
+          <h2>Ce que tu donnes, ce qui te touche</h2>
+          <div id="rel-love"></div>
+        </article>
+        <div class="rel-side">
+          <article class="res-card rel-role" id="rel-role"></article>
+          <article class="res-card">
+            <p class="card-kicker">Quatre curseurs de plus</p>
+            <div id="rel-bars" class="rel-bars"></div>
+          </article>
+        </div>
+      </div>
+      <p class="rel-source">Les deux cartes s'appuient sur des modèles reconnus : l'attachement adulte à deux dimensions (Brennan, Clark et Shaver, dans la lignée de Bowlby) et les cinq façons de gérer un désaccord (Thomas et Kilmann). Les façons d'aimer reprennent une idée populaire, les « langages de l'amour » : à lire comme une piste, pas comme une science.</p>
+    </section>
+    <div class="res-act" data-act="Pour le plaisir" data-tab="Pour rire">
+      <p class="act-n">IV</p>
       <p class="act-t">Pour le plaisir</p>
       <p class="act-s">Le même profil, comparé à autre chose que des idées : un personnage, un animal, un film, un morceau.</p>
     </div>
@@ -707,7 +722,7 @@
       </div>
     </header>
 
-    <nav class="res-nav" id="group-nav" aria-label="Sommaire du cercle" hidden></nav>
+    <nav class="res-nav" id="group-nav" aria-label="Sommaire du cercle" data-pre-tab="En bref" hidden></nav>
 
     <div class="res-body">
 
@@ -763,7 +778,7 @@
     <section class="res-section">
 
 
-      <div class="res-act" data-act="Le cercle en politique">
+      <div class="res-act" data-act="Le cercle en politique" data-tab="Politique">
         <p class="act-n">I</p>
         <p class="act-t">Le cercle en politique</p>
         <p class="act-s">Où le groupe se situe, ce qui le divise et ce qui le rassemble.</p>
@@ -825,7 +840,7 @@
         <p class="group-intro">Le losange : où les curseurs de chacun le placent, de la gauche à la droite. Le rond : où ses choix en situation le placent.</p>
         <div id="g-sit-people" class="gsit-people"></div>
       </article>
-      <div class="res-act" data-act="Le cercle en caractère">
+      <div class="res-act" data-act="Le cercle en caractère" data-tab="Caractère">
         <p class="act-n">II</p>
         <p class="act-t">Le cercle en caractère</p>
         <p class="act-s">Le groupe vu par le tempérament : son portrait-robot, ses couleurs, ses affinités.</p>
@@ -896,7 +911,7 @@
         <div id="g-awards-medals" class="medals"></div>
         <div id="g-awards" class="awards"></div>
       </article>
-      <div class="res-act" data-act="Pour le plaisir">
+      <div class="res-act" data-act="Pour le plaisir" data-tab="Pour rire">
         <p class="act-n">III</p>
         <p class="act-t">Pour le plaisir</p>
         <p class="act-s">Un personnage, un animal, un film et un morceau par personne — tous différents.</p>
@@ -945,7 +960,7 @@
       </article>
     </section>
 
-    <div class="res-act" data-act="Un par un">
+    <div class="res-act" data-act="Un par un" data-tab="Profils">
       <p class="act-n">IV</p>
       <p class="act-t">Un par un</p>
       <p class="act-s">Le test complet de chaque personne, à déplier.</p>
@@ -988,8 +1003,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=65"></script>
-  <script src="js/profiles.js?v=65"></script>
-  <script src="js/app.js?v=65"></script>
+  <script src="js/questions.js?v=66"></script>
+  <script src="js/profiles.js?v=66"></script>
+  <script src="js/app.js?v=66"></script>
 </body>
 </html>

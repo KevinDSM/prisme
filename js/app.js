@@ -176,7 +176,7 @@
     const walk = parent => {
       [...parent.children].forEach(el => {
         if (el.hidden) return;
-        if (el.classList.contains('res-act')) { out.push({ act: el.dataset.act || '' }); return; }
+        if (el.classList.contains('res-act')) { out.push({ act: el.dataset.act || '', tab: el.dataset.tab || '', actEl: el }); return; }
         if (!el.matches('.res-section, .res-card') || el.offsetParent === null) return;
         const hd = headOf(el);
         const h = hd ? hd.querySelector('h2') : el.querySelector(':scope > h2');
@@ -208,7 +208,7 @@
 
     const targets = [];
     navItems(screen).forEach((it, i) => {
-      if (it.act) { targets.push({ act: it.act }); return; }
+      if (it.act) { targets.push(it); return; }
       const h = it.h;
       const anchor = h.closest('.res-section, .res-card') || h;
       if (!anchor.id) anchor.id = navId + '-s' + i;
@@ -221,12 +221,37 @@
     const links = targets.filter(t => t.id);
     if (links.length < 4) { nav.hidden = true; nav.innerHTML = ''; return; }
 
-    nav.innerHTML = `<p class="nav-title">Sommaire</p><ol>${targets.map(t => t.act
-      ? `<li class="nav-act">${esc(t.act)}</li>`
-      : `<li><a href="#${t.id}" data-nav-to="${t.id}">${esc(t.label)}</a></li>`).join('')}</ol>`;
+    /* Les chapitres : sur un téléphone, vingt-sept pastilles qu'on fait défiler
+       ne disent jamais où l'on est. On n'y montre que les quatre ou cinq
+       chapitres ; leurs sections s'affichent en titres dans la page. */
+    const chapters = [];
+    targets.forEach(t => {
+      if (t.act) { chapters.push({ label: t.tab || t.act, act: t.actEl, links: [] }); return; }
+      if (!chapters.length) chapters.push({ label: nav.dataset.preTab || 'En bref', act: null, links: [] });
+      const c = chapters[chapters.length - 1];
+      c.links.push(t);
+      t.chap = c;
+    });
+    const chaps = chapters.filter(c => c.links.length);
+    chaps.forEach((c, i) => { c.i = i; });
+
+    nav.innerHTML = `<div class="nav-tabs">${chaps.map(c =>
+      `<button type="button" class="nav-tab" data-chap="${c.i}">${esc(c.label)}</button>`).join('')}</div>`
+      + `<p class="nav-title">Sommaire</p><ol>${targets.map(t => t.act
+        ? (t.chap = chaps.find(c => c.act === t.actEl)) ? `<li class="nav-act"><button type="button" data-chap="${t.chap.i}">${esc(t.act)}</button></li>` : ''
+        : `<li><a href="#${t.id}" data-nav-to="${t.id}">${esc(t.label)}</a></li>`).join('')}</ol>`;
     nav.hidden = false;
 
+    // Un chapitre : on referme ce qui est ouvert ailleurs, et on arrive sur ses titres
+    const goChapter = c => {
+      topFolds(screen).forEach(d => { if (!c.links.some(t => t.el.contains(d))) d.open = false; });
+      if (c.links.length === 1) revealFold(c.links[0].el); // un chapitre d'une seule section : on l'ouvre
+      (c.act || c.links[0].el).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     nav.onclick = e => {
+      const b = e.target.closest('[data-chap]');
+      if (b) { goChapter(chaps[Number(b.dataset.chap)]); return; }
       const a = e.target.closest('[data-nav-to]');
       if (!a) return;
       e.preventDefault();
@@ -236,18 +261,27 @@
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Surligne la section en cours de lecture
+    // Surligne la section et le chapitre en cours de lecture
     if (navObserver) navObserver.disconnect();
     const byId = new Map(links.map(t => [t.id, nav.querySelector(`[data-nav-to="${t.id}"]`)]));
+    const tabs = [...nav.querySelectorAll('.nav-tab')];
+    const tabRow = nav.querySelector('.nav-tabs');
     const seen = new Set();
+    const markTab = i => tabs.forEach((b, k) => {
+      b.classList.toggle('is-on', k === i);
+      if (k === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    });
+    markTab(0);
     navObserver = new IntersectionObserver(entries => {
       entries.forEach(en => (en.isIntersecting ? seen.add(en.target.id) : seen.delete(en.target.id)));
       const first = links.find(t => seen.has(t.id));
       byId.forEach(l => l.classList.remove('is-on'));
       if (!first) return;
-      const link = byId.get(first.id);
-      link.classList.add('is-on');
-      if (nav.scrollWidth > nav.clientWidth + 4) link.scrollIntoView({ block: 'nearest', inline: 'center' });
+      byId.get(first.id).classList.add('is-on');
+      if (!first.chap) return;
+      markTab(first.chap.i);
+      const tab = tabs[first.chap.i];
+      if (tabRow.scrollWidth > tabRow.clientWidth + 4) tabRow.scrollTo({ left: tab.offsetLeft - (tabRow.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' });
     }, { rootMargin: '-72px 0px -62% 0px' });
     links.forEach(t => navObserver.observe(t.el));
   }
@@ -498,10 +532,116 @@
 
   function startQuiz() {
     if (state.mode !== 'values') store(STORAGE_BACK, null);
-    $('q-total').textContent = quizList().length;
     showScreen('quiz');
     renderQuestion('in');
   }
+
+  /* Le test en parties. « 1 / 269 » décourage avant d'avoir commencé : on compte
+     plutôt partie par partie. Le tronc commun est mélangé exprès (idées et
+     caractère alternent), il se découpe donc en tranches d'une quarantaine ;
+     chaque module ajouté depuis forme une partie à lui seul. */
+  const PART_NAMES = { values: 'Tes valeurs', rel: 'Toi et les autres', sit: 'Face au réel' };
+  const PART_COLORS = ['#ff4d6d', '#ff9f1c', '#ffd60a', '#57cc99', '#4dc9ff', '#7b8cff', '#c77dff', '#ff70a6'];
+  const PART_INTRO = {
+    values: 'Ici, pas d\'opinion : dis simplement si la phrase te ressemble.',
+    rel: 'Comment tu aimes, tu te disputes, tu tiens aux tiens. Rien de politique.',
+    sit: 'Pas de bonne réponse : choisis ce que tu ferais vraiment, pas ce qu\'il faudrait dire.',
+  };
+  function partsOf(list) {
+    const runs = [];
+    list.forEach((q, i) => {
+      const last = runs[runs.length - 1];
+      if (last && last.m === q.module) last.end = i + 1;
+      else runs.push({ m: q.module, start: i, end: i + 1 });
+    });
+    const parts = [];
+    runs.forEach(r => {
+      if (PART_NAMES[r.m]) { parts.push({ ...r, name: PART_NAMES[r.m] }); return; }
+      const k = Math.max(1, Math.round((r.end - r.start) / 40)), size = Math.ceil((r.end - r.start) / k);
+      for (let s = r.start; s < r.end; s += size) parts.push({ m: r.m, start: s, end: Math.min(r.end, s + size), name: 'Tes idées' });
+    });
+    parts.forEach((x, i) => { x.color = PART_COLORS[i % PART_COLORS.length]; });
+    return parts;
+  }
+
+  function paintProgress(parts, index, total) {
+    const bar = $('progress');
+    const key = parts.map(x => x.end).join(',');
+    if (bar.dataset.key !== key) {
+      bar.dataset.key = key;
+      bar.innerHTML = parts.map(x => `<i style="flex:${x.end - x.start};--c:${x.color}"><b></b></i>`).join('');
+    }
+    [...bar.children].forEach((seg, k) => {
+      const x = parts[k];
+      const f = index >= x.end ? 1 : index <= x.start ? 0 : (index - x.start) / (x.end - x.start);
+      seg.firstChild.style.width = (f * 100) + '%';
+      seg.classList.toggle('is-on', index >= x.start && index < x.end);
+    });
+    bar.setAttribute('aria-valuenow', Math.round(index / total * 100));
+  }
+
+  /* Entre deux parties, une pause d'une ligne : ce qui est fait, un premier
+     aperçu du profil, et ce qui vient. */
+  function breakPeek(done, parts) {
+    try {
+      // le même chemin que le vrai résultat : on encode puis on relit
+      const r = decodeResult(encodeResult(compute(state.answers)));
+      if (done.m === 'core' && state.mode !== 'values') {
+        const core = parts.filter(x => x.m === 'core');
+        const fam = rankFamilies(r)[0];
+        if (core[core.length - 1] === done) {
+          const temp = rankTemperaments(r)[0];
+          return `Tes trois portraits sont prêts. Premier indice : <b>${esc(fam.name)}</b>, tendance <b>${esc(shortName(temp.name))}</b>. La suite t'attend à la fin.`;
+        }
+        return `Pour l'instant, ton profil penche vers : <b>${esc(fam.name)}</b>. Ça peut encore bouger d'ici la fin.`;
+      }
+      if (done.m === 'values') {
+        const vp = valueProfile(r);
+        if (vp) return `Ta boussole de valeurs se dessine : <b>${esc(valueTitle(vp))}</b>.`;
+      }
+      if (done.m === 'rel') return 'Ton portrait « avec les autres » est prêt : il t\'attend dans ton profil.';
+    } catch (e) { /* un aperçu en moins, rien de grave */ }
+    return '';
+  }
+
+  function showBreak(parts, k) {
+    const list = quizList(), done = parts[k - 1], next = parts[k];
+    const frac = state.index / list.length;
+    $('q-card').hidden = true;
+    document.querySelector('.quiz-actions').hidden = true;
+    document.querySelector('.quiz-hint').hidden = true;
+    $('q-break').hidden = false;
+    $('q-break').style.setProperty('--c', done.color);
+    $('q-break-k').textContent = `Partie ${k} sur ${parts.length} terminée`;
+    const core = parts.filter(x => x.m === 'core');
+    $('q-break-t').textContent = k === parts.length - 1 ? 'Dernière ligne droite.'
+      : done === core[core.length - 1] && core.length > 1 ? 'Tes idées sont bouclées !'
+      : frac >= 0.5 && done.start / list.length < 0.5 ? 'Plus de la moitié !'
+      : ['Première étape franchie.', 'Beau rythme, continue.', 'Tu tiens le bon bout.', 'Ça avance bien.', 'La ligne d\'arrivée se rapproche.'][Math.min(k - 1, 4)];
+    const peek = breakPeek(done, parts);
+    $('q-break-peek').hidden = !peek;
+    $('q-break-peek').innerHTML = peek;
+    const n = next.end - next.start;
+    $('q-break-next').innerHTML = (PART_NAMES[next.m]
+      ? `<b>Ensuite : ${esc(next.name)}</b>, ${n} question${n > 1 ? 's' : ''}, environ`
+      : `<b>Ensuite : ${n} nouvelles questions sur tes idées</b>, environ`)
+      + ` ${minutesFor(list.slice(next.start, next.end))} min.`
+      + (PART_INTRO[next.m] ? ` ${PART_INTRO[next.m]}` : '')
+      + `<br><span>Il reste environ ${minutesFor(list.slice(state.index))} min en tout.</span>`;
+    paintProgress(parts, state.index, list.length);
+    $('q-part').textContent = `Partie ${k} sur ${parts.length} · terminée`;
+    $('btn-break').focus({ preventScroll: true });
+  }
+
+  function hideBreak() {
+    $('q-break').hidden = true;
+    $('q-card').hidden = false;
+    document.querySelector('.quiz-actions').hidden = false;
+    document.querySelector('.quiz-hint').hidden = false;
+  }
+
+  // Sur un écran tactile, les raccourcis clavier ne servent à rien : on dit plutôt quoi toucher
+  const TOUCH = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
 
   function labelFor(v) {
     const a = Math.abs(v);
@@ -529,13 +669,20 @@
     const list = quizList();
     const q = list[state.index];
     const card = $('q-card');
+    hideBreak();
     card.classList.remove('is-leaving', 'is-back');
     void card.offsetWidth; // relance l'animation
     if (dir === 'back') card.classList.add('is-back');
 
-    $('q-index').textContent = state.index + 1;
+    const parts = partsOf(list);
+    const pi = Math.max(0, parts.findIndex(x => state.index >= x.start && state.index < x.end));
+    const part = parts[pi];
+    $('q-index').textContent = state.index - part.start + 1;
+    $('q-total').textContent = part.end - part.start;
+    $('q-part').textContent = parts.length > 1 ? `Partie ${pi + 1} sur ${parts.length} · ${part.name}` : part.name;
+    $('q-part').style.setProperty('--c', part.color);
+    paintProgress(parts, state.index, list.length);
     $('q-text').textContent = q.t;
-    const p = Math.round((state.index / list.length) * 100);
     const kicker = document.querySelector('.q-kicker');
     const isChoice = q.type === 'choice';
     kicker.textContent = q.module === 'values' ? 'Tes valeurs · à quel point cette phrase te ressemble ?'
@@ -544,25 +691,17 @@
       : 'Dans quelle mesure es-tu d\'accord ?';
     kicker.classList.toggle('is-values', q.module === 'values' || q.module === 'rel');
     kicker.classList.toggle('is-sit', q.module === 'sit');
-    const prevModule = state.index > 0 ? list[state.index - 1].module : null;
-    if (state.index > 0 && prevModule !== q.module && dir !== 'back') {
-      const left = list.slice(state.index).some(x => x.module !== q.module);
-      const when = left ? 'Partie suivante' : 'Dernière partie';
-      if (q.module === 'values') toast(`${when} : tes valeurs (${VALUE_QUESTIONS.length} curseurs). Ici, pas d'opinion : dis simplement si la phrase te ressemble.`);
-      if (q.module === 'rel') toast(`${when} : toi et les autres (${REL_QUESTIONS.length} questions). Comment tu aimes, tu te disputes, tu tiens aux tiens. Rien de tout ça n'est politique.`);
-      if (q.module === 'sit') toast(`${when} : ${SITS.length} mises en situation. Pas de bonne réponse : choisis ce que tu ferais vraiment, pas ce qu'il faudrait dire.`);
-    }
     $('q-situation-q').textContent = q.module === 'sit' && q.q ? q.q : '';
     $('q-situation-q').hidden = !(q.module === 'sit' && q.q);
     $('q-card').classList.toggle('is-choice', isChoice);
     $('q-card').classList.toggle('is-sit', q.module === 'sit');
     $('q-slider-block').hidden = isChoice;
-    document.querySelector('.quiz-hint').textContent = isChoice
-      ? `Touches 1 à ${q.o.length} pour choisir · Entrée ou double-clic pour valider`
-      : 'Flèches ← → pour ajuster · Entrée pour valider · H pour le cœur';
+    document.querySelector('.quiz-hint').textContent = TOUCH
+      ? (isChoice ? 'Touche ta réponse, puis Suivant' : 'Touche une graduation pour répondre d\'un coup, ou fais glisser le curseur')
+      : isChoice
+        ? `Touches 1 à ${q.o.length} pour choisir · Entrée ou double-clic pour valider`
+        : 'Flèches ← → pour ajuster · Entrée pour valider · H pour le cœur · clic sur une graduation pour répondre d\'un coup';
     heart.closest('.heart-toggle').hidden = isChoice || q.module === 'rel';
-    $('progress-fill').style.width = p + '%';
-    document.querySelector('.progress').setAttribute('aria-valuenow', p);
 
     const saved = state.answers[q.id];
     touched = false;
@@ -633,7 +772,10 @@
         finishQuiz();
       } else {
         saveProgress();
-        renderQuestion('in');
+        const parts = partsOf(quizList());
+        const k = parts.findIndex(x => x.start === state.index);
+        if (k > 0) showBreak(parts, k);
+        else renderQuestion('in');
       }
     }, 220);
   }
@@ -782,6 +924,16 @@
       if (Math.abs(Number(slider.value)) < 6) { slider.value = 0; paintSlider(); }
     });
     $('btn-next').onclick = () => goNext(false);
+    $('btn-break').onclick = () => renderQuestion('in');
+    // Une graduation touchée : la réponse est donnée et on passe à la suite, d'un seul geste
+    $('slider-ticks').addEventListener('click', e => {
+      const b = e.target.closest('[data-v]');
+      if (!b || transitioning) return;
+      slider.value = b.dataset.v;
+      touched = true;
+      paintSlider();
+      setTimeout(() => goNext(false), 240);
+    });
     $('q-choices').addEventListener('click', e => {
       const b = e.target.closest('[data-choice]');
       if (b) pickChoice(Number(b.dataset.choice));
@@ -808,6 +960,10 @@
     document.addEventListener('keydown', e => {
       if (!$('screen-quiz').classList.contains('is-active')) return;
       if (!$('pause-modal').hidden) { if (e.key === 'Escape') closePause(); return; }
+      if (!$('q-break').hidden) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); renderQuestion('in'); }
+        return;
+      }
       if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
       if (e.key === 'Enter') {
         if (e.target.closest && e.target.closest('[data-choice]')) {
@@ -6407,7 +6563,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 65;
+  const BUILD = 66;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
