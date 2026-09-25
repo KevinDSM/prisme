@@ -4429,7 +4429,7 @@
      laisse simplement sa section vide : le reste du rapport s'affiche quand même. */
   const EXTRA_SCRIPTS = ['characters', 'animals', 'films', 'musics', 'dishes', 'company', 'wow',
     'tvshows', 'monuments', 'plants', 'countries', 'sweets', 'medicine', 'ailments', 'organs', 'emotions', 'emojis',
-    'planets', 'colors', 'objects', 'brands'];
+    'planets', 'colors', 'objects', 'brands', 'tales', 'cities', 'clothes'];
   let extrasReady = false, extrasPromise = null;
 
   function initExtras() {
@@ -5743,6 +5743,12 @@
       get items() { return (window.PRISME_OBJECTS || { OBJECTS: [] }).OBJECTS; } },
     { key: 'entreprise', title: 'Une entreprise', unit: 'entreprises', like: 'comme elle', k: 'Tu serais', circle: 'Le conglomérat du cercle',
       get items() { return (window.PRISME_BRANDS || { BRANDS: [] }).BRANDS; } },
+    { key: 'conte', title: 'Un personnage de conte', unit: 'personnages', like: 'comme ce personnage', k: 'Tu serais', circle: 'Le livre de contes du cercle',
+      get items() { return (window.PRISME_TALES || { TALES: [] }).TALES; } },
+    { key: 'ville', title: 'Une ville française', unit: 'villes', like: 'comme elle', k: 'Tu serais', circle: 'Le tour de France du cercle',
+      get items() { return (window.PRISME_CITIES || { CITIES: [] }).CITIES; } },
+    { key: 'vetement', title: 'Un vêtement', unit: 'vêtements', like: 'comme lui', k: 'Tu serais', circle: 'La garde-robe du cercle',
+      get items() { return (window.PRISME_CLOTHES || { CLOTHES: [] }).CLOTHES; } },
   ];
 
   function renderMorePicks(cur) {
@@ -6262,7 +6268,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 62;
+  const BUILD = 63;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
