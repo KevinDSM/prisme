@@ -2032,67 +2032,146 @@
   const QUAL_ART = { fia: 'la ', det: 'la ', emp: 'l\'', ouv: 'l\'', ind: 'l\'', lea: 'le ', san: 'le ', dip: 'la ', aud: 'l\'',
     rig: 'la ', opt: 'l\'', vig: 'la ', soc: 'la ', com: 'la ', ide: 'l\'', att: 'l\'' };
 
+  const MATCH_DISC_SAME = {
+    dom: "Même couleur dominante au DISC, le rouge : deux tempéraments qui aiment décider et avancer vite. Ensemble, ça va loin, et ça va vite.",
+    inf: "Même couleur dominante au DISC, le jaune : deux énergies communicatives qui se nourrissent l'une l'autre. Les fous rires sont garantis.",
+    ste: "Même couleur dominante au DISC, le vert : deux présences calmes et fidèles, qui savent se reposer l'une sur l'autre.",
+    con: "Même couleur dominante au DISC, le bleu : deux esprits précis, qui aiment les choses bien faites et se respectent pour ça.",
+  };
+  // deux couleurs différentes qui se complètent : [couleur de x, couleur de y] → phrase
+  const MATCH_DISC_PAIR = {
+    'dom+ste': (x, y) => `${x} donne l'élan, ${y} apporte la stabilité : leurs couleurs DISC se complètent à merveille.`,
+    'con+inf': (x, y) => `${y} apporte l'enthousiasme, ${x} la rigueur : un duo complémentaire, où chaque angle mort est couvert.`,
+    'dom+inf': (x, y) => `${x} décide, ${y} embarque les autres : ensemble, un vrai moteur.`,
+    'con+ste': (x, y) => `${y} apporte la patience, ${x} la méthode : un duo sur lequel on peut bâtir.`,
+    'con+dom': (x, y) => `${y} fonce, ${x} vérifie : un tandem redoutablement efficace.`,
+    'inf+ste': (x, y) => `${x} met l'ambiance, ${y} veille à ce que tout le monde suive : un duo chaleureux.`,
+  };
+  const MATCH_FOUND = {
+    care: "voir quelqu'un souffrir touche les deux en plein cœur",
+    fair: "l'injustice fait bondir les deux",
+    loy: "pour les deux, la loyauté ne se négocie pas",
+    auth: "les règles et les engagements comptent pour les deux",
+    sanc: "pour les deux, certaines choses méritent le respect, au-delà de l'utile",
+    lib: "pour les deux, la liberté de chacun est sacrée",
+  };
+  const MATCH_CONF_SAME = {
+    build: "Dans un désaccord, les deux cherchent une vraie solution à deux : leurs disputes finissent en accords.",
+    yield: "Les deux font passer le lien avant le fait d'avoir raison : entre ces deux-là, la paix revient toujours vite.",
+    deal: "Les deux savent trouver vite le terrain d'entente : chacun fait un pas, et on avance.",
+    avoid: "Les deux préfèrent laisser retomber la pression plutôt que d'attaquer de front : leur relation reste paisible.",
+  };
+
   function matchHtml(p, q) {
     const A = p.r, B = q.r, a = esc(cap(p.name)), bn = esc(cap(q.name));
     const d = duoMetrics(p, q);
+    const seed = [...(p.name + q.name)].reduce((t, c) => t + c.charCodeAt(0), 0);
+    const pick = (arr, salt) => arr[(seed + salt) % arr.length];
     const same = (id, min) => A.known.has(id) && B.known.has(id) && A.axes[id] * B.axes[id] > 0
       && Math.min(Math.abs(A.axes[id]), Math.abs(B.axes[id])) >= min;
     const side = id => (A.axes[id] < 0 ? 0 : 1);
+    const b = t => `<b>${t}</b>`;
+    const paras = [];
 
+    // En politique
     const pol = [];
-    d.agree.slice(0, 4).forEach(f => pol.push(esc(PORTRAIT_POL[f.x.id][side(f.x.id)])));
-    Object.keys(MATCH_META).forEach(id => { if (same(id, 0.35) && pol.length < 4) pol.push(esc(MATCH_META[id][side(id)])); });
     const famA = rankFamilies(A)[0], famB = rankFamilies(B)[0];
-    const hearts = A.heartAxes.filter(id => B.heartAxes.includes(id));
+    if (famA.name === famB.name) {
+      const f = esc(familyPlural(famA.name));
+      pol.push(pick([
+        `${a} et ${bn} se retrouvent dans la même famille politique, celle des ${b(f)} : autour d'une table, la discussion tient plus de l'échange complice que du débat.`,
+        `Premier point commun, et pas des moindres : ${a} et ${bn} sont des ${b(f)}. Sur l'essentiel, ces deux-là se comprennent à demi-mot.`,
+        `${a} et ${bn} partagent la même famille politique, celle des ${b(f)} : de quoi refaire le monde sans jamais se fâcher.`,
+      ], 0));
+    }
+    const ag = d.agree.slice(0, 3).map(f => ({ t: esc(theme(f.x.id)), v: b(esc(PORTRAIT_POL[f.x.id][side(f.x.id)])) }));
+    if (ag.length >= 2) {
+      pol.push(`Sur ${ag[0].t}, les deux défendent ${ag[0].v} ; sur ${ag[1].t}, ${ag[1].v}${ag[2] ? ` ; et sur ${ag[2].t}, ${ag[2].v}` : ''}. `
+        + pick(["Pas besoin de se convaincre : il suffit d'avancer ensemble.", 'Des convictions partagées, qui font gagner un temps fou en discussion.', "Le genre d'accord qui rend les soirées faciles."], 1));
+    } else if (ag.length === 1) {
+      pol.push(`Sur ${ag[0].t}, les deux défendent ${ag[0].v} : un vrai terrain d'entente, sur lequel s'appuyer quand le reste diverge.`);
+    }
+    const hearts = A.heartAxes.filter(id => B.heartAxes.includes(id)).slice(0, 2).map(id => esc(theme(id)));
+    if (hearts.length) pol.push(`Et ${hearts.length > 1 ? 'deux sujets de cœur les réunissent' : 'un sujet de cœur les réunit'} : ${hearts.map(h => b(h)).join(' ; ')}. C'est le genre de terrain qui soude.`);
+    const meta = Object.keys(MATCH_META).filter(id => same(id, 0.35)).slice(0, 2).map(id => esc(MATCH_META[id][side(id)]));
+    if (meta.length) pol.push(`Même façon d'aborder la politique, aussi : ${joinFr(meta)}.`);
+    if (!pol.length) {
+      const near = knownList(POLITICAL, A).filter(x => B.known.has(x.id))
+        .sort((x, y) => Math.abs(A.axes[x.id] - B.axes[x.id]) - Math.abs(A.axes[y.id] - B.axes[y.id]))[0];
+      pol.push(`En politique, ${a} et ${bn} ne partent pas du même endroit, et c'est souvent là que naissent les discussions les plus intéressantes.`
+        + (near ? ` Leur terrain le plus sûr pour se retrouver : ${b(esc(theme(near.id)))}, où leurs avis sont les plus proches.` : ''));
+    }
+    paras.push({ h: 'En politique', p: pol.join(' ') });
 
+    // Dans la tête
     const head = [];
-    PSYCHE.forEach(x => { if (same(x.id, 0.3)) head.push({ t: MATCH_PSY[x.id][side(x.id)], w: Math.min(Math.abs(A.axes[x.id]), Math.abs(B.axes[x.id])) }); });
-    head.sort((u, v) => v.w - u.w);
+    const psyC = PSYCHE.filter(x => same(x.id, 0.3))
+      .sort((x, y) => Math.min(Math.abs(B.axes[y.id]), Math.abs(A.axes[y.id])) - Math.min(Math.abs(B.axes[x.id]), Math.abs(A.axes[x.id])))
+      .slice(0, 2).map(x => b(esc(MATCH_PSY[x.id][side(x.id)])));
+    if (psyC.length) {
+      head.push(pick([
+        `Côté caractère, ${a} et ${bn} ont en commun ${joinFr(psyC)} : ces deux-là se comprennent sans avoir besoin de s'expliquer.`,
+        `Au quotidien, ${a} et ${bn} partagent ${joinFr(psyC)} : le même rythme, les mêmes réflexes, et beaucoup de choses qui vont de soi.`,
+        `${a} et ${bn} se ressemblent aussi dans leur façon d'être : ${joinFr(psyC)}, chez les deux.`,
+      ], 2));
+    }
     const dA = discProfile(A.disc), dB = discProfile(B.disc);
+    if (dA && dB && !dA.balanced && !dB.balanced) {
+      if (dA.primary.id === dB.primary.id) head.push(MATCH_DISC_SAME[dA.primary.id]);
+      else {
+        const [x, y] = [[dA.primary.id, a], [dB.primary.id, bn]].sort((u, v) => (u[0] < v[0] ? -1 : 1));
+        const f = MATCH_DISC_PAIR[x[0] + '+' + y[0]];
+        if (f) head.push(f(x[1], y[1]));
+      }
+    }
     const vA = A.values && valueProfile(A), vB = B.values && valueProfile(B);
     const vals = vA && vB ? vA.ranked.slice(0, 3).filter(v => vB.ranked.slice(0, 3).some(w => w.id === v.id)) : [];
+    if (vals.length === 1) head.push(`Dans la vie, les deux tiennent à la même chose : ${PORTRAIT_V[vals[0].id][0]}${b(esc(vals[0].label.toLowerCase()))} (${esc(vals[0].short)}).`);
+    else if (vals.length > 1) head.push(`Dans la vie, les deux tiennent aux mêmes choses : ${joinFr(vals.map(v => `${PORTRAIT_V[v.id][0]}${b(esc(v.label.toLowerCase()))}`))}. C'est souvent ce qui fait durer une amitié.`);
     const fA = FOUNDATIONS.slice().sort((x, y) => A.found[y.id] - A.found[x.id])[0];
     const fB = FOUNDATIONS.slice().sort((x, y) => B.found[y.id] - B.found[x.id])[0];
+    if (fA.id === fB.id) head.push(`Et un même réflexe moral en tête, ${artLe(fA)}${b(esc(fA.label.toLowerCase()))} : ${MATCH_FOUND[fA.id]}.`);
     const top4 = r => qualityScores(r).filter(x => x.score !== null).sort((x, y) => y.score - x.score).slice(0, 4);
-    const quals = top4(A).filter(x => top4(B).some(y => y.id === x.id));
+    const quals = top4(A).filter(x => top4(B).some(y => y.id === x.id)).slice(0, 3);
+    if (quals.length) head.push(`${quals.length > 1 ? 'Leurs grandes forces se ressemblent' : 'Une grande force en commun'} : ${joinFr(quals.map(x => `${QUAL_ART[x.id] || ''}${b(esc(x.name.toLowerCase()))}`))}${quals.length > 1 ? ', chez les deux. Ensemble, elles s\'additionnent.' : ', qui compte double quand on est deux.'}`);
+    if (!head.length) head.push(`Dans la tête, ${a} et ${bn} fonctionnent différemment, et c'est une chance : chacun voit ce que l'autre ne voit pas.`);
+    paras.push({ h: 'Dans la tête', p: head.join(' ') });
 
-    const rel = [];
+    // Avec les autres
     if (A.rel && B.rel) {
+      const rel = [];
       const ca = conflictOf(A.rel), cb = conflictOf(B.rel);
-      if (ca.id === cb.id && ca.id !== 'defend') rel.push(`la même façon de gérer un désaccord : ${MATCH_CONFLICT[ca.id]}`);
-      if (attachOf(A.rel).id === 'secure' && attachOf(B.rel).id === 'secure') rel.push('une confiance sereine, sans besoin de se rassurer sans cesse');
-      if (d.giveAB && d.giveBA) rel.push(`chacun donne naturellement ce qui touche l'autre (${esc(d.giveAB.label.toLowerCase())} et ${esc(d.giveBA.label.toLowerCase())})`);
-      else if (d.giveAB) rel.push(`${a} donne naturellement ce qui touche le plus ${bn} : ${esc(d.giveAB.label.toLowerCase())}`);
-      else if (d.giveBA) rel.push(`${bn} donne naturellement ce qui touche le plus ${a} : ${esc(d.giveBA.label.toLowerCase())}`);
-      if (A.rel.fam >= 0.6 && B.rel.fam >= 0.6) rel.push('la famille au centre de la vie');
-      if (A.rel.cer >= 0.6 && B.rel.cer >= 0.6) rel.push('le goût d\'être bien entouré de monde');
-      else if (A.rel.cer <= 0.4 && B.rel.cer <= 0.4) rel.push('un petit cercle d\'amis choisis avec soin');
+      if (ca.id === cb.id && MATCH_CONF_SAME[ca.id]) rel.push(MATCH_CONF_SAME[ca.id]);
+      const tA = attachOf(A.rel).id, tB = attachOf(B.rel).id;
+      if (tA === 'secure' && tB === 'secure') rel.push('Et la confiance est sereine des deux côtés : pas besoin de se rassurer sans cesse.');
+      else if (tA === 'anxious' && tB === 'anxious') rel.push("Les deux s'attachent fort et aiment les signes d'affection : entre ces deux-là, on ne se laisse jamais sans nouvelles.");
+      else if (tA === 'avoidant' && tB === 'avoidant') rel.push('Les deux tiennent à leur liberté : une relation sans pression, où l\'on se retrouve toujours avec plaisir.');
+      else if (tA === 'secure' && (tB === 'anxious' || tB === 'fearful')) rel.push(`${a} apporte à ${bn} un calme qui rassure : exactement ce dont un cœur qui s'attache fort a besoin.`);
+      else if (tB === 'secure' && (tA === 'anxious' || tA === 'fearful')) rel.push(`${bn} apporte à ${a} un calme qui rassure : exactement ce dont un cœur qui s'attache fort a besoin.`);
+      const gA = d.giveAB && esc(d.giveAB.label.toLowerCase()), gB = d.giveBA && esc(d.giveBA.label.toLowerCase());
+      if (gA && gB) rel.push(`Plus rare : chacun donne naturellement ce qui touche l'autre. ${a} montre son affection par ${b(gA)}, exactement ce que ${bn} préfère recevoir ; et ${bn} passe par ${b(gB)}, ce qui touche le plus ${a}.`);
+      else if (gA) rel.push(`Bonus : ${a} montre son affection par ${b(gA)}, et c'est justement ce qui touche le plus ${bn}.`);
+      else if (gB) rel.push(`Bonus : ${bn} montre son affection par ${b(gB)}, et c'est justement ce qui touche le plus ${a}.`);
+      if (A.rel.fam >= 0.6 && B.rel.fam >= 0.6) rel.push('La famille compte énormément pour les deux.');
+      if (A.rel.cer >= 0.6 && B.rel.cer >= 0.6) rel.push('Et les deux aiment avoir du monde autour.');
+      else if (A.rel.cer <= 0.4 && B.rel.cer <= 0.4) rel.push("Et les deux préfèrent un petit cercle d'amis choisis avec soin.");
+      const rA = roleCloseOf(A), rB = roleCloseOf(B);
+      if (rA.id === rB.id) rel.push(`Chez leurs proches, les deux jouent le même rôle : ${esc(PORTRAIT_ROLE[rA.id][1].replace(/\{tiens\|siens\}/, 'siens'))}.`);
+      else rel.push(`Chez leurs proches, ${a} est ${esc(PORTRAIT_ROLE[rA.id][1])}, ${bn} ${esc(PORTRAIT_ROLE[rB.id][1])} : ${pick(['deux rôles qui se complètent', 'de quoi former une belle équipe', 'chacun apporte sa pierre'], 3)}.`);
+      paras.push({ h: 'Avec les autres', p: rel.join(' ') });
     }
 
-    const pct0 = pct(d.aff);
     const mood = d.aff >= 0.75 ? 'Une entente naturelle : ces deux-là parlent la même langue.'
-      : d.aff >= 0.62 ? 'De vraies affinités, sur le fond comme dans la façon d\'être.'
+      : d.aff >= 0.62 ? "De vraies affinités, sur le fond comme dans la façon d'être."
       : d.aff >= 0.5 ? 'Des points de rencontre bien réels, qui font de bons ponts.'
       : 'Deux mondes différents, mais des ponts existent, et ce sont les plus précieux.';
-    const li = list => `<ul>${list.map(x => `<li>${x}</li>`).join('')}</ul>`;
-    const blocks = [];
-    const polItems = [];
-    if (famA.name === famB.name) polItems.push(`la même famille politique : les ${esc(familyPlural(famA.name))}`);
-    if (hearts.length) polItems.push(`un même sujet de cœur : ${esc(joinFr(hearts.slice(0, 2).map(theme)))}`);
-    if (pol.length) polItems.push(`les deux défendent ${joinAlso(pol.map(x => `<b>${x}</b>`))}`);
-    if (polItems.length) blocks.push(`<h4>En politique</h4>${li(polItems)}`);
-    const headItems = [];
-    if (head.length) headItems.push(`un même tempérament : ${joinAlso(head.slice(0, 3).map(x => `<b>${esc(x.t)}</b>`))}`);
-    if (dA && dB && !dA.balanced && !dB.balanced && dA.primary.id === dB.primary.id) headItems.push(`la même couleur dominante au DISC : <b>${esc(dA.primary.color.toLowerCase())}</b>`);
-    const vArt = v => `${PORTRAIT_V[v.id][0]}<b>${esc(v.label.toLowerCase())}</b>`;
-    const qArt = x => `${QUAL_ART[x.id] || ''}<b>${esc(x.name.toLowerCase())}</b>`;
-    if (vals.length) headItems.push(`${vals.length > 1 ? 'des valeurs en commun' : 'une valeur en commun'} : ${joinFr(vals.map(vArt))}`);
-    if (fA.id === fB.id) headItems.push(`le même réflexe moral en tête : ${artLe(fA)}<b>${esc(fA.label.toLowerCase())}</b>`);
-    if (quals.length) headItems.push(`${quals.length > 1 ? 'des forces communes' : 'une force commune'} : ${joinFr(quals.slice(0, 3).map(qArt))}`);
-    if (headItems.length) blocks.push(`<h4>Dans la tête</h4>${li(headItems)}`);
-    if (rel.length) blocks.push(`<h4>Avec les autres</h4>${li(rel)}`);
-    if (!blocks.length) blocks.push(`<p class="pp-m-none">Peu de points communs évidents entre ${a} et ${bn} : c'est justement ce qui rend leurs échanges riches. Chacun a de quoi faire découvrir à l'autre un monde nouveau.</p>`);
-    return `<p class="pp-m-head"><span class="pp-m-pct">${pct0} %</span> ${a} et ${bn} · ${mood}</p>${blocks.join('')}`;
+    const end = d.aff >= 0.75 ? "Bref, le genre de duo qu'on aimerait croiser plus souvent."
+      : d.aff >= 0.62 ? "Bref, une belle entente, qui ne demande qu'à grandir."
+      : d.aff >= 0.5 ? "Bref, assez de points communs pour bien s'entendre, et assez de différences pour ne jamais s'ennuyer."
+      : 'Bref, deux regards différents, qui ont tout à gagner à se croiser.';
+    return `<p class="pp-m-head"><span class="pp-m-pct">${pct(d.aff)} %</span> ${a} et ${bn} · ${mood}</p>`
+      + paras.map(x => `<h4>${x.h}</h4><p class="pp-m-p">${x.p}</p>`).join('')
+      + `<p class="pp-m-end">${end}</p>`;
   }
 
   // La rangée de pastilles « Ce qui matche avec… » d'une personne
@@ -6964,7 +7043,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 68;
+  const BUILD = 69;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

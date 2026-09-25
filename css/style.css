@@ -2656,3 +2656,6 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .pp-match-out li { font-size: 15px; line-height: 1.55; color: var(--ink-2); }
 .pp-match-out li b { color: var(--ink); font-weight: 700; }
 .pp-m-none { margin: 10px 0 0 !important; font-size: 15px !important; }
+.portrait .pp-match-out .pp-m-p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ink-2); }
+.portrait .pp-match-out .pp-m-p b { color: var(--ink); font-weight: 700; }
+.portrait .pp-match-out .pp-m-end { margin: 14px 0 0; font-family: var(--font-display); font-style: italic; font-size: 16.5px; line-height: 1.45; color: var(--ink); }
