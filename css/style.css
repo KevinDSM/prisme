@@ -2588,11 +2588,17 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 .person-portrait .section-head h2 { font-size: clamp(22px, 3vw, 28px); }
 
 /* Les portraits du cercle : un prenom, une phrase, le texte en depliant */
-.pp-list { display: grid; margin-top: 6px; border-top: 1px solid var(--line); }
-.pp-item { border-bottom: 1px solid var(--line); }
+.pp-list { display: grid; gap: 10px; margin-top: 18px; }
+.pp-item {
+  border-radius: var(--radius); border: 1px solid var(--line-2);
+  background: rgba(var(--panel-rgb), 0.7); padding: 0 16px;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.pp-item:hover { border-color: color-mix(in srgb, var(--c) 45%, var(--line-2)); }
+.pp-item[open] { box-shadow: var(--shadow); }
 .pp-item > summary {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; row-gap: 4px; align-items: center;
-  margin: 0 -12px; padding: 16px 12px; border-radius: var(--radius-sm);
+  display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 4px; align-items: center;
+  margin: 0 -16px; padding: 16px; border-radius: var(--radius);
   list-style: none; cursor: pointer; transition: background 0.2s var(--ease);
 }
 .pp-item > summary::-webkit-details-marker { display: none; }
@@ -2605,11 +2611,48 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
 }
 .pp-name .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .pp-lead { grid-column: 1; font-family: var(--font-display); font-style: italic; font-size: 16px; line-height: 1.45; color: var(--ink-2); }
-.pp-item .fold-chev { grid-column: 2; grid-row: 1 / 3; }
+.pp-cue {
+  grid-column: 1; display: inline-flex; align-items: center; gap: 10px; margin-top: 4px;
+  font-size: 13px; font-weight: 800; letter-spacing: 0.04em; color: color-mix(in srgb, var(--c) 70%, var(--ink));
+}
+.pp-cue .fold-chev { width: 8px; height: 8px; border-color: currentColor; }
+.pp-cue .cue-c, .pp-item[open] .pp-cue .cue-o { display: none; }
+.pp-item[open] .pp-cue .cue-c { display: inline; }
 .pp-item[open] > summary .fold-chev { transform: rotate(-135deg); margin-top: 3px; }
-.pp-item > .portrait { padding: 0 0 26px 20px; }
+.pp-item > .portrait { padding: 0 0 22px 20px; }
 .pp-item > .portrait h3:first-child { margin-top: 6px; }
 @media (max-width: 560px) {
   .portrait p { font-size: 16px; }
   .pp-item > .portrait { padding-left: 14px; }
 }
+
+/* « Ce qui matche avec… » : une pastille par personne, le détail dessous */
+.pp-match { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); }
+.pp-match-k { margin: 0 0 10px !important; font-size: 12.5px !important; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent) !important; }
+.pp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.pp-chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px 0 12px;
+  border-radius: 999px; border: 1px solid var(--line-2); background: rgba(var(--panel-rgb), 0.9);
+  color: var(--ink); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.12s var(--ease);
+}
+.pp-chip .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.pp-chip small { font-size: 12.5px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.pp-chip:hover { border-color: var(--ink-3); }
+.pp-chip:active { transform: scale(0.97); }
+.pp-chip[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.pp-chip[aria-expanded="true"] small { color: inherit; opacity: 0.75; }
+.pp-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pp-match-out {
+  margin-top: 14px; padding: 16px 18px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--c) 9%, rgb(var(--panel-rgb)));
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  animation: fade-in 0.25s var(--ease) both;
+}
+.pp-m-head { margin: 0 !important; font-size: 15.5px !important; line-height: 1.5 !important; color: var(--ink) !important; }
+.pp-m-pct { display: inline-block; margin-right: 6px; font-family: var(--font-display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pp-match-out h4 { margin: 14px 0 4px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.pp-match-out ul { margin: 0; padding-left: 18px; }
+.pp-match-out li { font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+.pp-match-out li b { color: var(--ink); font-weight: 700; }
+.pp-m-none { margin: 10px 0 0 !important; font-size: 15px !important; }

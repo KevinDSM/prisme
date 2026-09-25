@@ -2003,6 +2003,108 @@
     return { lead, paras };
   }
 
+  /* « Ce qui matche avec… » : les points d'entente de deux personnes, en positif.
+     Politique d'un côté, tête et cœur de l'autre ; toujours « les deux », jamais « tous deux ». */
+  const MATCH_META = {
+    epi: ['le pragmatisme', 'la fidélité aux principes'],
+    chg: ['la réforme pas à pas', 'l\'envie de tout changer'],
+    dem: ['la confiance dans la voix du peuple', 'la confiance dans les experts'],
+    cfl: ['le goût du compromis', 'le rapport de force assumé'],
+    vis: ['l\'optimisme sur l\'avenir', 'l\'inquiétude pour l\'avenir'],
+    nat: ['la confiance dans les gens', 'une saine méfiance'],
+  };
+  const MATCH_PSY = {
+    aff: ['le cœur avant la tête', 'la tête avant le cœur'],
+    loc: ['l\'envie de prendre sa vie en main', 'une certaine sagesse face au hasard'],
+    rsk: ['la prudence', 'le goût du risque'],
+    ord: ['l\'art d\'improviser', 'le goût de l\'organisation'],
+    thr: ['la sérénité', 'la vigilance'],
+    col: ['l\'autonomie', 'le sens du collectif'],
+    tmp: ['l\'art de vivre l\'instant', 'l\'habitude de voir loin'],
+    cmp: ['l\'esprit d\'équipe', 'l\'esprit de compétition'],
+    opn: ['la curiosité', 'l\'attachement aux racines'],
+  };
+  const MATCH_CONFLICT = {
+    build: 'chercher une vraie solution à deux', yield: 'faire passer le lien avant tout',
+    deal: 'trouver vite le terrain d\'entente', avoid: 'laisser retomber la pression', defend: 'dire les choses franchement',
+  };
+
+  const QUAL_ART = { fia: 'la ', det: 'la ', emp: 'l\'', ouv: 'l\'', ind: 'l\'', lea: 'le ', san: 'le ', dip: 'la ', aud: 'l\'',
+    rig: 'la ', opt: 'l\'', vig: 'la ', soc: 'la ', com: 'la ', ide: 'l\'', att: 'l\'' };
+
+  function matchHtml(p, q) {
+    const A = p.r, B = q.r, a = esc(cap(p.name)), bn = esc(cap(q.name));
+    const d = duoMetrics(p, q);
+    const same = (id, min) => A.known.has(id) && B.known.has(id) && A.axes[id] * B.axes[id] > 0
+      && Math.min(Math.abs(A.axes[id]), Math.abs(B.axes[id])) >= min;
+    const side = id => (A.axes[id] < 0 ? 0 : 1);
+
+    const pol = [];
+    d.agree.slice(0, 4).forEach(f => pol.push(esc(PORTRAIT_POL[f.x.id][side(f.x.id)])));
+    Object.keys(MATCH_META).forEach(id => { if (same(id, 0.35) && pol.length < 4) pol.push(esc(MATCH_META[id][side(id)])); });
+    const famA = rankFamilies(A)[0], famB = rankFamilies(B)[0];
+    const hearts = A.heartAxes.filter(id => B.heartAxes.includes(id));
+
+    const head = [];
+    PSYCHE.forEach(x => { if (same(x.id, 0.3)) head.push({ t: MATCH_PSY[x.id][side(x.id)], w: Math.min(Math.abs(A.axes[x.id]), Math.abs(B.axes[x.id])) }); });
+    head.sort((u, v) => v.w - u.w);
+    const dA = discProfile(A.disc), dB = discProfile(B.disc);
+    const vA = A.values && valueProfile(A), vB = B.values && valueProfile(B);
+    const vals = vA && vB ? vA.ranked.slice(0, 3).filter(v => vB.ranked.slice(0, 3).some(w => w.id === v.id)) : [];
+    const fA = FOUNDATIONS.slice().sort((x, y) => A.found[y.id] - A.found[x.id])[0];
+    const fB = FOUNDATIONS.slice().sort((x, y) => B.found[y.id] - B.found[x.id])[0];
+    const top4 = r => qualityScores(r).filter(x => x.score !== null).sort((x, y) => y.score - x.score).slice(0, 4);
+    const quals = top4(A).filter(x => top4(B).some(y => y.id === x.id));
+
+    const rel = [];
+    if (A.rel && B.rel) {
+      const ca = conflictOf(A.rel), cb = conflictOf(B.rel);
+      if (ca.id === cb.id && ca.id !== 'defend') rel.push(`la même façon de gérer un désaccord : ${MATCH_CONFLICT[ca.id]}`);
+      if (attachOf(A.rel).id === 'secure' && attachOf(B.rel).id === 'secure') rel.push('une confiance sereine, sans besoin de se rassurer sans cesse');
+      if (d.giveAB && d.giveBA) rel.push(`chacun donne naturellement ce qui touche l'autre (${esc(d.giveAB.label.toLowerCase())} et ${esc(d.giveBA.label.toLowerCase())})`);
+      else if (d.giveAB) rel.push(`${a} donne naturellement ce qui touche le plus ${bn} : ${esc(d.giveAB.label.toLowerCase())}`);
+      else if (d.giveBA) rel.push(`${bn} donne naturellement ce qui touche le plus ${a} : ${esc(d.giveBA.label.toLowerCase())}`);
+      if (A.rel.fam >= 0.6 && B.rel.fam >= 0.6) rel.push('la famille au centre de la vie');
+      if (A.rel.cer >= 0.6 && B.rel.cer >= 0.6) rel.push('le goût d\'être bien entouré de monde');
+      else if (A.rel.cer <= 0.4 && B.rel.cer <= 0.4) rel.push('un petit cercle d\'amis choisis avec soin');
+    }
+
+    const pct0 = pct(d.aff);
+    const mood = d.aff >= 0.75 ? 'Une entente naturelle : ces deux-là parlent la même langue.'
+      : d.aff >= 0.62 ? 'De vraies affinités, sur le fond comme dans la façon d\'être.'
+      : d.aff >= 0.5 ? 'Des points de rencontre bien réels, qui font de bons ponts.'
+      : 'Deux mondes différents, mais des ponts existent, et ce sont les plus précieux.';
+    const li = list => `<ul>${list.map(x => `<li>${x}</li>`).join('')}</ul>`;
+    const blocks = [];
+    const polItems = [];
+    if (famA.name === famB.name) polItems.push(`la même famille politique : les ${esc(familyPlural(famA.name))}`);
+    if (hearts.length) polItems.push(`un même sujet de cœur : ${esc(joinFr(hearts.slice(0, 2).map(theme)))}`);
+    if (pol.length) polItems.push(`les deux défendent ${joinAlso(pol.map(x => `<b>${x}</b>`))}`);
+    if (polItems.length) blocks.push(`<h4>En politique</h4>${li(polItems)}`);
+    const headItems = [];
+    if (head.length) headItems.push(`un même tempérament : ${joinAlso(head.slice(0, 3).map(x => `<b>${esc(x.t)}</b>`))}`);
+    if (dA && dB && !dA.balanced && !dB.balanced && dA.primary.id === dB.primary.id) headItems.push(`la même couleur dominante au DISC : <b>${esc(dA.primary.color.toLowerCase())}</b>`);
+    const vArt = v => `${PORTRAIT_V[v.id][0]}<b>${esc(v.label.toLowerCase())}</b>`;
+    const qArt = x => `${QUAL_ART[x.id] || ''}<b>${esc(x.name.toLowerCase())}</b>`;
+    if (vals.length) headItems.push(`${vals.length > 1 ? 'des valeurs en commun' : 'une valeur en commun'} : ${joinFr(vals.map(vArt))}`);
+    if (fA.id === fB.id) headItems.push(`le même réflexe moral en tête : ${artLe(fA)}<b>${esc(fA.label.toLowerCase())}</b>`);
+    if (quals.length) headItems.push(`${quals.length > 1 ? 'des forces communes' : 'une force commune'} : ${joinFr(quals.slice(0, 3).map(qArt))}`);
+    if (headItems.length) blocks.push(`<h4>Dans la tête</h4>${li(headItems)}`);
+    if (rel.length) blocks.push(`<h4>Avec les autres</h4>${li(rel)}`);
+    if (!blocks.length) blocks.push(`<p class="pp-m-none">Peu de points communs évidents entre ${a} et ${bn} : c'est justement ce qui rend leurs échanges riches. Chacun a de quoi faire découvrir à l'autre un monde nouveau.</p>`);
+    return `<p class="pp-m-head"><span class="pp-m-pct">${pct0} %</span> ${a} et ${bn} · ${mood}</p>${blocks.join('')}`;
+  }
+
+  // La rangée de pastilles « Ce qui matche avec… » d'une personne
+  function matchRow(p, people) {
+    const others = people.filter(q => q !== p && q.r)
+      .map(q => ({ q, aff: affinityBetween(p.r, q.r).total })).sort((x, y) => y.aff - x.aff);
+    if (!others.length) return '';
+    return `<div class="pp-match"><p class="pp-match-k">Ce qui matche avec…</p><div class="pp-chips">${others.map(x =>
+      `<button type="button" class="pp-chip" data-match="${people.indexOf(p)}:${people.indexOf(x.q)}" aria-expanded="false"><span class="dot" style="background:${x.q.color}"></span>${esc(x.q.name)}<small>${pct(x.aff)} %</small></button>`).join('')}</div>`
+      + `<div class="pp-match-out" hidden></div></div>`;
+  }
+
   function portraitHtml(pt) {
     return `<p class="portrait-lead">${pt.lead}</p>` + pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('');
   }
@@ -5022,6 +5124,24 @@
     return [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
   }
 
+  let portraitPeople = [];
+  // Une pastille « Ce qui matche avec… » : le détail s'ouvre dessous, un second toucher le referme
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-match]');
+    if (!b) return;
+    const box = b.closest('.pp-match'), out = box.querySelector('.pp-match-out');
+    const was = b.getAttribute('aria-expanded') === 'true';
+    box.querySelectorAll('[data-match]').forEach(x => x.setAttribute('aria-expanded', 'false'));
+    if (was) { out.hidden = true; return; }
+    const [i, j] = b.dataset.match.split(':').map(Number);
+    const p = portraitPeople[i], q = portraitPeople[j];
+    if (!p || !q) return;
+    out.innerHTML = matchHtml(p, q);
+    out.style.setProperty('--c', q.color);
+    out.hidden = false;
+    b.setAttribute('aria-expanded', 'true');
+  });
+
   function renderGroupScreen(members) {
     groupMembers = members;
     const people = members.map((m, i) => ({
@@ -5048,11 +5168,12 @@
     }).join('');
 
     // Un portrait par personne : le prénom et la phrase d'accroche, le texte entier en dépliant
+    portraitPeople = people;
     $('g-portraits').innerHTML = people.filter(p => p.r).map(p => {
       const pt = portraitOf(p.r, p.name);
       return `<details class="pp-item" style="--c:${p.color}"><summary><span class="pp-name"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>`
-        + `<span class="pp-lead">${pt.lead}</span><span class="fold-chev" aria-hidden="true"></span></summary>`
-        + `<div class="portrait">${pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('')}</div></details>`;
+        + `<span class="pp-lead">${pt.lead}</span><span class="pp-cue"><span class="cue-o">Lire le portrait</span><span class="cue-c">Replier</span><span class="fold-chev" aria-hidden="true"></span></span></summary>`
+        + `<div class="portrait">${pt.paras.map(x => `<h3>${x.h}</h3><p>${x.p}</p>`).join('')}${matchRow(p, people)}</div></details>`;
     }).join('');
 
     // Cohésion : affinité moyenne entre toutes les paires
@@ -5197,7 +5318,8 @@
     // le portrait, cette fois au prénom
     const pt = document.createElement('section');
     pt.className = 'res-section person-portrait';
-    pt.innerHTML = `<div class="section-head"><h2>Le portrait ${esc(deName(name))}</h2></div><div class="portrait">${portraitHtml(portraitOf(r, name))}</div>`;
+    const me = portraitPeople.find(x => x.code === member.code);
+    pt.innerHTML = `<div class="section-head"><h2>Le portrait ${esc(deName(name))}</h2></div><div class="portrait">${portraitHtml(portraitOf(r, name))}${me ? matchRow(me, portraitPeople) : ''}</div>`;
     body.appendChild(pt);
 
     document.querySelectorAll('#screen-results .res-body > .res-section, #screen-results .res-body > .res-act').forEach(sec => {
@@ -6842,7 +6964,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 67;
+  const BUILD = 68;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
