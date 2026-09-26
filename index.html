@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=73">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=74">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=73">
+  <link rel="stylesheet" href="css/style.css?v=74">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -389,14 +389,13 @@
       <p class="act-s">Tes trois portraits, ton portrait complet, ce qui te distingue, et le détail en cinq temps.</p>
     </div>
     <section class="res-section res-trio" id="trio-section">
-      <article class="res-card family-card">
-        <p class="card-kicker">Famille politique la plus proche</p>
-        <h2 id="fam-name" data-nav="Famille politique"></h2>
-        <p class="fam-tag" id="fam-tag"></p>
-        <p class="fam-nuance" id="fam-nuance" hidden></p>
-        <p class="fam-desc" id="fam-desc"></p>
-        <p class="fam-why" id="fam-why" hidden></p>
-        <ul class="fam-list" id="fam-list"></ul>
+      <article class="res-card psy-card" id="psy-card">
+        <p class="card-kicker">Archétype de personnalité</p>
+        <h2 id="psy-name" data-nav="Archétype"></h2>
+        <p class="fam-nuance" id="psy-nuance" hidden></p>
+        <p class="fam-desc" id="psy-desc"></p>
+        <p class="fam-why" id="psy-why" hidden></p>
+        <ul class="fam-list" id="psy-list"></ul>
       </article>
       <article class="res-card temper-card">
         <p class="card-kicker">Tempérament politique</p>
@@ -406,13 +405,14 @@
         <p class="fam-why" id="temp-why" hidden></p>
         <ul class="fam-list" id="temp-list"></ul>
       </article>
-      <article class="res-card psy-card" id="psy-card">
-        <p class="card-kicker">Archétype de personnalité</p>
-        <h2 id="psy-name" data-nav="Archétype"></h2>
-        <p class="fam-nuance" id="psy-nuance" hidden></p>
-        <p class="fam-desc" id="psy-desc"></p>
-        <p class="fam-why" id="psy-why" hidden></p>
-        <ul class="fam-list" id="psy-list"></ul>
+      <article class="res-card family-card">
+        <p class="card-kicker">Famille politique la plus proche</p>
+        <h2 id="fam-name" data-nav="Famille politique"></h2>
+        <p class="fam-tag" id="fam-tag"></p>
+        <p class="fam-nuance" id="fam-nuance" hidden></p>
+        <p class="fam-desc" id="fam-desc"></p>
+        <p class="fam-why" id="fam-why" hidden></p>
+        <ul class="fam-list" id="fam-list"></ul>
       </article>
     </section>
     <section class="res-section portrait-section" id="portrait-section">
@@ -436,93 +436,10 @@
       </div>
       <div class="summary-body" id="summary"></div>
     </section>
-    <div class="res-act" data-act="Ce que tu penses" data-tab="Idées">
-      <p class="act-n">I</p>
-      <p class="act-t">Ce que tu penses</p>
-      <p class="act-s">La politique : tes axes, ta place dans l’hémicycle, tes angles morts et tes curseurs les plus tranchés.</p>
-    </div>
-    <section class="res-section" id="axes-pol-section">
-      <div class="section-head">
-        <h2>Axes politiques</h2>
-        <p>Ce que tu penses : les grandes lignes de fracture du débat public.</p>
-      </div>
-      <div id="axes-politique" class="axes"></div>
-    </section>
-    <section class="res-section" id="axes-meta-section">
-      <div class="section-head">
-        <h2>Méta-politique</h2>
-        <p>Comment tu penses : ta manière d'aborder le pouvoir, le changement, l'adversaire.</p>
-      </div>
-      <div id="axes-meta" class="axes"></div>
-    </section>
-    <section class="res-section" id="assembly-section">
-      <div class="section-head">
-        <h2 data-nav="Hémicycle">Ta place dans l'hémicycle</h2>
-        <p>Si l'Assemblée nationale comptait un 577<sup>e</sup> siège pour toi : l'angle vient de ta position gauche-droite, le rang de ton engagement.</p>
-      </div>
-      <div class="assembly">
-        <div class="hemi">
-          <div id="seat-svg"></div>
-          <div id="seat-legend" class="hemi-legend"></div>
-        </div>
-        <div>
-          <p class="card-kicker">Ton siège</p>
-          <h3 class="assembly-seat" id="seat-num"></h3>
-          <p class="assembly-rank" id="seat-rank"></p>
-          <p class="assembly-text" id="seat-text"></p>
-          <p class="assembly-why" id="seat-why"></p>
-          <p class="assembly-note">Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
-        </div>
-      </div>
-    </section>
-    <section class="res-section" id="sit-section" hidden>
-      <div class="section-head">
-        <h2 data-nav="Face au réel">Face au réel</h2>
-        <p>Quinze situations concrètes, et pour chacune la réponse que tu as choisie. Chaque réponse appartenait à une famille politique — sans que tu le saches en répondant. On peut donc comparer ce que tu <b>dis</b> (tes curseurs) et ce que tu <b>ferais</b> (tes choix).</p>
-      </div>
-      <div id="sit-hero" class="sit-hero"></div>
-      <article class="res-card sit-card">
-        <p class="card-kicker">Tes choix, camp par camp</p>
-        <h2>Pour qui tu as voté sans le savoir</h2>
-        <p class="group-intro">Chaque pastille est une situation, rangée dans le camp de la réponse choisie (survole-la pour la relire). Dessous, la règle gauche-droite : le losange, c'est où te placent tes curseurs ; le rond, où te placent tes choix.</p>
-        <div id="sit-camps"></div>
-      </article>
-      <article class="res-card sit-card">
-        <p class="card-kicker">Ce que tu dis, ce que tu ferais</p>
-        <h2>Thème par thème</h2>
-        <p class="group-intro">Pour chaque thème touché par les situations : <span class="db-leg me"></span> ta position dans les curseurs, <span class="db-leg them"></span> la position moyenne des réponses que tu as choisies, sur les seuls thèmes où elles prennent parti. Le nombre à droite est l'écart, sur 100 ; une ligne pâle ne repose que sur une seule situation.</p>
-        <p id="sit-gap-text" class="sit-gap-text"></p>
-        <div id="sit-dumbbell"></div>
-      </article>
-      <details id="sit-review" class="sit-review"></details>
-    </section>
-    <section class="res-section" id="blind-section" hidden>
-      <div class="section-head">
-        <h2 data-nav="Angles morts">Tes angles morts</h2>
-        <p id="blind-intro"></p>
-      </div>
-      <div id="blind-cards" class="blind-cards"></div>
-      <p id="blind-move" class="blind-move" hidden></p>
-    </section>
-    <section class="res-section" id="extremes-section" hidden>
-      <div class="section-head">
-        <h2 data-nav="Tes curseurs">Tes curseurs les plus tranchés</h2>
-        <p>Les affirmations que tu as poussées le plus loin, mot pour mot. C'est la partie la plus personnelle du rapport : deux personnes n'ont presque jamais les mêmes.</p>
-      </div>
-      <div id="extremes-cards" class="ext-cards"></div>
-      <p id="extremes-note" class="xs-note-txt"></p>
-    </section>
-    <section class="res-section" id="hearts-section" hidden>
-      <div class="section-head">
-        <h2>Sujets de cœur</h2>
-        <p>Les thèmes marqués comme tenant particulièrement à cœur.</p>
-      </div>
-      <div id="hearts" class="hearts"></div>
-    </section>
     <div class="res-act" data-act="Qui tu es" data-tab="Caractère">
-      <p class="act-n">II</p>
+      <p class="act-n">I</p>
       <p class="act-t">Qui tu es</p>
-      <p class="act-s">Le caractère, sous la politique : personnalité, morale, couleurs DISC, valeurs et qualités.</p>
+      <p class="act-s">Le caractère d'abord : personnalité, morale, couleurs DISC, MBTI et compagnie, valeurs et qualités.</p>
     </div>
     <section class="res-section" id="psyche-section">
       <div class="section-head">
@@ -626,7 +543,7 @@
       <div id="life-cards" class="life-cards"></div>
     </section>
     <div class="res-act" data-act="Avec les autres" data-tab="Relations">
-      <p class="act-n">III</p>
+      <p class="act-n">II</p>
       <p class="act-t">Avec les autres</p>
       <p class="act-s">La partie la plus intime : ce que tu es en amour, en famille et en amitié.</p>
     </div>
@@ -656,7 +573,7 @@
       <p class="rel-source">Les deux cartes s'appuient sur des modèles reconnus : l'attachement adulte à deux dimensions (Brennan, Clark et Shaver, dans la lignée de Bowlby) et les cinq façons de gérer un désaccord (Thomas et Kilmann). Les façons d'aimer reprennent une idée populaire, les « langages de l'amour » : à lire comme une piste, pas comme une science.</p>
     </section>
     <div class="res-act" data-act="Pour le plaisir" data-tab="Pour rire">
-      <p class="act-n">IV</p>
+      <p class="act-n">III</p>
       <p class="act-t">Pour le plaisir</p>
       <p class="act-s">Le même profil, comparé à autre chose que des idées : un personnage, un animal, un film, un morceau.</p>
     </div>
@@ -715,6 +632,89 @@
         <p>Une émission de télé, un monument, un végétal, un pays, une sucrerie, une spécialité de médecine, une maladie (bénigne, promis), un organe, une émotion, un emoji, une planète, une couleur, un objet du quotidien, une entreprise, un personnage de conte, une ville française, un vêtement, un département et une drogue (du quotidien, rassure-toi). Toujours le même principe : pas ce que tu préfères, mais ce dont le tempérament ressemble au tien. Clique pour découvrir chacun.</p>
       </div>
       <div id="more-picks" class="cast"></div>
+    </section>
+    <div class="res-act" data-act="Ce que tu penses" data-tab="Idées">
+      <p class="act-n">IV</p>
+      <p class="act-t">Ce que tu penses</p>
+      <p class="act-s">Et pour finir, la politique : tes axes, ta place dans l’hémicycle, face au réel, tes angles morts et tes curseurs les plus tranchés.</p>
+    </div>
+    <section class="res-section" id="axes-pol-section">
+      <div class="section-head">
+        <h2>Axes politiques</h2>
+        <p>Ce que tu penses : les grandes lignes de fracture du débat public.</p>
+      </div>
+      <div id="axes-politique" class="axes"></div>
+    </section>
+    <section class="res-section" id="axes-meta-section">
+      <div class="section-head">
+        <h2>Méta-politique</h2>
+        <p>Comment tu penses : ta manière d'aborder le pouvoir, le changement, l'adversaire.</p>
+      </div>
+      <div id="axes-meta" class="axes"></div>
+    </section>
+    <section class="res-section" id="assembly-section">
+      <div class="section-head">
+        <h2 data-nav="Hémicycle">Ta place dans l'hémicycle</h2>
+        <p>Si l'Assemblée nationale comptait un 577<sup>e</sup> siège pour toi : l'angle vient de ta position gauche-droite, le rang de ton engagement.</p>
+      </div>
+      <div class="assembly">
+        <div class="hemi">
+          <div id="seat-svg"></div>
+          <div id="seat-legend" class="hemi-legend"></div>
+        </div>
+        <div>
+          <p class="card-kicker">Ton siège</p>
+          <h3 class="assembly-seat" id="seat-num"></h3>
+          <p class="assembly-rank" id="seat-rank"></p>
+          <p class="assembly-text" id="seat-text"></p>
+          <p class="assembly-why" id="seat-why"></p>
+          <p class="assembly-note">Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
+        </div>
+      </div>
+    </section>
+    <section class="res-section" id="sit-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Face au réel">Face au réel</h2>
+        <p>Quinze situations concrètes, et pour chacune la réponse que tu as choisie. Chaque réponse appartenait à une famille politique — sans que tu le saches en répondant. On peut donc comparer ce que tu <b>dis</b> (tes curseurs) et ce que tu <b>ferais</b> (tes choix).</p>
+      </div>
+      <div id="sit-hero" class="sit-hero"></div>
+      <article class="res-card sit-card">
+        <p class="card-kicker">Tes choix, camp par camp</p>
+        <h2>Pour qui tu as voté sans le savoir</h2>
+        <p class="group-intro">Chaque pastille est une situation, rangée dans le camp de la réponse choisie (survole-la pour la relire). Dessous, la règle gauche-droite : le losange, c'est où te placent tes curseurs ; le rond, où te placent tes choix.</p>
+        <div id="sit-camps"></div>
+      </article>
+      <article class="res-card sit-card">
+        <p class="card-kicker">Ce que tu dis, ce que tu ferais</p>
+        <h2>Thème par thème</h2>
+        <p class="group-intro">Pour chaque thème touché par les situations : <span class="db-leg me"></span> ta position dans les curseurs, <span class="db-leg them"></span> la position moyenne des réponses que tu as choisies, sur les seuls thèmes où elles prennent parti. Le nombre à droite est l'écart, sur 100 ; une ligne pâle ne repose que sur une seule situation.</p>
+        <p id="sit-gap-text" class="sit-gap-text"></p>
+        <div id="sit-dumbbell"></div>
+      </article>
+      <details id="sit-review" class="sit-review"></details>
+    </section>
+    <section class="res-section" id="blind-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Angles morts">Tes angles morts</h2>
+        <p id="blind-intro"></p>
+      </div>
+      <div id="blind-cards" class="blind-cards"></div>
+      <p id="blind-move" class="blind-move" hidden></p>
+    </section>
+    <section class="res-section" id="extremes-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="Tes curseurs">Tes curseurs les plus tranchés</h2>
+        <p>Les affirmations que tu as poussées le plus loin, mot pour mot. C'est la partie la plus personnelle du rapport : deux personnes n'ont presque jamais les mêmes.</p>
+      </div>
+      <div id="extremes-cards" class="ext-cards"></div>
+      <p id="extremes-note" class="xs-note-txt"></p>
+    </section>
+    <section class="res-section" id="hearts-section" hidden>
+      <div class="section-head">
+        <h2>Sujets de cœur</h2>
+        <p>Les thèmes marqués comme tenant particulièrement à cœur.</p>
+      </div>
+      <div id="hearts" class="hearts"></div>
     </section>
 
     <footer class="res-foot">
@@ -805,70 +805,8 @@
     <section class="res-section">
 
 
-      <div class="res-act" data-act="Le cercle en politique" data-tab="Politique">
-        <p class="act-n">I</p>
-        <p class="act-t">Le cercle en politique</p>
-        <p class="act-s">Où le groupe se situe, ce qui le divise et ce qui le rassemble.</p>
-      </div>
-      <article class="res-card group-card" id="g-assembly-card" hidden>
-        <p class="card-kicker">Le cercle à l'Assemblée</p>
-        <h2>Qui siège où</h2>
-        <div class="group-assembly">
-          <div class="hemi">
-            <div id="g-assembly-svg"></div>
-            <div id="g-assembly-legend" class="hemi-legend"></div>
-          </div>
-          <div>
-            <p id="g-assembly-text" class="group-assembly-text"></p>
-            <ul id="g-assembly-blocs" class="hemi-blocs"></ul>
-            <p class="assembly-note">L'angle vient de la position gauche-droite de chacun, le rang de son engagement (les plus engagés près du perchoir). Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
-          </div>
-        </div>
-      </article>
-      <article class="res-card group-card" id="g-topics-card" hidden>
-        <p class="card-kicker">Les sujets du groupe</p>
-        <h2 data-nav="Sujets du groupe">Ce qui vous rassemble, ce qui vous fâche</h2>
-        <div class="topics">
-          <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="g-topics-divide"></div></div>
-          <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="g-topics-unite"></div></div>
-        </div>
-        <p id="g-topics-values" class="circle-disc-notes" hidden></p>
-      </article>
-      <article class="res-card group-card" id="g-clans-card" hidden>
-        <p class="card-kicker">Alliances et clans</p>
-        <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
-        <p class="group-intro">Ceux qui ressemblent plus à leurs voisins qu'au reste du cercle, regroupés automatiquement. Le même cercle se découpe autrement selon ce qu'on regarde : les idées, le caractère ou les valeurs. Choisis le regard.</p>
-        <div id="g-clans-tabs" class="clan-tabs"></div>
-        <div id="g-clans"></div>
-      </article>
-      <article class="res-card" id="g-map-card">
-        <p class="card-kicker">Carte du cercle</p>
-        <h2>Où chacun se place</h2>
-        <div class="map-controls">
-          <label>Horizontal<select id="g-map-x"></select></label>
-          <label>Vertical<select id="g-map-y"></select></label>
-        </div>
-        <div id="g-circle-map" class="circle-map"></div>
-        <p id="g-map-note" class="map-note"></p>
-      </article>
-      <article class="res-card group-card" id="g-gov-card" hidden>
-        <p class="card-kicker">Le gouvernement du cercle</p>
-        <h2>Qui aurait quel ministère</h2>
-        <p id="g-gov-note" class="group-intro"></p>
-        <div id="g-gov" class="awards govs"></div>
-      </article>
-      <article class="res-card group-card" id="g-sit-card-group" hidden>
-        <p class="card-kicker">Le cercle face au réel</p>
-        <h2 data-nav="Face au réel">Si le cercle devait décider</h2>
-        <p class="group-intro">Les quinze situations et, pour chacune, la réponse la plus choisie dans le cercle : son programme, mesure par mesure. La barre montre comment le cercle s'est partagé, de la gauche vers la droite ; une pastille par personne, survole-la pour voir qui a choisi quoi.</p>
-        <div id="g-sit-facts" class="stats-grid gsit-facts"></div>
-        <ol id="g-sit-prog" class="gsit-prog"></ol>
-        <h3 class="gsub">Chacun, entre ce qu'il dit et ce qu'il ferait</h3>
-        <p class="group-intro">Le losange : où les curseurs de chacun le placent, de la gauche à la droite. Le rond : où ses choix en situation le placent.</p>
-        <div id="g-sit-people" class="gsit-people"></div>
-      </article>
       <div class="res-act" data-act="Le cercle en caractère" data-tab="Caractère">
-        <p class="act-n">II</p>
+        <p class="act-n">I</p>
         <p class="act-t">Le cercle en caractère</p>
         <p class="act-s">Le groupe vu par le tempérament : son portrait-robot, ses couleurs, ses affinités.</p>
       </div>
@@ -949,7 +887,7 @@
         <div id="g-awards" class="awards"></div>
       </article>
       <div class="res-act" data-act="Pour le plaisir" data-tab="Pour rire">
-        <p class="act-n">III</p>
+        <p class="act-n">II</p>
         <p class="act-t">Pour le plaisir</p>
         <p class="act-s">Un personnage, un animal, un film et un morceau par personne — tous différents.</p>
       </div>
@@ -994,6 +932,69 @@
         <h2 data-nav="Et si le cercle">Dix-neuf listes de plus</h2>
         <p class="group-intro">Une émission, un monument, un végétal, un pays, une sucrerie, une spécialité de médecine, une maladie, un organe, une émotion, un emoji, une planète, une couleur, un objet, une entreprise, un personnage de conte, une ville, un vêtement, un département et une petite addiction par personne, et à chaque fois une différente pour chacun. Clique sur une liste pour voir qui est quoi.</p>
         <div id="g-more" class="cast"></div>
+      </article>
+
+      <div class="res-act" data-act="Le cercle en politique" data-tab="Politique">
+        <p class="act-n">III</p>
+        <p class="act-t">Le cercle en politique</p>
+        <p class="act-s">Et pour finir, les idées : où le groupe se situe, ce qui le divise et ce qui le rassemble.</p>
+      </div>
+      <article class="res-card group-card" id="g-assembly-card" hidden>
+        <p class="card-kicker">Le cercle à l'Assemblée</p>
+        <h2>Qui siège où</h2>
+        <div class="group-assembly">
+          <div class="hemi">
+            <div id="g-assembly-svg"></div>
+            <div id="g-assembly-legend" class="hemi-legend"></div>
+          </div>
+          <div>
+            <p id="g-assembly-text" class="group-assembly-text"></p>
+            <ul id="g-assembly-blocs" class="hemi-blocs"></ul>
+            <p class="assembly-note">L'angle vient de la position gauche-droite de chacun, le rang de son engagement (les plus engagés près du perchoir). Représentation symbolique : les sept blocs ne correspondent à aucun groupe parlementaire réel.</p>
+          </div>
+        </div>
+      </article>
+      <article class="res-card group-card" id="g-topics-card" hidden>
+        <p class="card-kicker">Les sujets du groupe</p>
+        <h2 data-nav="Sujets du groupe">Ce qui vous rassemble, ce qui vous fâche</h2>
+        <div class="topics">
+          <div><h4 class="topics-h hot">Les sujets qui fâchent</h4><div id="g-topics-divide"></div></div>
+          <div><h4 class="topics-h cool">Les sujets qui rassemblent</h4><div id="g-topics-unite"></div></div>
+        </div>
+        <p id="g-topics-values" class="circle-disc-notes" hidden></p>
+      </article>
+      <article class="res-card group-card" id="g-clans-card" hidden>
+        <p class="card-kicker">Alliances et clans</p>
+        <h2 data-nav="Clans">Les sous-groupes naturels du cercle</h2>
+        <p class="group-intro">Ceux qui ressemblent plus à leurs voisins qu'au reste du cercle, regroupés automatiquement. Le même cercle se découpe autrement selon ce qu'on regarde : les idées, le caractère ou les valeurs. Choisis le regard.</p>
+        <div id="g-clans-tabs" class="clan-tabs"></div>
+        <div id="g-clans"></div>
+      </article>
+      <article class="res-card" id="g-map-card">
+        <p class="card-kicker">Carte du cercle</p>
+        <h2>Où chacun se place</h2>
+        <div class="map-controls">
+          <label>Horizontal<select id="g-map-x"></select></label>
+          <label>Vertical<select id="g-map-y"></select></label>
+        </div>
+        <div id="g-circle-map" class="circle-map"></div>
+        <p id="g-map-note" class="map-note"></p>
+      </article>
+      <article class="res-card group-card" id="g-gov-card" hidden>
+        <p class="card-kicker">Le gouvernement du cercle</p>
+        <h2>Qui aurait quel ministère</h2>
+        <p id="g-gov-note" class="group-intro"></p>
+        <div id="g-gov" class="awards govs"></div>
+      </article>
+      <article class="res-card group-card" id="g-sit-card-group" hidden>
+        <p class="card-kicker">Le cercle face au réel</p>
+        <h2 data-nav="Face au réel">Si le cercle devait décider</h2>
+        <p class="group-intro">Les quinze situations et, pour chacune, la réponse la plus choisie dans le cercle : son programme, mesure par mesure. La barre montre comment le cercle s'est partagé, de la gauche vers la droite ; une pastille par personne, survole-la pour voir qui a choisi quoi.</p>
+        <div id="g-sit-facts" class="stats-grid gsit-facts"></div>
+        <ol id="g-sit-prog" class="gsit-prog"></ol>
+        <h3 class="gsub">Chacun, entre ce qu'il dit et ce qu'il ferait</h3>
+        <p class="group-intro">Le losange : où les curseurs de chacun le placent, de la gauche à la droite. Le rond : où ses choix en situation le placent.</p>
+        <div id="g-sit-people" class="gsit-people"></div>
       </article>
     </section>
 
@@ -1040,8 +1041,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=73"></script>
-  <script src="js/profiles.js?v=73"></script>
-  <script src="js/app.js?v=73"></script>
+  <script src="js/questions.js?v=74"></script>
+  <script src="js/profiles.js?v=74"></script>
+  <script src="js/app.js?v=74"></script>
 </body>
 </html>

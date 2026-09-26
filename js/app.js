@@ -2002,6 +2002,9 @@
     const adj3 = qs.slice(0, 3).map(q => PORTRAIT_Q[q.id][0]);
     const lead = T(`Une personne ${adj3.length === 3 ? `${adj3[0]}, ${adj3[1]} et ${adj3[2]}` : 'singulière'}`
       + (vp && !vp.flat ? `, ${PORTRAIT_V[vp.ranked[0].id][1]}.` : '.'));
+    // les idées à la fin, juste avant « Au fond » : le caractère d'abord
+    const ideas = paras.findIndex(x => x.h === T('{Tes|Ses} idées'));
+    if (ideas >= 0 && paras.length > 2) paras.splice(paras.length - 2, 0, paras.splice(ideas, 1)[0]);
     return { lead, paras, ...portraitExtras(r, T, qs, vp) };
   }
 
@@ -4620,9 +4623,9 @@
 
     $('res-kicker').textContent = cur.isMine ? (friend ? `Ton profil, comparé à ${friend.name}` : 'Ton profil') : `Le profil ${deName(owner)}`;
     $('res-title').innerHTML = psy.length
-      ? `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>, ${esc(shortName(psy[0].name))}`
-      : `${esc(fam[0].name)}, <em>${esc(shortName(temp[0].name))}</em>`;
-    $('res-headline').textContent = [fam[0].desc, temp[0].desc, psy.length ? psy[0].desc : ''].filter(Boolean).join(' ');
+      ? `${esc(shortName(psy[0].name))}, <em>${esc(shortName(temp[0].name))}</em>, ${esc(fam[0].name)}`
+      : `<em>${esc(shortName(temp[0].name))}</em>, ${esc(fam[0].name)}`;
+    $('res-headline').textContent = [psy.length ? psy[0].desc : '', temp[0].desc, fam[0].desc].filter(Boolean).join(' ');
 
     const dp = discProfile(r.disc);
     const vp = valueProfile(r);
@@ -4739,7 +4742,9 @@
     }).join('');
 
     $('portrait').innerHTML = portraitHtml(portraitOf(r));
-    $('summary').innerHTML = summarize(r, fam, temp, psy).map((p, i) =>
+    // le caractère d'abord (fonctionnement, ce qui fait vibrer), les idées ensuite
+    const sumParts = summarize(r, fam, temp, psy);
+    $('summary').innerHTML = [2, 3, 0, 1, 4].map(k => sumParts[k]).map((p, i) =>
       `<h3 data-n="${ROMAN[i]}">${esc(p.h)}</h3><p>${p.p}</p>`).join('');
 
     $('url-panel').hidden = true;
@@ -7625,7 +7630,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 73;
+  const BUILD = 74;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

@@ -80,7 +80,7 @@
       </article>
       <article class="gcard">
         <h4>8 · Trois temps</h4>
-        <p>Le rapport est rangé en chapitres, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits, ton portrait complet, les signatures, le détail en cinq temps. <b>I · Ce que tu penses</b> : la politique — axes, méta-politique, hémicycle, face au réel, angles morts, curseurs tranchés, sujets de cœur. <b>II · Qui tu es</b> : le caractère — personnalité, fondements moraux, traits, DISC, valeurs, qualités, dans la vie. <b>III · Avec les autres</b> : en amour, en famille, en amitié. <b>IV · Pour le plaisir</b> : le personnage, l'animal, le film, le morceau et les listes « Et si tu étais… ». La page de cercle suit les mêmes temps (en politique, en caractère, pour le plaisir), puis les profils un par un.</p>
+        <p>Le rapport est rangé en chapitres, pour qu'on sache toujours ce qu'on est en train de lire. <b>En bref</b> : les trois portraits (archétype, tempérament, famille politique), ton portrait complet, les signatures, le détail en cinq temps. <b>I · Qui tu es</b> : le caractère d'abord — personnalité, fondements moraux, traits, DISC, MBTI, Ennéagramme et Big Five, valeurs, qualités, dans la vie. <b>II · Avec les autres</b> : en amour, en famille, en amitié. <b>III · Pour le plaisir</b> : le personnage, l'animal, le film, le morceau et les listes « Et si tu étais… ». <b>IV · Ce que tu penses</b> : pour finir, la politique — axes, méta-politique, hémicycle, face au réel, angles morts, curseurs tranchés, sujets de cœur. La page de cercle suit la même logique (le cercle en caractère, pour le plaisir, puis le cercle en politique), avant les profils un par un.</p>
       </article>
     </div>`);
 
