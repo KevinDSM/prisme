@@ -14,6 +14,7 @@
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
     VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES,
+    TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -2798,6 +2799,151 @@
     return svg + '</svg>';
   }
 
+
+  /* ---------------------------------------------------------
+     Équivalences : MBTI, Big Five, Ennéagramme
+     Aucune question en plus : chaque modèle est une recombinaison des axes de
+     caractère, du DISC, des valeurs, de la morale et du module relations.
+     Chaque terme est pondéré ; un module absent vaut « neutre » (0,5).
+     Les scores bruts se tassent vers le milieu (moyennes de beaucoup de
+     termes) : on les étire autour de 0,5 pour qu'ils restent lisibles.
+     --------------------------------------------------------- */
+  const TYPES_STRETCH = 1.9;
+  /* Centres de calibrage. Les réponses réelles ne sont pas symétriques : on tient
+     plus à ses racines, on est plus vigilant, on aime plus la sécurité que ne le
+     voudrait le hasard. Sans correction, presque tout le monde sortirait « S », « J »
+     et type 6. On recentre aux trois quarts sur les profils réels observés. */
+  const TYPES_CENTER = { O: 0.397, C: 0.507, E: 0.523, A: 0.497, N: 0.575, TF: 0.486, JP: 0.571 };
+  const ENNEA_BIAS = { 1: -0.013, 2: 0.027, 3: 0.014, 4: -0.001, 5: -0.029, 6: 0.085, 7: -0.052, 8: 0.005, 9: -0.035 };
+  const wmean = parts => parts.reduce((t, p) => t + p[0] * p[1], 0) / parts.reduce((t, p) => t + p[1], 0);
+  const stretch = (v, c = 0.5) => clamp(0.5 + (v - c) * TYPES_STRETCH, 0, 1);
+
+  function typeInputs(r) {
+    const ax = id => (r.known.has(id) ? (r.axes[id] + 1) / 2 : 0.5);
+    const disc = id => (r.disc ? r.disc[id] : 0.5);
+    const rel = id => (r.rel ? r.rel[id] : 0.5);
+    const f = id => r.found[id];
+    const tr = id => (r.traits ? r.traits[id] : 0.5);
+    let val = () => 0.5;
+    if (r.values) {
+      // les valeurs comptent l'une par rapport aux autres : tout le monde coche « important » partout
+      const m = meanOf(VALUES.map(v => r.values[v.id]));
+      val = id => clamp(0.5 + (r.values[id] - m) * 1.5, 0, 1);
+    }
+    return { ax, disc, rel, f, tr, val };
+  }
+
+  function bigFiveOf(r) {
+    const { ax, disc, rel, f, tr, val } = typeInputs(r);
+    const raw = {
+      O: wmean([[1 - ax('opn'), 1.4], [tr('inc'), 1], [val('vst'), 0.8], [val('vsd'), 0.6], [val('vun'), 0.5], [1 - val('vtr'), 0.6], [1 - ax('soc'), 0.4]]),
+      C: wmean([[ax('ord'), 1.5], [ax('tmp'), 0.9], [disc('con'), 0.9], [1 - ax('rsk'), 0.4], [val('vac'), 0.3], [val('vco'), 0.4]]),
+      E: wmean([[disc('inf'), 1.4], [rel('cer'), 1], [rel('exp'), 0.9], [disc('dom'), 0.5], [val('vst'), 0.4], [1 - rel('avo'), 0.5], [1 - disc('con'), 0.4]]),
+      A: wmean([[1 - ax('cmp'), 1.2], [rel('coo'), 0.9], [rel('par'), 0.7], [f('care'), 0.9], [disc('ste'), 0.8], [val('vbe'), 0.6], [1 - disc('dom'), 0.5], [1 - tr('dog'), 0.4], [1 - ax('cfl'), 0.5]]),
+      N: wmean([[ax('thr'), 1.4], [rel('anx'), 1.1], [1 - tr('inc'), 0.6], [ax('nat'), 0.3], [ax('vis'), 0.3]]),
+    };
+    const out = {};
+    Object.keys(raw).forEach(k => { out[k] = stretch(raw[k], TYPES_CENTER[k]); });
+    return out;
+  }
+
+  function mbtiOf(r) {
+    const { ax, f, disc, tr } = typeInputs(r);
+    const b5 = bigFiveOf(r);
+    // part de la première lettre de chaque paire (E, N, T, J)
+    const s = {
+      EI: b5.E,
+      NS: b5.O,
+      TF: stretch(wmean([[ax('aff'), 1.5], [1 - b5.A, 1], [1 - f('care'), 0.4], [disc('con'), 0.3]]), TYPES_CENTER.TF),
+      JP: stretch(wmean([[ax('ord'), 1.4], [b5.C, 1], [1 - tr('inc'), 0.5]]), TYPES_CENTER.JP),
+    };
+    const letters = TYPE_MBTI_DIMS.map(d => (s[d.k] >= 0.5 ? d.a : d.b));
+    // ordre canonique : E/I, S/N, T/F, J/P
+    const code = letters[0] + letters[1] + letters[2] + letters[3];
+    return { code, s, b5 };
+  }
+
+  function enneaOf(r) {
+    const { ax, disc, rel, f, tr, val } = typeInputs(r);
+    const raw = {
+      1: wmean([[disc('con'), 1], [val('vco'), 0.8], [ax('ord'), 0.8], [f('fair'), 0.6], [f('auth'), 0.4], [tr('dog'), 0.4]]),
+      2: wmean([[val('vbe'), 1.2], [f('care'), 1], [rel('coo'), 0.8], [rel('exp'), 0.5], [disc('ste'), 0.4], [1 - rel('avo'), 0.5]]),
+      3: wmean([[val('vac'), 1.3], [ax('cmp'), 1], [disc('dom'), 0.5], [disc('inf'), 0.5], [1 - ax('loc'), 0.5]]),
+      4: wmean([[1 - ax('aff'), 0.8], [rel('exp'), 0.7], [val('vsd'), 0.6], [1 - ax('opn'), 0.6], [ax('thr'), 0.3], [1 - ax('col'), 0.5]]),
+      5: wmean([[ax('aff'), 1], [disc('con'), 0.6], [rel('avo'), 0.8], [1 - rel('cer'), 0.7], [val('vsd'), 0.5], [1 - disc('inf'), 0.5]]),
+      6: wmean([[val('vse'), 1.2], [ax('thr'), 1], [f('loy'), 0.8], [rel('anx'), 0.6], [ax('nat'), 0.4]]),
+      7: wmean([[val('vhe'), 1.2], [val('vst'), 1], [ax('rsk'), 0.8], [disc('inf'), 0.6], [1 - ax('thr'), 0.4], [1 - ax('tmp'), 0.4]]),
+      8: wmean([[disc('dom'), 1.3], [val('vpo'), 1], [rel('ass'), 0.9], [ax('cmp'), 0.6], [ax('cfl'), 0.5], [f('lib'), 0.3]]),
+      9: wmean([[disc('ste'), 1.2], [1 - ax('cfl'), 0.8], [1 - ax('thr'), 0.6], [rel('coo'), 0.6], [1 - ax('cmp'), 0.5], [1 - rel('ass'), 0.5]]),
+    };
+    const ranked = Object.keys(raw).map(k => ({ n: Number(k), v: raw[k] - ENNEA_BIAS[k] })).sort((a, b) => b.v - a.v);
+    const n = ranked[0].n;
+    const left = n === 1 ? 9 : n - 1, right = n === 9 ? 1 : n + 1;
+    const sc = k => ranked.find(x => x.n === k).v;
+    const wing = sc(left) >= sc(right) ? left : right;
+    return { n, wing, ranked };
+  }
+
+  const b5Level = v => (v >= 0.62 ? 'hi' : v <= 0.38 ? 'lo' : 'mid');
+
+  function renderTypesSection(r) {
+    const sec = $('types-section');
+    sec.hidden = !!r.partial;
+    if (r.partial) return;
+    const m = mbtiOf(r), e = enneaOf(r), b5 = m.b5;
+    const [name, desc] = TYPE_MBTI[m.code];
+    $('type-mbti').innerHTML = `<p class="card-kicker">MBTI · 16 types</p>
+      <p class="ty-code">${m.code.split('').map(l => `<span>${l}</span>`).join('')}</p>
+      <h3 class="ty-name">${esc(name)}</h3><p class="ty-desc">${esc(desc)}</p>
+      <div class="ty-dims">${TYPE_MBTI_DIMS.map(d => {
+        const v = m.s[d.k], first = v >= 0.5, pctv = Math.round((first ? v : 1 - v) * 100);
+        return `<div class="ty-dim"><span class="${first ? 'is-on' : ''}">${d.a} · ${d.la}</span><span class="ty-track"><i style="left:${(1 - v) * 100}%"></i></span><span class="${first ? '' : 'is-on'}">${d.lb} · ${d.b}</span><small>${pctv} % ${first ? d.a : d.b}${pctv < 58 ? ', de peu' : ''}</small></div>`;
+      }).join('')}</div>
+      <p class="ty-what"><b>C'est quoi ?</b> Le MBTI range les personnalités en 16 types de quatre lettres : ${TYPE_MBTI_DIMS.map(d => esc(d.q)).join(' ; ')}.</p>`;
+    $('type-big5').innerHTML = `<p class="card-kicker">Big Five · 5 grands traits</p>
+      <h3 class="ty-name">Ta personnalité en cinq curseurs</h3>
+      <ul class="ty-b5">${TYPE_BIG5.map(t => {
+        const v = b5[t.k];
+        return `<li><div class="ty-b5-top"><b>${esc(t.name)}</b><span>${pct(v)}</span></div><span class="bar"><i data-bar="${pct(v)}" style="background:${t.color}"></i></span><p>${esc(t[b5Level(v)])}</p></li>`;
+      }).join('')}</ul>
+      <p class="ty-what"><b>C'est quoi ?</b> Le modèle le plus utilisé en psychologie : cinq traits, chacun sur une échelle de 0 à 100. Aucun score n'est bon ou mauvais, chacun a ses forces.</p>`;
+    const [en, ed, emot, efear] = TYPE_ENNEA[e.n];
+    $('type-ennea').innerHTML = `<p class="card-kicker">Ennéagramme · 9 types</p>
+      <p class="ty-code ty-code-n"><span>${e.n}</span></p>
+      <h3 class="ty-name">${esc(en)}</h3><p class="ty-wing">aile ${e.wing}, ${esc(TYPE_ENNEA[e.wing][0].toLowerCase().replace(/^(le |la |l')/, ''))}</p>
+      <p class="ty-desc">${esc(ed)}</p>
+      <dl class="ty-ennea-dl"><div><dt>Ce qui te motive</dt><dd>${esc(emot)}</dd></div><div><dt>Ce qui t'inquiète</dt><dd>${esc(efear)}</dd></div></dl>
+      <p class="ty-next">Ensuite : ${e.ranked.slice(1, 3).map(x => `${x.n} · ${esc(TYPE_ENNEA[x.n][0])}`).join(', puis ')}.</p>
+      <p class="ty-what"><b>C'est quoi ?</b> Neuf types construits autour d'une motivation profonde. L'« aile » est le type voisin qui colore le tien.</p>`;
+  }
+
+  // Le cercle : le type de chacun, et ce qui domine dans le groupe
+  function renderGroupTypes(people) {
+    const card = $('g-types-card');
+    const list = people.filter(p => p.r && !p.r.partial);
+    card.hidden = list.length < 2;
+    if (card.hidden) return;
+    const rows = list.map(p => ({ p, m: mbtiOf(p.r), e: enneaOf(p.r) }));
+    const count = arr => { const c = new Map(); arr.forEach(x => c.set(x, (c.get(x) || 0) + 1)); return [...c.entries()].sort((a, b) => b[1] - a[1]); };
+    const topM = count(rows.map(x => x.m.code))[0], topE = count(rows.map(x => x.e.n))[0];
+    const mean = {};
+    TYPE_BIG5.forEach(t => { mean[t.k] = meanOf(rows.map(x => x.m.b5[t.k])); });
+    const strong = TYPE_BIG5.filter(t => t.k !== 'N').sort((a, b) => mean[b.k] - mean[a.k])[0];
+    const letters = ['EI', 'NS', 'TF', 'JP'].map((k, i) => {
+      const d = TYPE_MBTI_DIMS[i], n = rows.filter(x => x.m.s[k] >= 0.5).length;
+      return n * 2 >= rows.length ? { l: d.a, lab: d.la, n } : { l: d.b, lab: d.lb, n: rows.length - n };
+    });
+    $('g-types-sum').innerHTML = `Le type MBTI le plus présent : <b>${topM[0]}</b>, ${esc(TYPE_MBTI[topM[0]][0].toLowerCase())}${topM[1] > 1 ? ` (${topM[1]} personnes)` : ''}. `
+      + `Côté Ennéagramme, c'est le <b>${topE[0]} · ${esc(TYPE_ENNEA[topE[0]][0].replace(/^(Le |La |L')/, ''))}</b>${topE[1] > 1 ? ` (${topE[1]} personnes)` : ''}. `
+      + `Dans l'ensemble, le cercle penche vers ${letters.map(x => `${x.lab.toLowerCase()} (${x.l})`).join(', ')} ; son trait Big Five le plus fort : <b>${esc(strong.name.toLowerCase())}</b>.`;
+    $('g-types-list').innerHTML = rows.map(({ p, m, e }) => `<li class="gty-row">
+        <span class="gty-who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>
+        <span class="gty-mbti"><b>${m.code}</b><small>${esc(TYPE_MBTI[m.code][0])}</small></span>
+        <span class="gty-ennea"><b>${e.n}</b><small>${esc(TYPE_ENNEA[e.n][0])}</small></span>
+        <span class="gty-b5" aria-label="Big Five">${TYPE_BIG5.map(t => `<span title="${esc(t.name)} : ${pct(m.b5[t.k])}"><i style="height:${Math.max(8, pct(m.b5[t.k]))}%;background:${t.color}"></i><small>${t.k}</small></span>`).join('')}</span>
+      </li>`).join('');
+  }
+
   function renderDiscSection(r, dp) {
     const P = dp.primary, sec = dp.secondary;
     const colors = discColors(dp);
@@ -4340,6 +4486,7 @@
       + (vp ? `<span class="disc-pill" style="--c:${vp.flat ? 'var(--ink-3)' : vp.primary.color}"><b>★</b>${esc(valueTitle(vp))}<small>valeurs</small></span>` : '');
     $('disc-section').hidden = !dp;
     if (dp) renderDiscSection(r, dp);
+    renderTypesSection(r);
 
     if (!silent) resetCard('');
     renderAssembly(cur);
@@ -5582,6 +5729,7 @@
     renderGroup(people, 'g-');
     renderStrips(people, 'g-');
     renderCircleDisc(people, 'g-');
+    renderGroupTypes(people);
     mapState = { cur: null, entries: people, selectedCode: null, pre: 'g-' };
     renderMap();
 
@@ -7330,7 +7478,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 70;
+  const BUILD = 71;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -7357,7 +7505,7 @@
   initQuiz();
   initResults();
   // le moteur de calcul, en lecture : pour les tests automatiques (aucune donnée n'y transite)
-  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress, portraitOf });
+  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress, portraitOf, bigFiveOf, mbtiOf, enneaOf });
   initGroup();
   initCircleByUrl();
   window.addEventListener('hashchange', route);

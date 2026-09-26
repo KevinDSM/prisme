@@ -1050,4 +1050,53 @@ const CLAN_NAMES = {
   tmp: ['Les épicuriens', 'Les long-termistes'], cmp: ['Les coopératifs', 'Les compétiteurs'], opn: ['Les explorateurs', 'Les casaniers'],
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES };
+/* ============================================================
+   ÉQUIVALENCES : MBTI, BIG FIVE, ENNÉAGRAMME
+   Trois modèles connus, estimés à partir des réponses existantes.
+   Noms choisis pour ne pas se confondre avec les archétypes du site.
+   ============================================================ */
+const TYPE_MBTI = {
+  INTJ: ['Le Concepteur', "Tu vois loin et tu construis tes plans pièce par pièce. Indépendance d'esprit, exigence, et un vrai talent pour transformer une idée en stratégie."],
+  INTP: ['Le Penseur', "Tu adores comprendre comment les choses fonctionnent. Curiosité sans fin, logique affûtée, et un goût pour les idées que personne n'avait envisagées."],
+  ENTJ: ['Le Meneur', "Tu fixes le cap et tu entraînes les autres. Décision, vision et efficacité : là où tu passes, les projets avancent."],
+  ENTP: ["L'Inventeur", "Tu débordes d'idées et tu aimes les confronter. Vivacité, audace intellectuelle et un talent pour voir les choses sous un angle neuf."],
+  INFJ: ['Le Guide', "Tu comprends les gens en profondeur et tu portes des convictions fortes. Discrétion, intuition et un vrai désir d'aider le monde à aller mieux."],
+  INFP: ["L'Idéaliste", "Tu vis selon tes valeurs, avec une grande sensibilité. Imagination, fidélité à toi-même et une douceur qui touche ceux qui te connaissent."],
+  ENFJ: ['Le Mentor', "Tu fais grandir les autres. Chaleur, charisme et un talent naturel pour rassembler autour d'un projet qui a du sens."],
+  ENFP: ["L'Enthousiaste", "Ton enthousiasme est contagieux. Curiosité, spontanéité et une capacité rare à voir le potentiel de chacun."],
+  ISTJ: ['Le Garant', "Tu es la personne sur qui l'on peut compter. Rigueur, sens du devoir et respect des engagements : avec toi, les choses sont faites, et bien faites."],
+  ISFJ: ['Le Dévoué', "Tu prends soin des autres, souvent sans rien dire. Attention aux détails, loyauté et une présence rassurante au quotidien."],
+  ESTJ: ['Le Gestionnaire', "Tu organises, tu structures, tu fais avancer. Clarté, sens pratique et une énergie qui transforme le chaos en plan d'action."],
+  ESFJ: ["L'Hôte", "Tu veilles à ce que tout le monde se sente bien. Générosité, sens du collectif et une vraie mémoire de ce qui compte pour chacun."],
+  ISTP: ['Le Débrouillard', "Tu résous les problèmes concrets avec calme et habileté. Sang-froid, sens pratique et goût de l'autonomie."],
+  ISFP: ["L'Esthète", "Tu vis l'instant avec sensibilité et discrétion. Goût du beau, douceur et une liberté que tu tiens à préserver."],
+  ESTP: ["L'Aventurier", "Tu fonces, tu t'adaptes, tu profites. Énergie, sens de l'action et un talent pour saisir les occasions au vol."],
+  ESFP: ["L'Animateur", "Tu mets de la vie partout où tu passes. Spontanéité, chaleur et un vrai talent pour faire profiter les autres de l'instant."],
+};
+// Les quatre dimensions, du côté de la première lettre à celui de la seconde
+const TYPE_MBTI_DIMS = [
+  { k: 'EI', a: 'E', b: 'I', la: 'Extraversion', lb: 'Introversion', q: "où tu puises ton énergie : dans les autres ou en toi" },
+  { k: 'NS', a: 'N', b: 'S', la: 'Intuition', lb: 'Sensation', q: "ce que tu regardes d'abord : les idées et les possibles, ou le concret et les faits" },
+  { k: 'TF', a: 'T', b: 'F', la: 'Pensée', lb: 'Sentiment', q: "comment tu décides : par la logique ou par les valeurs et les gens" },
+  { k: 'JP', a: 'J', b: 'P', la: 'Jugement', lb: 'Perception', q: "comment tu t'organises : en planifiant ou en restant ouvert" },
+];
+const TYPE_BIG5 = [
+  { k: 'O', name: 'Ouverture', color: '#9b5de5', hi: "Curiosité, imagination et goût de la nouveauté.", mid: "Un équilibre entre curiosité et sens du concret.", lo: "Goût du concret, des valeurs sûres et de ce qui a fait ses preuves." },
+  { k: 'C', name: 'Rigueur', color: '#2f80ed', hi: "Organisation, persévérance et sens du devoir.", mid: "Assez de méthode pour avancer, assez de souplesse pour s'adapter.", lo: "Souplesse, spontanéité et art de l'improvisation." },
+  { k: 'E', name: 'Extraversion', color: '#f2a93b', hi: "Énergie tournée vers les autres, plaisir du groupe et de l'action.", mid: "À l'aise en groupe comme au calme, selon les jours.", lo: "Énergie tournée vers l'intérieur, goût des moments calmes et des échanges choisis." },
+  { k: 'A', name: 'Bienveillance', color: '#2fb67c', hi: "Coopération, confiance et attention aux autres.", mid: "De la gentillesse, sans naïveté.", lo: "Franchise, esprit critique et indépendance de jugement." },
+  { k: 'N', name: 'Sensibilité émotionnelle', color: '#e76f51', hi: "Émotions vives et grande vigilance : tout est ressenti fort.", mid: "Des émotions présentes, mais qui ne débordent pas.", lo: "Calme, stabilité et belle résistance au stress." },
+];
+const TYPE_ENNEA = {
+  1: ['Le Perfectionniste', "Tu cherches à bien faire, et à faire le bien. Exigence, sens de la justice et envie d'améliorer tout ce qui peut l'être.", "faire les choses correctement", "l'erreur et le travail bâclé"],
+  2: ["L'Altruiste", "Tu donnes beaucoup aux autres. Chaleur, attention et disponibilité : tu sais ce dont chacun a besoin, parfois avant la personne elle-même.", "être utile et compter pour les autres", "ne pas être aimé en retour"],
+  3: ['Le Battant', "Tu vises haut et tu avances vite. Ambition, efficacité et un vrai talent pour transformer tes objectifs en réussites.", "réussir et être reconnu", "l'échec et le sur-place"],
+  4: ["L'Individualiste", "Tu tiens à être toi-même, pleinement. Sensibilité, créativité et une profondeur qui te rend unique.", "être authentique et compris", "la banalité et l'indifférence"],
+  5: ['Le Chercheur', "Tu veux comprendre le monde avant d'y plonger. Réflexion, recul et une soif de savoir qui ne s'éteint jamais.", "comprendre et maîtriser", "être envahi ou manquer de ressources"],
+  6: ['Le Loyal', "Tu es fidèle à ceux qui comptent et tu anticipes ce qui peut mal tourner. Fiabilité, prudence et un sens du devoir envers les tiens.", "la sécurité et la confiance", "l'abandon et l'imprévu"],
+  7: ["L'Épicurien", "Tu croques la vie à pleines dents. Enthousiasme, curiosité et un talent pour transformer n'importe quel moment en fête.", "profiter et rester libre", "l'ennui et la frustration"],
+  8: ['Le Chef', "Tu prends les choses en main et tu protèges les tiens. Force, franchise et une énergie qui ne recule devant rien.", "garder le contrôle et protéger", "être contrôlé ou vulnérable"],
+  9: ['Le Pacificateur', "Tu apaises, tu relies, tu fais baisser la température. Calme, écoute et une présence qui met tout le monde d'accord.", "la paix et l'harmonie", "le conflit et la rupture"],
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA };

@@ -14,7 +14,7 @@
   <meta property="og:site_name" content="Prisme">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://kevindsm.github.io/prisme/">
-  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=70">
+  <meta property="og:image" content="https://kevindsm.github.io/prisme/og.png?v=71">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Prisme — Pas des cases. Des curseurs.">
@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=70">
+  <link rel="stylesheet" href="css/style.css?v=71">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -563,6 +563,18 @@
       <div id="disc-cards" class="disc-cards"></div>
       <div id="disc-legend" class="disc-legend"></div>
     </section>
+    <section class="res-section types" id="types-section" hidden>
+      <div class="section-head">
+        <h2 data-nav="MBTI et cie">Tes types : MBTI, Big Five, Ennéagramme</h2>
+        <p>Trois modèles de personnalité très connus, estimés à partir de tes réponses, sans question en plus : ton caractère, tes couleurs DISC, tes valeurs, ta morale et ta façon d'être avec les autres.</p>
+      </div>
+      <div class="ty-grid">
+        <article class="res-card ty-card" id="type-mbti"></article>
+        <article class="res-card ty-card" id="type-big5"></article>
+        <article class="res-card ty-card" id="type-ennea"></article>
+      </div>
+      <p class="ty-note">Ce sont des estimations, pas des tests officiels : elles donnent une tendance fiable, mais un questionnaire dédié à chaque modèle pourrait donner un résultat légèrement différent, surtout sur une lettre « de peu ».</p>
+    </section>
     <section class="res-section values" id="values-section" hidden>
       <div class="section-head">
         <h2>Tes valeurs</h2>
@@ -876,6 +888,13 @@
         <ul id="g-circle-disc-list" class="circle-disc-list"></ul>
         <p id="g-circle-disc-notes" class="circle-disc-notes"></p>
       </article>
+      <article class="res-card group-card" id="g-types-card" hidden>
+        <p class="card-kicker">Personnalité</p>
+        <h2 data-nav="Types">MBTI, Ennéagramme et Big Five du cercle</h2>
+        <p class="gsub-intro" id="g-types-sum"></p>
+        <ul class="gty-list" id="g-types-list"></ul>
+        <p class="ty-note">Estimations tirées des réponses de chacun, sans questions en plus. Les cinq barres : O ouverture, C rigueur, E extraversion, A bienveillance, N sensibilité émotionnelle.</p>
+      </article>
       <article class="res-card group-card" id="g-rel-card-group" hidden>
         <p class="card-kicker">Le cercle et les autres</p>
         <h2 data-nav="Toi et les autres">Comment chacun aime et se dispute</h2>
@@ -1018,8 +1037,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/questions.js?v=70"></script>
-  <script src="js/profiles.js?v=70"></script>
-  <script src="js/app.js?v=70"></script>
+  <script src="js/questions.js?v=71"></script>
+  <script src="js/profiles.js?v=71"></script>
+  <script src="js/app.js?v=71"></script>
 </body>
 </html>
