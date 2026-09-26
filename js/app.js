@@ -14,7 +14,7 @@
     FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT,
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
     VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES,
-    TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA,
+    TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -2886,20 +2886,62 @@
 
   const b5Level = v => (v >= 0.62 ? 'hi' : v <= 0.38 ? 'lo' : 'mid');
 
+
+  // Une icône de lettre MBTI, au trait
+  const mbtiIcon = k => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MBTI_ICONS[k]}</svg>`;
+
+  // Une des quatre questions : les deux réponses possibles, la barre, et ce que ça dit de toi
+  function mbtiDimHtml(d, v, i) {
+    const first = v >= 0.5, win = first ? d.a : d.b, share = first ? v : 1 - v;
+    const how = share >= 0.62 ? 'Nettement' : share >= 0.55 ? 'Plutôt' : 'De justesse, presque à égalité :';
+    const opt = (l, on) => `<div class="mb-opt${on ? ' is-on' : ''}"><span class="mb-ico">${mbtiIcon(MBTI_LETTERS[l].icon)}</span>`
+      + `<p><b>${l} · ${esc(MBTI_LETTERS[l].name)}</b><small>${esc(MBTI_LETTERS[l].means)}</small></p></div>`;
+    return `<div class="mb-dim">
+      <p class="mb-q"><span class="mb-n">${i + 1}</span>${esc(MBTI_QUESTIONS[d.k])}</p>
+      <div class="mb-opts">${opt(d.a, first)}${opt(d.b, !first)}</div>
+      <div class="mb-bar" aria-label="${Math.round(v * 100)} % ${d.a}, ${Math.round((1 - v) * 100)} % ${d.b}"><i style="width:${(v * 100).toFixed(1)}%"></i></div>
+      <p class="mb-bar-l"><span>${Math.round(v * 100)} % ${d.a}</span><span>${Math.round((1 - v) * 100)} % ${d.b}</span></p>
+      <p class="mb-you"><b>${how} ${win}.</b> ${esc(MBTI_LETTERS[win].you)}</p>
+    </div>`;
+  }
+
+  // La carte des 16 types : quatre familles, et des repères (toi, ou les initiales du cercle)
+  function mbtiMapHtml(marks) {
+    return `<div class="mb-map">${MBTI_FAMILIES.map(f => `<div class="mb-fam-box" style="--c:${f.color}">
+        <p class="mb-fam-t"><b>${esc(f.name)}</b><small>${f.k} · ${esc(f.what)}</small></p>
+        <div class="mb-cells">${f.types.map(code => {
+          const here = marks[code] || [];
+          return `<div class="mb-cell${here.length ? ' is-on' : ''}"><b>${code}</b><small>${esc(TYPE_MBTI[code][0])}</small>`
+            + (here.length ? `<span class="mb-tags">${here.map(x => `<span class="mb-tag" style="--t:${x.c}">${esc(x.t)}</span>`).join('')}</span>` : '')
+            + '</div>';
+        }).join('')}</div></div>`).join('')}</div>`;
+  }
+
   function renderTypesSection(r) {
     const sec = $('types-section');
     sec.hidden = !!r.partial;
     if (r.partial) return;
     const m = mbtiOf(r), e = enneaOf(r), b5 = m.b5;
     const [name, desc] = TYPE_MBTI[m.code];
-    $('type-mbti').innerHTML = `<p class="card-kicker">MBTI · 16 types</p>
-      <p class="ty-code">${m.code.split('').map(l => `<span>${l}</span>`).join('')}</p>
-      <h3 class="ty-name">${esc(name)}</h3><p class="ty-desc">${esc(desc)}</p>
-      <div class="ty-dims">${TYPE_MBTI_DIMS.map(d => {
-        const v = m.s[d.k], first = v >= 0.5, pctv = Math.round((first ? v : 1 - v) * 100);
-        return `<div class="ty-dim"><span class="${first ? 'is-on' : ''}">${d.a} · ${d.la}</span><span class="ty-track"><i style="left:${(1 - v) * 100}%"></i></span><span class="${first ? '' : 'is-on'}">${d.lb} · ${d.b}</span><small>${pctv} % ${first ? d.a : d.b}${pctv < 58 ? ', de peu' : ''}</small></div>`;
-      }).join('')}</div>
-      <p class="ty-what"><b>C'est quoi ?</b> Le MBTI range les personnalités en 16 types de quatre lettres : ${TYPE_MBTI_DIMS.map(d => esc(d.q)).join(' ; ')}.</p>`;
+    const fam = MBTI_FAMILIES.find(f => f.types.includes(m.code));
+    const [forces, day, watch] = MBTI_DAILY[m.code];
+    $('type-mbti').innerHTML = `<div class="mb-head">
+        <div class="mb-id"><p class="card-kicker">MBTI · 16 types</p>
+          <p class="ty-code">${m.code.split('').map(l => `<span>${l}</span>`).join('')}</p>
+          <h3 class="ty-name">${esc(name)}</h3>
+          <p class="mb-fam" style="--c:${fam.color}">Famille <b>${esc(fam.name)}</b> · ${esc(fam.what)}</p></div>
+        <p class="ty-desc mb-desc">${esc(desc)}</p>
+      </div>
+      <p class="mb-intro"><b>Comment ça marche ?</b> Le MBTI résume une personnalité en quatre lettres. Chacune répond à une question simple, avec deux réponses possibles : ta lettre est celle du côté où tu penches.</p>
+      <div class="mb-dims">${TYPE_MBTI_DIMS.map((d, i) => mbtiDimHtml(d, m.s[d.k], i)).join('')}</div>
+      <div class="mb-daily">
+        <div><p class="mb-k">Tes forces</p><p class="mb-chips">${forces.map(f => `<span>${esc(f)}</span>`).join('')}</p></div>
+        <div><p class="mb-k">Au quotidien</p><p>${esc(day)}</p></div>
+        <div><p class="mb-k">Point d'attention</p><p>${esc(watch)}</p></div>
+      </div>
+      <p class="mb-k mb-map-k">Les 16 types, en quatre familles</p>
+      ${mbtiMapHtml({ [m.code]: [{ t: 'Toi', c: 'var(--ink)' }] })}
+      <p class="ty-what"><b>D'où ça vient ?</b> Le MBTI s'inspire des travaux du psychiatre Carl Jung sur les types psychologiques. Il est très utilisé en entreprise et en développement personnel. Il décrit des préférences, pas des capacités : aucun type n'est meilleur qu'un autre, et chacun sait aussi faire l'inverse de sa lettre quand il le faut.</p>`;
     $('type-big5').innerHTML = `<p class="card-kicker">Big Five · 5 grands traits</p>
       <h3 class="ty-name">Ta personnalité en cinq curseurs</h3>
       <ul class="ty-b5">${TYPE_BIG5.map(t => {
@@ -2936,6 +2978,10 @@
     $('g-types-sum').innerHTML = `Le type MBTI le plus présent : <b>${topM[0]}</b>, ${esc(TYPE_MBTI[topM[0]][0].toLowerCase())}${topM[1] > 1 ? ` (${topM[1]} personnes)` : ''}. `
       + `Côté Ennéagramme, c'est le <b>${topE[0]} · ${esc(TYPE_ENNEA[topE[0]][0].replace(/^(Le |La |L')/, ''))}</b>${topE[1] > 1 ? ` (${topE[1]} personnes)` : ''}. `
       + `Dans l'ensemble, le cercle penche vers ${letters.map(x => `${x.lab.toLowerCase()} (${x.l})`).join(', ')} ; son trait Big Five le plus fort : <b>${esc(strong.name.toLowerCase())}</b>.`;
+    const tags = shortTags(rows.map(x => x.p));
+    const marks = {};
+    rows.forEach((x, i) => { (marks[x.m.code] = marks[x.m.code] || []).push({ t: tags[i], c: x.p.color }); });
+    $('g-types-map').innerHTML = mbtiMapHtml(marks);
     $('g-types-list').innerHTML = rows.map(({ p, m, e }) => `<li class="gty-row">
         <span class="gty-who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>
         <span class="gty-mbti"><b>${m.code}</b><small>${esc(TYPE_MBTI[m.code][0])}</small></span>
@@ -7478,7 +7524,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 71;
+  const BUILD = 72;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })

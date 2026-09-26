@@ -1099,4 +1099,53 @@ const TYPE_ENNEA = {
   9: ['Le Pacificateur', "Tu apaises, tu relies, tu fais baisser la température. Calme, écoute et une présence qui met tout le monde d'accord.", "la paix et l'harmonie", "le conflit et la rupture"],
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA };
+// Chaque lettre, expliquée en clair : l'icône, ce qu'elle veut dire, et une phrase « toi »
+const MBTI_LETTERS = {
+  E: { name: 'Extraversion', icon: 'people', means: "Des autres : voir du monde te recharge, et tu penses souvent en parlant.", you: "Une soirée entre amis te recharge plus qu'un week-end tranquille." },
+  I: { name: 'Introversion', icon: 'moon', means: "De toi : le calme te recharge, et tu réfléchis avant de parler.", you: "Un moment au calme te recharge plus qu'une grande soirée." },
+  N: { name: 'Intuition', icon: 'bulb', means: "Les idées et les possibles : tu vois ce qui pourrait être.", you: "Tu aimes imaginer, relier les idées et voir plus loin que le présent." },
+  S: { name: 'Sensation', icon: 'eye', means: "Le concret et les faits : tu vois ce qui est, ici et maintenant.", you: "Tu fais confiance à ce qui se voit, se touche et a fait ses preuves." },
+  T: { name: 'Pensée', icon: 'cog', means: "Avec la tête : la logique et la cohérence passent d'abord.", you: "Face à un choix, tu cherches d'abord ce qui est juste et logique." },
+  F: { name: 'Sentiment', icon: 'heart', means: "Avec le cœur : les gens et les valeurs passent d'abord.", you: "Face à un choix, tu penses d'abord à ce que ça fera aux gens." },
+  J: { name: 'Jugement', icon: 'calendar', means: "En planifiant : tu aimes que les choses soient décidées.", you: "Une liste cochée, un plan qui tient : ça te met à l'aise." },
+  P: { name: 'Perception', icon: 'compass', means: "En improvisant : tu aimes garder des options ouvertes.", you: "Un imprévu ? Tu t'adaptes, et tu y prends même goût." },
+};
+const MBTI_QUESTIONS = { EI: "D'où vient ton énergie ?", NS: "Qu'est-ce que tu remarques d'abord ?", TF: 'Comment tu décides ?', JP: "Comment tu t'organises ?" };
+const MBTI_ICONS = {
+  people: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15.5 14.2c2.9.2 5.5 2.3 5.5 5.3"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  cog: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  heart: '<path d="M12 20s-7.5-4.6-9.6-9.3C.9 7.3 3 3.8 6.6 3.8c2 0 3.4 1 4.2 2.3.8-1.3 2.2-2.3 4.2-2.3 3.6 0 5.7 3.5 4.2 6.9C19.5 15.4 12 20 12 20z"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M13 14h3M8 17h3"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+};
+// Quatre familles de quatre types
+const MBTI_FAMILIES = [
+  { k: 'NT', name: 'Les Analystes', color: '#7b61ff', what: 'logique, idées, stratégie', types: ['INTJ', 'INTP', 'ENTJ', 'ENTP'] },
+  { k: 'NF', name: 'Les Inspirés', color: '#2fb67c', what: 'valeurs, empathie, sens', types: ['INFJ', 'INFP', 'ENFJ', 'ENFP'] },
+  { k: 'SJ', name: 'Les Ancrés', color: '#2f80ed', what: 'fiabilité, devoir, stabilité', types: ['ISTJ', 'ISFJ', 'ESTJ', 'ESFJ'] },
+  { k: 'SP', name: 'Les Spontanés', color: '#f2a93b', what: 'action, liberté, instant présent', types: ['ISTP', 'ISFP', 'ESTP', 'ESFP'] },
+];
+// Au quotidien : trois forces, une scène, un point d'attention
+const MBTI_DAILY = {
+  INTJ: [['Vision', 'Indépendance', 'Exigence'], "Tu as toujours un plan d'avance, et tu préfères un projet bien pensé à dix idées lancées en l'air.", "Ton exigence peut sembler froide : un mot chaleureux de temps en temps fait des merveilles."],
+  INTP: [['Curiosité', 'Logique', 'Originalité'], "Tu peux passer des heures à creuser un sujet qui te passionne, juste pour comprendre.", "Tu peux te perdre dans tes réflexions et oublier de passer à l'action."],
+  ENTJ: [['Leadership', 'Décision', 'Efficacité'], "Tu prends naturellement les commandes, et les projets avancent quand tu es là.", "Tu vas parfois plus vite que les autres : pense à embarquer tout le monde."],
+  ENTP: [['Vivacité', 'Créativité', 'Répartie'], "Tu adores débattre, lancer des idées et bousculer les habitudes.", "Tu lances beaucoup de projets : le plus dur est d'en finir quelques-uns."],
+  INFJ: [['Intuition', 'Profondeur', 'Convictions'], "Tu devines ce que ressentent les autres, et tu cherches du sens à ce que tu fais.", "Tu donnes beaucoup : pense à te préserver, toi aussi."],
+  INFP: [['Sensibilité', 'Imagination', 'Authenticité'], "Tu vis selon tes valeurs, et tu mets du cœur dans tout ce que tu fais.", "Tu gardes souvent tes émotions pour toi : les partager te ferait du bien."],
+  ENFJ: [['Charisme', 'Empathie', 'Sens du collectif'], "Tu encourages, tu fédères, tu fais grandir ceux qui t'entourent.", "À force de t'occuper des autres, tu peux t'oublier."],
+  ENFP: [['Enthousiasme', 'Créativité', 'Chaleur'], "Tu t'enflammes pour de nouvelles idées et tu embarques tout le monde avec toi.", "La routine te pèse : un peu de suivi rend tes idées encore plus fortes."],
+  ISTJ: [['Fiabilité', 'Rigueur', 'Sens du devoir'], "Tu tiens tes engagements, tu respectes les règles, et on sait qu'on peut compter sur toi.", "Les changements de dernière minute te bousculent : garde un peu de place pour l'imprévu."],
+  ISFJ: [['Dévouement', 'Attention', 'Loyauté'], "Tu te souviens des petits détails qui comptent pour chacun, et tu prends soin de tout le monde.", "Tu as du mal à dire non : tes besoins comptent aussi."],
+  ESTJ: [['Organisation', 'Pragmatisme', 'Franchise'], "Tu structures, tu répartis les rôles, et les choses se font.", "Ta franchise peut paraître brusque : un peu de douceur fait mieux passer le message."],
+  ESFJ: [['Générosité', 'Sociabilité', 'Sens du collectif'], "Tu organises les retrouvailles et tu veilles à ce que chacun se sente bien.", "Tu accordes beaucoup d'importance à l'avis des autres : le tien compte tout autant."],
+  ISTP: [['Sang-froid', 'Habileté', 'Autonomie'], "Tu comprends vite comment marchent les choses, et tu répares ce qui est cassé.", "Tu gardes beaucoup pour toi : dire ce que tu ressens aide les autres à te suivre."],
+  ISFP: [['Douceur', 'Sens du beau', 'Liberté'], "Tu vis l'instant, tu remarques la beauté des choses et tu respectes la liberté de chacun.", "Tu évites les conflits : dire ce qui te dérange évite que ça s'accumule."],
+  ESTP: [['Énergie', 'Réactivité', 'Audace'], "Tu vis à cent à l'heure, tu saisis les occasions et tu réagis vite.", "Tu peux foncer sans penser aux conséquences : un temps de recul t'évitera des surprises."],
+  ESFP: [['Spontanéité', 'Chaleur', 'Joie de vivre'], "Tu mets de l'ambiance partout, et tu fais profiter les autres de chaque instant.", "Tu vis l'instant présent : penser un peu à demain t'évitera du stress."],
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY };
