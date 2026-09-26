@@ -1120,6 +1120,7 @@ const MBTI_ICONS = {
   heart: '<path d="M12 20s-7.5-4.6-9.6-9.3C.9 7.3 3 3.8 6.6 3.8c2 0 3.4 1 4.2 2.3.8-1.3 2.2-2.3 4.2-2.3 3.6 0 5.7 3.5 4.2 6.9C19.5 15.4 12 20 12 20z"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M13 14h3M8 17h3"/>',
   compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  wave: '<path d="M2 12h3.5l2.5-6 4 13 3.5-10 2 3H22"/>',
 };
 // Quatre familles de quatre types
 const MBTI_FAMILIES = [
@@ -1148,4 +1149,41 @@ const MBTI_DAILY = {
   ESFP: [['Spontanéité', 'Chaleur', 'Joie de vivre'], "Tu mets de l'ambiance partout, et tu fais profiter les autres de chaque instant.", "Tu vis l'instant présent : penser un peu à demain t'évitera du stress."],
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY };
+// Ennéagramme expliqué : trois centres, le quotidien, et les deux flèches (en forme, sous stress)
+const ENNEA_CENTERS = [
+  { k: 'inst', name: "L'Instinct", types: [8, 9, 1], color: '#e76f51', what: "on réagit d'abord par l'action et le ressenti" },
+  { k: 'coeur', name: 'Le Cœur', types: [2, 3, 4], color: '#d9488b', what: "les émotions et le lien aux autres passent d'abord" },
+  { k: 'tete', name: 'La Tête', types: [5, 6, 7], color: '#2f80ed', what: "la réflexion et l'anticipation passent d'abord" },
+];
+const ENNEA_SHORT = { 1: 'Perfectionniste', 2: 'Altruiste', 3: 'Battant', 4: 'Individualiste', 5: 'Chercheur', 6: 'Loyal', 7: 'Épicurien', 8: 'Chef', 9: 'Pacificateur' };
+const ENNEA_DAILY = {
+  1: [['Intégrité', 'Exigence', 'Sens de la justice'], "Tu remarques tout de suite ce qui pourrait être mieux fait, et tu t'y attaques.", "Ton exigence envers toi-même peut peser : le « assez bien » a aussi du bon."],
+  2: [['Générosité', 'Écoute', 'Chaleur'], "Tu sens ce dont les autres ont besoin, et tu es là avant qu'on te le demande.", "À force de donner, tu peux oublier tes propres besoins : ils comptent aussi."],
+  3: [['Ambition', 'Efficacité', 'Énergie'], "Tu te fixes des objectifs et tu fonces, avec un vrai talent pour motiver les autres.", "Tu peux te définir par tes réussites : tu vaux bien plus que ton palmarès."],
+  4: [['Créativité', 'Sensibilité', 'Authenticité'], "Tu vis les choses intensément, et tu mets ta patte personnelle partout.", "Il t'arrive de penser que personne ne te comprend : ceux qui t'aiment ne demandent pourtant qu'à essayer."],
+  5: [['Réflexion', 'Expertise', 'Recul'], "Tu observes, tu analyses, et tu deviens vite la personne qui s'y connaît vraiment.", "Tu peux te mettre en retrait : partager ce que tu sais fait du bien, à toi aussi."],
+  6: [['Loyauté', 'Prudence', 'Engagement'], "Tu anticipes les problèmes et tu restes fidèle à ceux qui comptent, contre vents et marées.", "Tu peux t'inquiéter à l'avance : la plupart des scénarios catastrophes n'arrivent jamais."],
+  7: [['Enthousiasme', 'Optimisme', 'Curiosité'], "Tu as toujours un projet, une sortie ou une idée en réserve, et ta bonne humeur est contagieuse.", "Tu peux fuir ce qui est pénible : affronter les petits tracas les empêche de grossir."],
+  8: [['Force', 'Franchise', 'Protection'], "Tu prends les choses en main, tu dis ce que tu penses, et tu défends ceux qui en ont besoin.", "Ta force peut impressionner : montrer ta douceur rapproche les gens de toi."],
+  9: [['Calme', 'Écoute', 'Conciliation'], "Tu apaises les tensions, tu écoutes chacun, et ta présence met les gens à l'aise.", "Tu peux t'effacer pour éviter le conflit : ton avis compte, dis-le."],
+};
+// Les flèches de l'étoile : vers où l'on va quand tout va bien, et sous stress
+const ENNEA_GROWTH = { 1: 7, 2: 4, 3: 6, 4: 1, 5: 8, 6: 9, 7: 5, 8: 2, 9: 3 };
+const ENNEA_STRESS = { 1: 4, 2: 8, 3: 9, 4: 2, 5: 7, 6: 3, 7: 1, 8: 5, 9: 6 };
+const ENNEA_BEST = { 1: "l'exigence juste", 2: 'la générosité', 3: "l'énergie d'agir", 4: 'la sincérité avec toi-même', 5: 'le recul', 6: "l'engagement", 7: 'la légèreté et la joie', 8: "l'assurance", 9: 'le calme' };
+const ENNEA_WORST = { 1: 'la critique et la rigidité', 2: 'le besoin de te rendre indispensable', 3: "l'obsession de l'image", 4: 'la mélancolie', 5: 'le repli sur toi', 6: "l'inquiétude", 7: 'la dispersion', 8: 'le besoin de tout contrôler', 9: "l'inertie" };
+// Big Five expliqué : une question en clair, deux pôles (tous deux positifs), un exemple au quotidien
+const BIG5_EXPLAIN = {
+  O: { icon: 'bulb', q: 'Aimes-tu la nouveauté et les idées ?', lo: 'Goût du concret', hi: 'Goût de la nouveauté',
+    day: { hi: "Un nouveau resto, un nouveau pays, une idée étrange : tu dis oui avec plaisir.", mid: 'Tu aimes découvrir, sans perdre tes repères.', lo: 'Tu retournes avec plaisir là où tu te sens bien, et les modes passent sans t\'atteindre.' } },
+  C: { icon: 'calendar', q: 'Plutôt planifier ou improviser ?', lo: 'Spontanéité', hi: 'Organisation',
+    day: { hi: 'Listes, agenda, échéances tenues : on peut compter sur ton organisation.', mid: 'De l\'organisation quand il le faut, de la souplesse le reste du temps.', lo: 'Tu fais confiance au moment présent : les plans, tu les ajustes en route.' } },
+  E: { icon: 'people', q: "Qu'est-ce qui te recharge : le calme ou le monde ?", lo: 'Calme intérieur', hi: 'Énergie sociale',
+    day: { hi: 'Plus il y a de monde, plus tu es dans ton élément.', mid: "Une grande soirée comme un tête-à-tête te conviennent, selon l'humeur.", lo: 'Tu préfères un ami proche à une grande tablée, et tu as besoin de moments à toi.' } },
+  A: { icon: 'heart', q: 'Face aux autres : la franchise ou la conciliation ?', lo: 'Franchise', hi: 'Conciliation',
+    day: { hi: 'Tu fais confiance, tu arrondis les angles, et tu penses aux autres avant toi.', mid: 'De la gentillesse, sans te laisser marcher sur les pieds.', lo: "Tu dis ce que tu penses, et tu ne crois pas tout ce qu'on te raconte." } },
+  N: { icon: 'wave', q: 'Comment vis-tu le stress et les émotions ?', lo: 'Calme émotionnel', hi: 'Émotions vives',
+    day: { hi: 'Le meilleur comme le plus difficile, tu le vis intensément : c\'est aussi ce qui rend ta présence si attentive aux autres.', mid: 'Tes émotions sont là, mais tu les gardes bien en main.', lo: 'Le stress glisse sur toi : dans la tempête, tu restes stable.' } },
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY, ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN };

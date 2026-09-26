@@ -15,6 +15,7 @@
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
     VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES,
     TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY,
+    ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -2942,21 +2943,117 @@
       <p class="mb-k mb-map-k">Les 16 types, en quatre familles</p>
       ${mbtiMapHtml({ [m.code]: [{ t: 'Toi', c: 'var(--ink)' }] })}
       <p class="ty-what"><b>D'où ça vient ?</b> Le MBTI s'inspire des travaux du psychiatre Carl Jung sur les types psychologiques. Il est très utilisé en entreprise et en développement personnel. Il décrit des préférences, pas des capacités : aucun type n'est meilleur qu'un autre, et chacun sait aussi faire l'inverse de sa lettre quand il le faut.</p>`;
-    $('type-big5').innerHTML = `<p class="card-kicker">Big Five · 5 grands traits</p>
-      <h3 class="ty-name">Ta personnalité en cinq curseurs</h3>
-      <ul class="ty-b5">${TYPE_BIG5.map(t => {
-        const v = b5[t.k];
-        return `<li><div class="ty-b5-top"><b>${esc(t.name)}</b><span>${pct(v)}</span></div><span class="bar"><i data-bar="${pct(v)}" style="background:${t.color}"></i></span><p>${esc(t[b5Level(v)])}</p></li>`;
-      }).join('')}</ul>
-      <p class="ty-what"><b>C'est quoi ?</b> Le modèle le plus utilisé en psychologie : cinq traits, chacun sur une échelle de 0 à 100. Aucun score n'est bon ou mauvais, chacun a ses forces.</p>`;
+    // Big Five : cinq questions en clair, deux pôles, un exemple, et le pentagone du profil
+    $('type-big5').innerHTML = `<div class="b5-head">
+        <div><p class="card-kicker">Big Five · 5 grands traits</p>
+          <h3 class="ty-name">Ta personnalité en cinq traits</h3>
+          <p class="mb-intro"><b>Comment ça marche ?</b> Le Big Five décrit une personnalité avec cinq traits, chacun sur une échelle de 0 à 100. Ce n'est pas un type où l'on rentre ou non : chacun se situe quelque part entre deux pôles, et <b>les deux pôles ont leurs forces</b>. Aucun score n'est bon ou mauvais.</p></div>
+        <div class="b5-radar">${b5RadarSvg([{ b5, color: 'var(--accent)' }])}</div>
+      </div>
+      <div class="b5-list">${TYPE_BIG5.map(t => {
+        const v = b5[t.k], x = BIG5_EXPLAIN[t.k], lv = b5Level(v);
+        return `<div class="b5-item" style="--c:${t.color}">
+          <p class="b5-q"><span class="mb-ico">${mbtiIcon(x.icon)}</span><span><b>${esc(t.name)}</b><small>${esc(x.q)}</small></span><em>${pct(v)}</em></p>
+          <div class="b5-scale"><span class="b5-track"><i style="left:${(v * 100).toFixed(1)}%"></i></span>
+            <span class="b5-poles"><span class="${lv === 'lo' ? 'is-on' : ''}">${esc(x.lo)}</span><span class="${lv === 'hi' ? 'is-on' : ''}">${esc(x.hi)}</span></span></div>
+          <p class="b5-you"><b>${esc(t[lv])}</b> ${esc(x.day[lv])}</p>
+        </div>`;
+      }).join('')}</div>
+      <p class="ty-what"><b>D'où ça vient ?</b> Le Big Five (on dit aussi OCEAN) est le modèle le plus étudié en psychologie scientifique. Il est né de décennies de recherches sur les mots qu'on utilise, dans toutes les langues, pour décrire les gens : ils se regroupent en cinq grandes familles.</p>`;
+
+    // Ennéagramme : l'étoile des neuf types, les trois centres, les deux flèches, le quotidien
     const [en, ed, emot, efear] = TYPE_ENNEA[e.n];
-    $('type-ennea').innerHTML = `<p class="card-kicker">Ennéagramme · 9 types</p>
-      <p class="ty-code ty-code-n"><span>${e.n}</span></p>
-      <h3 class="ty-name">${esc(en)}</h3><p class="ty-wing">aile ${e.wing}, ${esc(TYPE_ENNEA[e.wing][0].toLowerCase().replace(/^(le |la |l')/, ''))}</p>
-      <p class="ty-desc">${esc(ed)}</p>
-      <dl class="ty-ennea-dl"><div><dt>Ce qui te motive</dt><dd>${esc(emot)}</dd></div><div><dt>Ce qui t'inquiète</dt><dd>${esc(efear)}</dd></div></dl>
-      <p class="ty-next">Ensuite : ${e.ranked.slice(1, 3).map(x => `${x.n} · ${esc(TYPE_ENNEA[x.n][0])}`).join(', puis ')}.</p>
-      <p class="ty-what"><b>C'est quoi ?</b> Neuf types construits autour d'une motivation profonde. L'« aile » est le type voisin qui colore le tien.</p>`;
+    const center = ENNEA_CENTERS.find(c => c.types.includes(e.n));
+    const [eforces, eday, ewatch] = ENNEA_DAILY[e.n];
+    const gro = ENNEA_GROWTH[e.n], str = ENNEA_STRESS[e.n];
+    $('type-ennea').innerHTML = `<div class="mb-head">
+        <div class="mb-id"><p class="card-kicker">Ennéagramme · 9 types</p>
+          <p class="ty-code ty-code-n"><span>${e.n}</span></p>
+          <h3 class="ty-name">${esc(en)}</h3>
+          <p class="mb-fam" style="--c:${center.color}">Aile <b>${e.wing} · ${esc(ENNEA_SHORT[e.wing])}</b> · centre <b>${esc(center.name)}</b></p></div>
+        <p class="ty-desc mb-desc">${esc(ed)}</p>
+      </div>
+      <div class="en-body">
+        <div class="en-star">${enneaSvg({ scores: enneaNorm(e), me: e.n, wing: e.wing })}
+          <p class="en-legend"><span class="en-lg-g">→ en forme</span><span class="en-lg-s">⇢ sous stress</span></p></div>
+        <div class="en-side">
+          <p class="mb-intro"><b>Comment ça marche ?</b> L'Ennéagramme décrit neuf types, chacun construit autour d'une <b>motivation profonde</b> et d'une <b>peur</b>. Ton type est celui dont la motivation te ressemble le plus ; ton <b>aile</b> est le type voisin qui le colore. Sur l'étoile, plus un point est plein, plus ce type te ressemble.</p>
+          <div class="en-centers">${ENNEA_CENTERS.map(c => `<p class="${c === center ? 'is-on' : ''}" style="--c:${c.color}"><b>${esc(c.name)}</b> (${c.types.join(', ')}) : ${esc(c.what)}.</p>`).join('')}</div>
+          <dl class="ty-ennea-dl"><div><dt>Ce qui te motive</dt><dd>${esc(emot)}</dd></div><div><dt>Ce qui t'inquiète</dt><dd>${esc(efear)}</dd></div></dl>
+          <div class="en-arrows">
+            <p><b>Quand tout va bien</b>, tu prends le meilleur du <b>${gro} · ${esc(ENNEA_SHORT[gro])}</b> : ${esc(ENNEA_BEST[gro])}.</p>
+            <p><b>Sous stress</b>, tu glisses vers le <b>${str} · ${esc(ENNEA_SHORT[str])}</b>, et son côté sombre : ${esc(ENNEA_WORST[str])}. Le repérer aide à s'en libérer.</p>
+          </div>
+        </div>
+      </div>
+      <div class="mb-daily">
+        <div><p class="mb-k">Tes forces</p><p class="mb-chips">${eforces.map(f => `<span>${esc(f)}</span>`).join('')}</p></div>
+        <div><p class="mb-k">Au quotidien</p><p>${esc(eday)}</p></div>
+        <div><p class="mb-k">Point d'attention</p><p>${esc(ewatch)}</p></div>
+      </div>
+      <p class="ty-what"><b>D'où ça vient ?</b> L'Ennéagramme est un modèle ancien, repris au XXᵉ siècle par des psychologues. Il est très utilisé en développement personnel pour comprendre ce qui nous pousse à agir. Son étoile relie les types entre eux : les flèches montrent vers quel type on glisse quand on va bien, et quand on est sous pression.</p>`;
+  }
+
+  // Les scores d'Ennéagramme ramenés entre 0 et 1 : le plus fort vaut 1, le plus faible 0
+  function enneaNorm(e) {
+    const vs = e.ranked.map(x => x.v), lo = Math.min(...vs), hi = Math.max(...vs);
+    const out = {};
+    e.ranked.forEach(x => { out[x.n] = hi > lo ? (x.v - lo) / (hi - lo) : 0.5; });
+    return out;
+  }
+
+  /* L'étoile de l'Ennéagramme : neuf points sur un cercle (le 9 en haut), le triangle 3-6-9
+     et l'hexagramme 1-4-2-8-5-7. Un point est d'autant plus plein que le type ressemble ;
+     « me » est entouré, l'aile en pointillés, et les deux flèches partent de « me ».
+     Dans un cercle, « tags » range les initiales de chacun sous son type. */
+  function enneaSvg(o) {
+    const W = 480, H = 400, cx = 240, cy = 196, R = 118, LR = 156;
+    const at = (n, r) => { const a = ((n % 9) * 40 - 90) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+    const path = seq => seq.map((n, i) => { const [x, y] = at(n, R); return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`; }).join(' ');
+    const col = n => ENNEA_CENTERS.find(c => c.types.includes(n)).color;
+    let s = `<svg class="en-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Étoile de l'Ennéagramme">`;
+    s += `<circle class="en-ring" cx="${cx}" cy="${cy}" r="${R}"/><path class="en-line" d="${path([3, 6, 9, 3])}"/><path class="en-line" d="${path([1, 4, 2, 8, 5, 7, 1])}"/>`;
+    if (o.me) {
+      const arrow = (to, cls) => {
+        const [x1, y1] = at(o.me, R), [x2, y2] = at(to, R), dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+        const ex = x2 - dx / L * 20, ey = y2 - dy / L * 20, sx = x1 + dx / L * 20, sy = y1 + dy / L * 20;
+        return `<line class="${cls}" x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" marker-end="url(#${cls}-h)"/>`;
+      };
+      s += `<defs><marker id="en-g-h" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2fb67c"/></marker>`
+        + `<marker id="en-s-h" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e76f51"/></marker></defs>`;
+      s += arrow(ENNEA_GROWTH[o.me], 'en-g') + arrow(ENNEA_STRESS[o.me], 'en-s');
+    }
+    for (let n = 1; n <= 9; n++) {
+      const [x, y] = at(n, R), sc = o.scores ? o.scores[n] : 0, c = col(n);
+      const on = n === o.me, wing = n === o.wing, has = o.tags && o.tags[n] && o.tags[n].length;
+      if (on) s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="23" fill="none" stroke="var(--ink)" stroke-width="2.5"/>`;
+      if (wing) s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="21" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-dasharray="3 3"/>`;
+      const op = o.tags ? (has ? 1 : 0.18) : 0.18 + 0.82 * sc;
+      s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="${c}" fill-opacity="${op.toFixed(2)}" stroke="${c}" stroke-width="1.5"/>`;
+      s += `<text class="en-num${op > 0.55 ? ' is-full' : ''}" x="${x.toFixed(1)}" y="${(y + 5.5).toFixed(1)}" text-anchor="middle">${n}</text>`;
+      const [lx, ly] = at(n, LR), anchor = lx < cx - 30 ? 'end' : lx > cx + 30 ? 'start' : 'middle';
+      const lyy = n === 9 ? ly - 2 : (n === 4 || n === 5) ? ly + 8 : ly + 4;
+      s += `<text class="en-lbl${on ? ' is-on' : ''}" x="${lx.toFixed(1)}" y="${lyy.toFixed(1)}" text-anchor="${anchor}">${esc(ENNEA_SHORT[n])}</text>`;
+      if (has) s += `<text class="en-tags" x="${lx.toFixed(1)}" y="${(lyy + 16).toFixed(1)}" text-anchor="${anchor}">${o.tags[n].map(t => `<tspan fill="${t.c}">${esc(t.t)}</tspan>`).join(' ')}</text>`;
+    }
+    return s + '</svg>';
+  }
+
+  // Le pentagone du Big Five : un polygone par profil (un seul en solo, la moyenne dans un cercle)
+  function b5RadarSvg(list) {
+    const W = 440, H = 290, cx = 220, cy = 150, R = 98;
+    const at = (i, r) => { const a = (i * 72 - 90) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+    const poly = (vals, r) => vals.map((v, i) => at(i, r * v).map(x => x.toFixed(1)).join(',')).join(' ');
+    let s = `<svg class="b5-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Profil Big Five">`;
+    [0.25, 0.5, 0.75, 1].forEach(k => { s += `<polygon class="b5-grid" points="${poly([1, 1, 1, 1, 1], R * k)}"/>`; });
+    TYPE_BIG5.forEach((t, i) => { const [x, y] = at(i, R); s += `<line class="b5-grid" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; });
+    list.forEach(p => { s += `<polygon points="${poly(TYPE_BIG5.map(t => p.b5[t.k]), R)}" fill="${p.color}" fill-opacity="0.22" stroke="${p.color}" stroke-width="2.2" stroke-linejoin="round"/>`; });
+    TYPE_BIG5.forEach((t, i) => {
+      const [x, y] = at(i, R + 22), anchor = x < cx - 10 ? 'end' : x > cx + 10 ? 'start' : 'middle';
+      const v = list.length === 1 ? ` ${pct(list[0].b5[t.k])}` : '';
+      s += `<text class="b5-lbl" x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${anchor}" fill="${t.color}">${esc(t.k === 'N' ? 'Émotions' : t.name.split(' ')[0])}${v}</text>`;
+    });
+    return s + '</svg>';
   }
 
   // Le cercle : le type de chacun, et ce qui domine dans le groupe
@@ -2982,6 +3079,10 @@
     const marks = {};
     rows.forEach((x, i) => { (marks[x.m.code] = marks[x.m.code] || []).push({ t: tags[i], c: x.p.color }); });
     $('g-types-map').innerHTML = mbtiMapHtml(marks);
+    const etags = {};
+    rows.forEach((x, i) => { (etags[x.e.n] = etags[x.e.n] || []).push({ t: tags[i], c: x.p.color }); });
+    $('g-types-more').innerHTML = `<div><p class="mb-k">L'Ennéagramme du cercle</p><p class="gty-hint">Neuf types, chacun construit autour d'une motivation profonde. Les initiales de chacun sont rangées sous son type.</p>${enneaSvg({ tags: etags })}</div>`
+      + `<div><p class="mb-k">Le Big Five moyen du cercle</p><p class="gty-hint">Cinq traits de 0 à 100 : plus la forme s'étire vers un trait, plus il est présent dans le groupe.</p>${b5RadarSvg([{ b5: mean, color: 'var(--accent)' }])}</div>`;
     $('g-types-list').innerHTML = rows.map(({ p, m, e }) => `<li class="gty-row">
         <span class="gty-who"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</span>
         <span class="gty-mbti"><b>${m.code}</b><small>${esc(TYPE_MBTI[m.code][0])}</small></span>
@@ -7524,7 +7625,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 72;
+  const BUILD = 73;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
