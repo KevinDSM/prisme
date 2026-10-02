@@ -3132,6 +3132,64 @@
       <div class="dst-col dst-tri"><p class="dst-col-t">Trois couleurs fortes</p><div class="dst-tri-row">${DSTYLE_TRIPLES.map(cell).join('')}</div></div>`;
   }
 
+
+  /* Le profil DISC en courbe : une colonne par couleur, la courbe qui relie les quatre scores,
+     et la ligne des couleurs fortes (le seuil du style). Au-dessus, ce qui fait ton style. */
+  function discCurveSvg(disc) {
+    const W = 500, H = 230, top = 24, h = 160, xs = [70, 170, 270, 370], RX = 424;
+    const Y = v => top + (1 - v) * h;
+    let s = `<svg class="dcv-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Profil DISC en courbe">`;
+    [0, 0.25, 0.5, 0.75, 1].forEach(k => { s += `<line class="dcv-grid" x1="40" x2="${RX}" y1="${Y(k).toFixed(1)}" y2="${Y(k).toFixed(1)}"/><text class="dcv-tick" x="32" y="${(Y(k) + 4).toFixed(1)}" text-anchor="end">${Math.round(k * 100)}</text>`; });
+    DISC.forEach((x, i) => {
+      const v = disc[x.id];
+      s += `<rect class="dcv-bar" x="${xs[i] - 24}" y="${Y(v).toFixed(1)}" width="48" height="${(top + h - Y(v)).toFixed(1)}" rx="6" style="fill:var(${x.css})"/>`;
+    });
+    s += `<line class="dcv-line-min" x1="40" x2="${RX}" y1="${Y(DSTYLE_MIN).toFixed(1)}" y2="${Y(DSTYLE_MIN).toFixed(1)}"/>`;
+    s += `<text class="dcv-min" x="${RX + 8}" y="${(Y(DSTYLE_MIN) - 3).toFixed(1)}">couleurs</text><text class="dcv-min" x="${RX + 8}" y="${(Y(DSTYLE_MIN) + 12).toFixed(1)}">fortes</text>`;
+    s += `<polyline class="dcv-curve" points="${DISC.map((x, i) => `${xs[i]},${Y(disc[x.id]).toFixed(1)}`).join(' ')}"/>`;
+    DISC.forEach((x, i) => {
+      const v = disc[x.id], strong = v >= DSTYLE_MIN;
+      s += `<circle class="dcv-pt" cx="${xs[i]}" cy="${Y(v).toFixed(1)}" r="${strong ? 8 : 6}" style="fill:var(${x.css})"/>`;
+      s += `<text class="dcv-val${strong ? ' is-on' : ''}" x="${xs[i]}" y="${(Y(v) - 14).toFixed(1)}" text-anchor="middle">${pct(v)}</text>`;
+      s += `<text class="dcv-lt" x="${xs[i]}" y="${top + h + 24}" text-anchor="middle" style="fill:var(${x.css})">${x.letter} · ${esc(x.color)}</text>`;
+    });
+    return s + '</svg>';
+  }
+
+  /* Les quatre couches : de ce qui est le plus profond (ta nature) à ce qui se voit le plus
+     (tes idées). Le noyau bouge peu ; la couche extérieure bouge avec la vie et l'actualité. */
+  const LAYERS = [
+    { k: 'Ta nature', what: "Ton caractère profond : archétype, Big Five, MBTI. C'est la couche la plus stable : elle bouge peu au fil de la vie.", color: '#7b61ff' },
+    { k: 'Tes valeurs', what: "Ce qui compte pour toi et ce qui te fait réagir moralement. Elles évoluent lentement, avec les grandes étapes de la vie.", color: '#2fb67c' },
+    { k: "Ta façon d'agir", what: "Ton comportement avec les autres, que montre le DISC. Il s'adapte davantage au contexte : au travail, en famille, entre amis.", color: '#f2a93b' },
+    { k: 'Tes idées', what: "Tes opinions politiques, la couche la plus visible. Elles reposent sur les trois autres, et peuvent bouger avec l'actualité et les rencontres.", color: '#e76f51' },
+  ];
+  function renderLayers(r, fam, temp, psy, vp) {
+    const nature = psy.length ? shortName(psy[0].name) : shortName(temp[0].name);
+    const mb = r.partial ? '' : mbtiOf(r).code;
+    const fTop = FOUNDATIONS.slice().sort((x, y) => r.found[y.id] - r.found[x.id])[0];
+    const values = vp ? valueTitle(vp) : fTop.label;
+    const st = discStyleOf(r.disc);
+    const act = st ? st.name : shortName(temp[0].name);
+    const ideas = fam[0].name;
+    const res = [[nature, mb], [values], [act], [ideas]];
+    const C = 220, R = [64, 112, 160, 208];
+    let s = `<svg class="ly-svg" viewBox="0 0 440 440" role="img" aria-label="Tes quatre couches">`;
+    for (let i = 3; i >= 0; i--) s += `<circle cx="${C}" cy="${C}" r="${R[i]}" fill="${LAYERS[i].color}" fill-opacity="${(0.16 + (3 - i) * 0.05).toFixed(2)}" stroke="${LAYERS[i].color}" stroke-width="1.5"/>`;
+    s += `<text class="ly-k" x="${C}" y="${C - 14}" text-anchor="middle">TA NATURE</text>`;
+    s += `<text class="ly-v" x="${C}" y="${C + 8}" text-anchor="middle">${esc(nature)}</text>`;
+    if (mb) s += `<text class="ly-v ly-v2" x="${C}" y="${C + 28}" text-anchor="middle">${mb}</text>`;
+    for (let i = 1; i <= 3; i++) {
+      const mid = C - (R[i - 1] + R[i]) / 2;
+      s += `<text class="ly-k" x="${C}" y="${(mid - 7).toFixed(1)}" text-anchor="middle">${esc(LAYERS[i].k.toUpperCase())}</text>`;
+      s += `<text class="ly-v" x="${C}" y="${(mid + 13).toFixed(1)}" text-anchor="middle">${esc(res[i][0])}</text>`;
+    }
+    s += '</svg>';
+    $('layers').innerHTML = `<div class="ly-body"><div class="ly-pic">${s}</div>
+      <div class="ly-side"><p class="mb-intro"><b>Comment ça marche ?</b> Une personnalité se lit comme un oignon : au centre, ce qui est le plus profond et le plus stable ; à l'extérieur, ce qui se voit le plus et change le plus facilement. C'est pour ça que Prisme commence par le caractère et finit par les idées.</p>
+        <ol class="ly-list">${LAYERS.map((l, i) => `<li style="--c:${l.color}"><b>${esc(l.k)} : ${esc(res[i].filter(Boolean).join(' · '))}</b><span>${esc(l.what)}</span></li>`).join('')}</ol></div></div>`;
+  }
+
   function renderDiscStyle(r) {
     const st = discStyleOf(r.disc);
     if (!st) { $('disc-style').innerHTML = ''; return; }
@@ -3143,6 +3201,7 @@
         <p class="dst-desc">${esc(st.desc)}</p>
         <p class="dst-defi"><b>Ton défi :</b> ${esc(st.defi)}</p>
       </div>
+      <div class="dst-curve">${discCurveSvg(r.disc)}<p class="gty-hint">Au-dessus de la ligne, tes couleurs fortes : ce sont elles qui font ton style, dans l'ordre. En dessous, ce qui t'est moins naturel, mais que tu sais mobiliser quand il le faut.</p></div>
       <p class="mb-intro"><b>Comment ça marche ?</b> Ta couleur dominante ne dit pas tout : l'ordre de tes couleurs fortes compte aussi. Vert puis jaune, ce n'est pas jaune puis vert : la première couleur donne le ton, la deuxième la nuance. On retient les couleurs au-dessus de 55, de la plus forte à la plus faible ; avec trois couleurs fortes, c'est leur alliance qui compte. Cela fait vingt styles.</p>
       ${discStyleMapHtml({ [st.key]: [{ t: 'Toi', c: 'var(--ink)' }] })}`;
   }
@@ -4718,6 +4777,7 @@
     $('disc-section').hidden = !dp;
     if (dp) renderDiscSection(r, dp);
     renderTypesSection(r);
+    renderLayers(r, fam, temp, psy, vp);
 
     if (!silent) resetCard('');
     renderAssembly(cur);
@@ -7711,7 +7771,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 77;
+  const BUILD = 78;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
