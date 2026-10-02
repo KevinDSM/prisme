@@ -15,7 +15,7 @@
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
     VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES,
     TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY,
-    ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN, DISC_TEAM,
+    ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN, DISC_TEAM, DISC_STYLES20,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -3094,6 +3094,59 @@
       </li>`).join('');
   }
 
+
+  /* Style DISC ordonné : les couleurs au-dessus du seuil, de la plus forte à la plus faible.
+     Une ou deux couleurs : l'ordre compte (vert puis jaune ≠ jaune puis vert).
+     Trois couleurs : c'est leur alliance qui compte, la clé suit l'ordre D, I, S, C. */
+  const DSTYLE_MIN = 0.55;
+  const DSTYLE_GROUPS = [['D', 'DI', 'DS', 'DC'], ['I', 'ID', 'IS', 'IC'], ['S', 'SD', 'SI', 'SC'], ['C', 'CD', 'CI', 'CS']];
+  const DSTYLE_TRIPLES = ['DIS', 'DIC', 'DSC', 'ISC'];
+  const discByLetter = l => DISC.find(x => x.letter === l);
+
+  function discStyleOf(disc) {
+    if (!disc) return null;
+    const ranked = DISC.map(x => ({ ...x, v: disc[x.id] })).sort((a, b) => b.v - a.v);
+    let top = ranked.filter(x => x.v >= DSTYLE_MIN).slice(0, 3);
+    if (!top.length) top = [ranked[0]];
+    const key = top.length === 3
+      ? top.map(x => x.letter).sort((p, q) => DISC_ORDER.indexOf(p) - DISC_ORDER.indexOf(q)).join('')
+      : top.map(x => x.letter).join('');
+    const [name, desc, defi] = DISC_STYLES20[key];
+    return { key, top, name, desc, defi };
+  }
+
+  // Les lettres d'un style en pastilles de couleur
+  const dstyleChips = key => key.split('').map(l => `<i style="--c:var(${discByLetter(l).css})">${l}</i>`).join('');
+
+  // La carte des 20 styles : une colonne par couleur dominante, puis les styles à trois couleurs
+  function discStyleMapHtml(marks) {
+    const cell = key => {
+      const here = marks[key] || [];
+      return `<div class="dst-cell${here.length ? ' is-on' : ''}"><span class="dst-k">${dstyleChips(key)}</span><b>${esc(DISC_STYLES20[key][0])}</b>`
+        + (here.length ? `<span class="mb-tags">${here.map(x => `<span class="mb-tag" style="--t:${x.c}">${esc(x.t)}</span>`).join('')}</span>` : '') + '</div>';
+    };
+    return `<div class="dst-map">${DSTYLE_GROUPS.map(g => {
+        const d = discByLetter(g[0]);
+        return `<div class="dst-col" style="--c:var(${d.css})"><p class="dst-col-t">${esc(d.color)} en tête</p>${g.map(cell).join('')}</div>`;
+      }).join('')}</div>
+      <div class="dst-col dst-tri"><p class="dst-col-t">Trois couleurs fortes</p><div class="dst-tri-row">${DSTYLE_TRIPLES.map(cell).join('')}</div></div>`;
+  }
+
+  function renderDiscStyle(r) {
+    const st = discStyleOf(r.disc);
+    if (!st) { $('disc-style').innerHTML = ''; return; }
+    const order = st.top.map(x => `<span style="--c:var(${x.css})">${esc(x.color)}</span>`).join('<em>→</em>');
+    $('disc-style').innerHTML = `<p class="mb-k">Ton style DISC, dans l'ordre de tes couleurs</p>
+      <div class="dst-head">
+        <p class="dst-order">${order}</p>
+        <h3 class="ty-name">${esc(st.name)}</h3>
+        <p class="dst-desc">${esc(st.desc)}</p>
+        <p class="dst-defi"><b>Ton défi :</b> ${esc(st.defi)}</p>
+      </div>
+      <p class="mb-intro"><b>Comment ça marche ?</b> Ta couleur dominante ne dit pas tout : l'ordre de tes couleurs fortes compte aussi. Vert puis jaune, ce n'est pas jaune puis vert : la première couleur donne le ton, la deuxième la nuance. On retient les couleurs au-dessus de 55, de la plus forte à la plus faible ; avec trois couleurs fortes, c'est leur alliance qui compte. Cela fait vingt styles.</p>
+      ${discStyleMapHtml({ [st.key]: [{ t: 'Toi', c: 'var(--ink)' }] })}`;
+  }
+
   function renderDiscSection(r, dp) {
     const P = dp.primary, sec = dp.secondary;
     const colors = discColors(dp);
@@ -3107,6 +3160,7 @@
       ? `${dp.pair.title} · profil ${P.letter}${sec.letter}`
       : `${P.style.title} · ${P.letter} comme ${P.label}`;
     $('disc-desc').textContent = dp.balanced ? `${DISC_BALANCED} ${P.style.desc}` : sec ? dp.pair.text : P.style.desc;
+    renderDiscStyle(r);
 
     $('disc-bars').innerHTML = DISC.map(x => {
       const v = r.disc[x.id];
@@ -3156,7 +3210,11 @@
     });
     const profiles = people.map((p, i) => ({ ...p, tag: tags[i], dp: discProfile(p.r.disc) }));
     $(pre + 'circle-disc-list').innerHTML = profiles.map(p =>
-      `<li><span class="disc-tag${p.me ? ' me' : ''}" style="${p.me ? '' : `background:${p.color}`}">${esc(p.tag)}</span><span class="who">${esc(p.me ? 'Toi' : p.name)}</span>${discPills(p.dp, true)}<small>${esc(p.dp.secondary ? p.dp.pair.title : p.dp.primary.style.title)}</small></li>`).join('');
+      `<li><span class="disc-tag${p.me ? ' me' : ''}" style="${p.me ? '' : `background:${p.color}`}">${esc(p.tag)}</span><span class="who">${esc(p.me ? 'Toi' : p.name)}</span>${discPills(p.dp, true)}<small>${esc(discStyleOf(p.r.disc).name)}</small></li>`).join('');
+    const smarks = {};
+    profiles.forEach(p => { const k = discStyleOf(p.r.disc).key; (smarks[k] = smarks[k] || []).push({ t: p.me ? 'Toi' : p.tag, c: p.me ? 'var(--ink)' : p.color }); });
+    const sbox = $(pre + 'circle-disc-styles');
+    if (sbox) sbox.innerHTML = `<p class="mb-k">Les styles DISC du cercle</p><p class="gty-hint">L'ordre des couleurs fortes compte : chacun est rangé dans son style, parmi les vingt.</p>${discStyleMapHtml(smarks)}`;
 
     const counts = {};
     DISC.forEach(x => { counts[x.id] = 0; });
@@ -7653,7 +7711,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 76;
+  const BUILD = 77;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
@@ -7680,7 +7738,7 @@
   initQuiz();
   initResults();
   // le moteur de calcul, en lecture : pour les tests automatiques (aucune donnée n'y transite)
-  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress, portraitOf, bigFiveOf, mbtiOf, enneaOf });
+  window.PRISME_ENGINE = Object.freeze({ compute, encodeResult, decodeResult, mergeUpgrade, missingQuestions, canUpgrade, encodeProgress, decodeProgress, portraitOf, bigFiveOf, mbtiOf, enneaOf, discStyleOf });
   initGroup();
   initCircleByUrl();
   window.addEventListener('hashchange', route);

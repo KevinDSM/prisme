@@ -1202,4 +1202,30 @@ const DISC_TEAM = {
     tension: "Avec les profils rapides et intuitifs, ton besoin de vérifier peut sembler freiner l'élan. Distinguer ce qui mérite d'être approfondi de ce qui peut aller vite fluidifie l'équipe." },
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY, ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN, DISC_TEAM };
+/* Styles DISC ordonnés : les couleurs au-dessus du seuil, de la plus forte à la plus faible.
+   Une couleur (4), deux couleurs dans un ordre (12), trois couleurs (4) : 20 styles.
+   Noms en images, pour ne pas se confondre avec les personnages et les types du site. */
+const DISC_STYLES20 = {
+  D: ['La Locomotive', "Tu tires tout le monde vers l'avant, droit au but : tu décides vite et tu avances sans attendre.", "Ralentir assez pour que les autres montent dans le train."],
+  I: ["Le Feu d'artifice", "Tu illumines chaque pièce où tu entres : ton enthousiasme donne envie de te suivre.", "Tenir la distance une fois l'étincelle passée."],
+  S: ["Le Port d'attache", "On revient vers toi quand la mer est agitée : calme, fiable, toujours là.", "Oser larguer les amarres quand le changement s'impose."],
+  C: ['La Loupe', "Rien ne t'échappe : tu vois le détail qui cloche et tu veux que tout soit juste.", "Accepter que certaines choses puissent être simplement bien, sans être parfaites."],
+  DI: ['La Fusée', "Puissance et éclat : tu décolles vite et tu embarques du monde avec toi.", "Garder un œil sur le carburant, le tien comme celui des autres."],
+  ID: ['Le Projecteur', "Tu captes la lumière et l'attention, avec une vraie envie de gagner : tu convaincs d'abord, tu tranches ensuite.", "Laisser aussi la lumière aux autres."],
+  DS: ['Le Bouclier', "Ta force sert d'abord à protéger : tu décides vite, mais pour mettre les tiens à l'abri.", "Distinguer protéger et tout décider à la place des autres."],
+  SD: ['Le Chêne', "Calme et solide la plupart du temps, tu sais te montrer inébranlable quand il le faut : une force tranquille.", "Dire plus tôt ce qui ne te convient pas, avant de devoir tenir tête."],
+  DC: ['Le Gouvernail', "Tu tiens le cap avec fermeté, et tes décisions reposent sur des bases solides.", "Expliquer ton cap, pas seulement le tenir."],
+  CD: ['Le Scalpel', "Tu analyses d'abord, puis tu tranches net, avec précision et sans détour.", "Adoucir la lame quand tu t'adresses aux gens."],
+  IS: ['Le Feu de camp', "Ta chaleur rassemble : autour de toi, chacun trouve sa place et se sent bien.", "Savoir dire non sans avoir peur d'éteindre la flamme."],
+  SI: ['La Maison ouverte', "Tu accueilles avec chaleur et discrétion : on se sent chez soi avec toi, sans que tu aies besoin d'en faire trop.", "Prendre aussi la parole quand ton avis compte."],
+  IC: ['Le Vitrail', "Couleur et précision : tu rends beau et clair ce qui est complexe.", "Choisir entre plaire à tous et tout faire parfaitement."],
+  CI: ['La Lanterne', "Tu éclaires avec justesse et avec tact : tes explications sont précises, et toujours aimables.", "Faire confiance à ton intuition autant qu'à tes vérifications."],
+  SC: ['Le Métronome', "Régularité et justesse : avec toi, les choses avancent au bon rythme, sans fausse note.", "Accepter un changement de tempo de temps en temps."],
+  CS: ['La Charpente', "Rigueur d'abord, fiabilité ensuite : tu construis ce qui tient dans la durée.", "Montrer un peu plus ce que tu ressens, pas seulement ce que tu penses."],
+  DIS: ["Le Chef d'orchestre", "Élan, chaleur et attention aux gens : tu mènes le groupe sans laisser personne de côté.", "Garder du temps pour les détails, qui ne sont pas ton terrain."],
+  DIC: ['Le Couteau suisse', "Décision, contact et rigueur : tu sais presque tout faire, et vite.", "Prendre le temps de souffler : la patience est ta seule lame manquante."],
+  DSC: ['La Forteresse', "Volonté, constance et méthode : ce que tu construis ne tombe pas.", "Ouvrir les portes : un peu de légèreté rend la forteresse accueillante."],
+  ISC: ['La Passerelle', "Chaleur, fiabilité et précision : tu relies les gens et les tâches, et tout le monde s'y retrouve.", "Oser trancher quand il le faut, sans attendre l'accord de tous."],
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY, ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN, DISC_TEAM, DISC_STYLES20 };
