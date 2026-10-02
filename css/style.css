@@ -2872,3 +2872,11 @@ q { quotes: '« ' ' »'; font-style: italic; color: var(--ink-2); }
   .en-num { font-size: 20px; }
   .b5-lbl { font-size: 16px; }
 }
+
+/* DISC : nature profonde, et qui complete qui dans le cercle */
+.disc-nature { margin: 18px 0 0; padding: 14px 18px; border-radius: var(--radius-sm); background: rgba(var(--ink-rgb), 0.045); font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 90ch; }
+.disc-nature b { color: var(--ink); }
+.disc-comp-box { margin-top: 20px; }
+.disc-comp { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.disc-comp li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+.disc-comp li b { color: var(--ink); }

@@ -1186,4 +1186,20 @@ const BIG5_EXPLAIN = {
     day: { hi: 'Le meilleur comme le plus difficile, tu le vis intensément : c\'est aussi ce qui rend ta présence si attentive aux autres.', mid: 'Tes émotions sont là, mais tu les gardes bien en main.', lo: 'Le stress glisse sur toi : dans la tempête, tu restes stable.' } },
 };
 
-window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY, ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN };
+// DISC en équipe : qui te complète, où ça peut frotter, ce que chaque couleur apporte aux autres
+const DISC_TEAM = {
+  dom: { needs: ['ste', 'con'], bring: "l'élan et la décision",
+    complete: "Les profils verts et bleus : leur patience et leur rigueur transforment ton élan en résultats qui durent.",
+    tension: "Avec les profils plus lents ou plus prudents, ton impatience peut être vécue comme de la pression. Écouter jusqu'au bout avant de trancher évite bien des frictions." },
+  inf: { needs: ['con', 'ste'], bring: "la chaleur et l'enthousiasme",
+    complete: "Les profils bleus et verts : leur structure et leur suivi donnent corps à tes idées et les mènent jusqu'au bout.",
+    tension: "Avec les profils rigoureux, ta spontanéité peut passer pour de la légèreté. Tenir les délais et soigner les détails rassure, et renforce ta crédibilité." },
+  ste: { needs: ['dom', 'inf'], bring: "la patience et la stabilité",
+    complete: "Les profils rouges et jaunes : leur élan et leur initiative t'aident à oser, à trancher plus vite et à te mettre en avant.",
+    tension: "Face aux profils pressés ou très directs, tu peux céder pour préserver l'harmonie, puis garder pour toi ce qui te gêne. Le dire tôt et calmement évite que ça s'accumule." },
+  con: { needs: ['inf', 'dom'], bring: "la rigueur et la méthode",
+    complete: "Les profils jaunes et rouges : leur chaleur et leur sens de la décision font passer tes analyses à l'action.",
+    tension: "Avec les profils rapides et intuitifs, ton besoin de vérifier peut sembler freiner l'élan. Distinguer ce qui mérite d'être approfondi de ce qui peut aller vite fluidifie l'équipe." },
+};
+
+window.PRISME_PROFILES = { FAMILIES, TEMPERAMENTS, PSYCHE_TYPES, SIGNATURES, AXIS_PHRASES, COMPARE_TEXT, DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING, VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES, TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY, ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN, DISC_TEAM };

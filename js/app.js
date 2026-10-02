@@ -15,7 +15,7 @@
     DISC_STYLES, DISC_PAIRS, DISC_DUO, DISC_BALANCED, DISC_MISSING,
     VALUE_TEXTS, VALUE_POLES, VALUE_COMBOS, VALUE_TENSIONS, QUALITIES, LIFE, MINISTRIES, CLAN_NAMES,
     TYPE_MBTI, TYPE_MBTI_DIMS, TYPE_BIG5, TYPE_ENNEA, MBTI_LETTERS, MBTI_QUESTIONS, MBTI_ICONS, MBTI_FAMILIES, MBTI_DAILY,
-    ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN,
+    ENNEA_CENTERS, ENNEA_SHORT, ENNEA_DAILY, ENNEA_GROWTH, ENNEA_STRESS, ENNEA_BEST, ENNEA_WORST, BIG5_EXPLAIN, DISC_TEAM,
   } = window.PRISME_PROFILES;
 
   const STORAGE_PROGRESS = 'prisme.progress.v3';
@@ -3127,6 +3127,8 @@
       <article class="disc-card"><h4>Ce qui te motive</h4><p>${esc(colors.map(x => x.style.motive).join(' '))}</p></article>
       <article class="disc-card"><h4>Pour bien communiquer avec toi</h4><p>${esc(colors.map(x => x.style.comm).join(' '))}</p></article>
       <article class="disc-card"><h4>Sous pression</h4><p>${esc(P.style.stress)}</p></article>
+      <article class="disc-card"><h4>Les profils qui te complètent</h4><p>${esc(DISC_TEAM[P.id].complete)}</p></article>
+      <article class="disc-card"><h4>Tensions possibles en équipe</h4><p>${esc(DISC_TEAM[P.id].tension)}${sec ? ` ${esc(DISC_TEAM[sec.id].tension.split(' : ')[0].split('. ')[0])}.` : ''}</p></article>
       <article class="disc-card"><h4>En débat politique</h4><p>${esc(colors.map(x => x.style.politics).join(' '))}</p></article>`;
 
     $('disc-legend').innerHTML = DISC.map(x => {
@@ -3164,7 +3166,28 @@
     DISC.filter(x => !counts[x.id]).forEach(x => notes.push(esc(DISC_MISSING[x.id])));
     const legacy = all.length - people.length;
     if (legacy) notes.push(`${legacy} personne${legacy > 1 ? 's' : ''} sans profil DISC (ancienne version du test).`);
+    notes.push('Ces couleurs décrivent la nature profonde de chacun : au travail, chacun les nuance un peu selon son rôle.');
     $(pre + 'circle-disc-notes').innerHTML = notes.map(n => `<span>${n}</span>`).join('');
+
+    // Qui complète qui : pour chacun, les personnes dont la couleur dominante lui apporte ce qui lui manque
+    const comp = profiles.filter(p => !p.dp.balanced).map(p => {
+      const needs = DISC_TEAM[p.dp.primary.id].needs;
+      const others = profiles.filter(q => q !== p && !q.dp.balanced && needs.includes(q.dp.primary.id));
+      if (!others.length) return '';
+      // regroupés par couleur : « Marion et Flob lui apportent la patience ; Renard, la rigueur »
+      const groups = needs.map(id => others.filter(q => q.dp.primary.id === id)).filter(g => g.length);
+      const say = groups.map((g, i) => {
+        const names = joinFr(g.slice(0, 4).map(q => esc(q.me ? 'toi' : q.name)));
+        const what = esc(DISC_TEAM[g[0].dp.primary.id].bring);
+        return i === 0 ? `${names} ${g.length > 1 ? 'lui apportent' : 'lui apporte'} ${what}` : `${names}, ${what}`;
+      }).join(' ; ');
+      return `<li><span class="disc-tag${p.me ? ' me' : ''}" style="${p.me ? '' : `background:${p.color}`}">${esc(p.tag)}</span><span><b>${esc(p.me ? 'Toi' : p.name)}</b> (${esc(p.dp.primary.color.toLowerCase())}) : ${say}.</span></li>`;
+    }).filter(Boolean);
+    const box = $(pre + 'circle-disc-comp');
+    if (box) {
+      box.hidden = !comp.length;
+      box.innerHTML = comp.length ? `<p class="mb-k">Qui complète qui</p><p class="gty-hint">Les couleurs opposées se complètent : ce qui manque à l'un, l'autre l'apporte naturellement.</p><ul class="disc-comp">${comp.join('')}</ul>` : '';
+    }
   }
 
   /* ---------------------------------------------------------
@@ -7630,7 +7653,7 @@
      Mise à jour : le navigateur garde parfois une ancienne page en cache. On compare notre numéro de version
      à celui du site ; s'il est plus récent, on recharge une seule fois en contournant le cache.
      --------------------------------------------------------- */
-  const BUILD = 75;
+  const BUILD = 76;
   function checkForUpdate() {
     if (!window.fetch || location.protocol === 'file:') return;
     fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
